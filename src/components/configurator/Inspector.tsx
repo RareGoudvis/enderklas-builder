@@ -94,7 +94,7 @@ export default function Inspector() {
 // LOKALE STYLES
 // ============================================================================
 const styles = {
-    sidebar: { width: '380px', minWidth: '380px', backgroundColor: 'var(--bg-dark)', borderLeft: '1px solid var(--border-color)', height: '100%', boxSizing: 'border-box', overflowY: 'auto', padding: '20px' } as React.CSSProperties,
+    sidebar: { width: '425px', minWidth: '425px', backgroundColor: 'var(--bg-dark)', borderLeft: '1px solid var(--border-color)', height: '100%', boxSizing: 'border-box', overflowY: 'auto', padding: '20px' } as React.CSSProperties,
     mainTitle: { color: 'var(--text-main)', marginTop: 0, marginBottom: '24px', fontSize: '18px' } as React.CSSProperties,
     card: { backgroundColor: 'var(--bg-panel)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '20px' } as React.CSSProperties,
     cardTitle: { color: 'var(--accent-purple)', margin: '0 0 16px 0', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' } as React.CSSProperties,

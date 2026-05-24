@@ -5,8 +5,11 @@ import type { Fraction } from './services/math/types';
 import logo from './assets/enderklas-logo.png';
 
 // 🔥 NIEUW: Importeer de PDF generator en je PDF component
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 import { WorksheetPDF } from './components/pdf/WorksheetPDF';
+
+import { useState } from 'react';
+
 
 // ============================================================================
 // TYPE GUARDS & FORMATTERS
@@ -33,6 +36,46 @@ const formatMathNumber = (num: number | string | undefined): string => {
 // ============================================================================
 
 export default function App() {
+
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleDownloadPDF = async (showSolutions: boolean) => {
+    setIsGenerating(true);
+    try {
+      const fileName = `${headerData.titel || 'Oefenbundel'}${showSolutions ? '_Oplossingen' : ''}.pdf`;
+      const doc = <WorksheetPDF blocks={blocks} headerData={headerData} footerData={footerData} showSolutions={showSolutions} />;
+      const blob = await pdf(doc).toBlob();
+
+      if ('showSaveFilePicker' in window) {
+        try {
+          const handle = await (window as any).showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: 'PDF-bestand', accept: { 'application/pdf': ['.pdf'] } }],
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+        } catch (saveErr: any) {
+          if (saveErr.name !== 'AbortError') throw saveErr;
+        }
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('PDF generatie mislukt:', error);
+      alert(`PDF generatie mislukt:\n${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const blocks = useWorksheetStore((state) => state.blocks);
   const headerData = useWorksheetStore((state) => state.header);
   const footerData = useWorksheetStore((state) => state.footer);
@@ -120,6 +163,10 @@ export default function App() {
 
   return (
     <div className="print-root" style={styles.appContainer}>
+      {/* font inladen voor preview/}
+      <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+            `}</style>
 
       {/* =========================================================
                 LINKER SIDEBAR
@@ -162,30 +209,13 @@ export default function App() {
             Algemene Instellingen
           </button>
 
-          {/* 🔥 DIT GENEREERT DE PDF VIA DE ENGINE */}
-          <PDFDownloadLink
-            document={<WorksheetPDF blocks={blocks} headerData={headerData} footerData={footerData} showSolutions={false} />}
-            fileName={`${headerData.titel || 'Oefenbundel'}.pdf`}
-            style={{ textDecoration: 'none' }}
-          >
-            {({ loading }) => (
-              <button style={styles.printBtnPrimary} disabled={loading}>
-                {loading ? '⏳ PDF genereren...' : 'Download oefenbundel'}
-              </button>
-            )}
-          </PDFDownloadLink>
+          <button onClick={() => handleDownloadPDF(false)} style={styles.printBtnPrimary} disabled={isGenerating}>
+            {isGenerating ? '⏳ PDF genereren...' : 'Download oefenbundel'}
+          </button>
 
-          <PDFDownloadLink
-            document={<WorksheetPDF blocks={blocks} headerData={headerData} footerData={footerData} showSolutions={true} />}
-            fileName={`${headerData.titel || 'Oefenbundel'}_Oplossingen.pdf`}
-            style={{ textDecoration: 'none' }}
-          >
-            {({ loading }) => (
-              <button style={styles.printBtnSecondary} disabled={loading}>
-                {loading ? '⏳ PDF genereren...' : 'Download oplossingen'}
-              </button>
-            )}
-          </PDFDownloadLink>
+          <button onClick={() => handleDownloadPDF(true)} style={styles.printBtnSecondary} disabled={isGenerating}>
+            {isGenerating ? '⏳ PDF genereren...' : 'Download oplossingen'}
+          </button>
         </div>
       </aside>
 
@@ -397,7 +427,7 @@ const styles = {
   instructionDisplay: { fontSize: '16px', fontWeight: 'bold', color: '#000', fontFamily: 'sans-serif' } as React.CSSProperties,
   pointsText: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'sans-serif', marginRight: '24px', color: '#000' } as React.CSSProperties,
   exerciseRow: { display: 'flex', alignItems: 'flex-start', fontSize: '17px', fontFamily: 'monospace' } as React.CSSProperties,
-  mathInput: { width: '70px', textAlign: 'center', fontSize: '17px', fontFamily: 'monospace', border: '1px solid transparent', background: 'transparent', outline: 'none', color: '#000', padding: 0 } as React.CSSProperties,
+  mathInput: { width: '70px', textAlign: 'center', fontSize: '17px', fontFamily: 'Roboto Mono, monospace', border: '1px solid transparent', background: 'transparent', outline: 'none', color: '#000', padding: 0 } as React.CSSProperties,
   mathDottedLine: { borderBottom: '1.5px dotted #000', width: '40px', margin: '0 6px', display: 'inline-block', height: '16px' } as React.CSSProperties,
   workLine: (layout: string | undefined): React.CSSProperties => ({ borderBottom: '1.5px solid #000', minWidth: '55px', width: layout === 'inline-long' ? '100%' : (layout === 'stepped' ? '100%' : '75px') }),
   solutionText: { color: '#e11d48', fontWeight: 'bold', padding: '0 4px', fontSize: '18px' } as React.CSSProperties,
