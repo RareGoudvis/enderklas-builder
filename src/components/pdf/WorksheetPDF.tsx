@@ -755,11 +755,11 @@ export const WorksheetPDF: React.FC<{
         const isShort = block.layoutPreset === 'inline-short';
 
         return (
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                <View style={{ height: 30, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                <View style={{ height: 36, flexDirection: 'row', alignItems: 'center' }}>
                     <View style={S.operandSlot}>{renderTerm(ex.operands[0], m1)}</View>
                     <Text style={S.op}>{ex.operator}</Text>
-                    <View style={S.operandSlot}>{renderTerm(ex.operands[1], m2)}</View>
+                    <View style={[S.operandSlot, { alignItems: 'flex-start' }]}>{renderTerm(ex.operands[1], m2)}</View>
                 </View>
 
                 {/* Answer slots */}
@@ -927,7 +927,7 @@ export const WorksheetPDF: React.FC<{
                                         {blockHeader}
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                             {(block.fractionExercises || []).map((ex) => (
-                                                <View key={ex.id} style={{ width: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek') ? '100%' : '50%', marginBottom: spacing, paddingRight: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek') ? 0 : 16 }}>
+                                                <View key={ex.id} style={{ width: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek' || ex.subType === 'hoeveelheid' || ex.subType === 'hoeveelheid-rechthoek' || ex.subType === 'hoeveelheid-abstract') ? '100%' : '50%', marginBottom: spacing, paddingRight: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek' || ex.subType === 'hoeveelheid' || ex.subType === 'hoeveelheid-rechthoek' || ex.subType === 'hoeveelheid-abstract') ? 0 : 16 }}>
                                                     {renderFractionExercisePDF(ex, block)}
                                                 </View>
                                             ))}
@@ -1006,7 +1006,7 @@ const S = StyleSheet.create({
     // operandSlot: fixed-width right-aligned box so columns stay consistent across rows
     operandSlot: { width: 50, alignItems: 'flex-end' },
     op: { fontFamily: 'RobotoMono', fontSize: 14, marginLeft: 5, marginRight: 5 },
-    answerSlot: { flexDirection: 'row', alignItems: 'center', height: 30 },
+    answerSlot: { flexDirection: 'row', alignItems: 'flex-end', height: 36 },
     eq: { fontFamily: 'RobotoMono', fontSize: 14, marginRight: 6, width: 14 },
     eqHidden: { fontFamily: 'RobotoMono', fontSize: 14, marginRight: 6, width: 14, opacity: 0 },
     mono: { fontFamily: 'RobotoMono', fontSize: 14 },

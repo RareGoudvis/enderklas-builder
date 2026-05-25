@@ -42,9 +42,11 @@ export default function FractionConfig({ block }: Props) {
         updateBlockSettings(block.id, { constraints: { ...c, [key]: value } });
 
     const handleSubTypeChange = (newSubType: FractionSubType) => {
+        const isHoeveelheidType = newSubType === 'hoeveelheid' || newSubType === 'hoeveelheid-rechthoek' || newSubType === 'hoeveelheid-abstract';
         updateBlockSettings(block.id, {
             constraints: { subType: newSubType, ...defaultsFor(newSubType) },
             fractionExercises: [],
+            ...(isHoeveelheidType ? { numberOfExercises: 1 } : {}),
         });
     };
 

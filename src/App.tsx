@@ -788,7 +788,7 @@ export default function App() {
                     </div>
                   ) : block.typeId === 'breuken' ? (() => {
                     const subType = block.constraints.subType || 'kleuren';
-                    const is1Col  = subType === 'lijnstuk' || subType === 'veelhoek';
+                    const is1Col  = subType === 'lijnstuk' || subType === 'veelhoek' || subType === 'hoeveelheid' || subType === 'hoeveelheid-rechthoek' || subType === 'hoeveelheid-abstract';
                     const exList  = block.fractionExercises || [];
                     return (
                       <div style={{ display: 'grid', gridTemplateColumns: is1Col ? '1fr' : '1fr 1fr', gap: `${block.verticalSpacing || 14}px` }}>
@@ -852,7 +852,7 @@ export default function App() {
                               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '8px', gap: `${(block.verticalSpacing || 14) * 0.8}px` }}>
                                 {(!isMissing1 && !isMissing2) ? (
                                   Array.from({ length: block.layoutPreset === 'stepped' ? (block.steppedLines || 1) : 1 }).map((_, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', width: '100%', height: '24px' }}>
+                                    <div key={i} style={{ display: 'flex', alignItems: 'flex-end', width: '100%', height: '32px' }}>
                                       <span style={{ marginRight: '10px', visibility: i === 0 ? 'visible' : 'hidden' }}>=</span>
                                       {(i === 0 && showSolutions) ? renderAnswer(ex.answer) : <div style={styles.workLine(block.layoutPreset)}></div>}
                                     </div>
