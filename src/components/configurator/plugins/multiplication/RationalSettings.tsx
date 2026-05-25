@@ -82,7 +82,7 @@ export default function RationalSettings({ block, isDivision = false }: Props) {
             })()}
 
             {/* DYNAMISCHE GETALOPBOUW */}
-            <div style={{ padding: '16px', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
+            <div style={{ marginBottom: '24px' }}>
                 <h4 style={{ color: 'white', fontSize: '14px', margin: '0 0 16px 0' }}>Specifieke getalopbouw</h4>
 
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>

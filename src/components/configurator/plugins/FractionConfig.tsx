@@ -18,7 +18,7 @@ function defaultsFor(subType: FractionSubType): Record<string, unknown> {
         case 'hoeveelheid-rechthoek': return { minDenominator: 2, maxDenominator: 5, maxTotal: 20, answerFormat: 'met-berekening' };
         case 'hoeveelheid-abstract':  return { minDenominator: 2, maxDenominator: 9, level: 1, answerMode: 'berekeningslijnen', maxAbstractN3: 1000 };
         case 'lijnstuk':              return { minDenominator: 2, maxDenominator: 6, minLineLength: 4, maxLineLength: 12, level: 1, answerMode: 'berekeningslijnen' };
-        case 'veelhoek':              return { minDenominator: 2, maxDenominator: 9, maxDimension: 6 };
+        case 'veelhoek':              return { minDenominator: 2, maxDenominator: 9, maxWidth: 6, maxHeight: 6 };
     }
 }
 
@@ -182,33 +182,22 @@ export default function FractionConfig({ block }: Props) {
                 </div>
             )}
 
-            {/* ── MAX DIMENSION (veelhoek) ── */}
+            {/* ── MAX DIMENSIONS (veelhoek) ── */}
             {isVeelhoek && (
                 <div style={styles.section}>
-                    <label style={styles.label}>Max. afmeting (vakjes): {c.maxDimension ?? 6}</label>
-                    <input type="range" min="2" max="8" step="1"
-                        value={c.maxDimension ?? 6}
-                        onChange={(e) => updateConstraint('maxDimension', Number(e.target.value))}
+                    <label style={styles.label}>Max. breedte (vakjes): {c.maxWidth ?? 6}</label>
+                    <input type="range" min="1" max="10" step="1"
+                        value={c.maxWidth ?? 6}
+                        onChange={(e) => updateConstraint('maxWidth', Number(e.target.value))}
+                        style={sliderStyle} />
+                    <label style={{ ...styles.label, marginTop: '8px' }}>Max. hoogte (vakjes): {c.maxHeight ?? 6}</label>
+                    <input type="range" min="1" max="10" step="1"
+                        value={c.maxHeight ?? 6}
+                        onChange={(e) => updateConstraint('maxHeight', Number(e.target.value))}
                         style={sliderStyle} />
                 </div>
             )}
 
-            {/* ── ANSWER FORMAT (hoeveelheid concreet) ── */}
-            {isHoeveelheid && (
-                <div style={styles.section}>
-                    <label style={styles.label}>Antwoordvorm:</label>
-                    {[
-                        { val: 'met-hulp',        label: 'Met hulplijnen' },
-                        { val: 'met-breukvragen', label: 'Met breukvragen' },
-                        { val: 'zonder-hulp',     label: 'Zonder hulp' },
-                    ].map(({ val, label }) => (
-                        <button key={val} onClick={() => updateConstraint('answerFormat', val)}
-                            style={{ ...styles.radioBtn(c.answerFormat === val), display: 'flex', width: '100%', marginBottom: '6px', textAlign: 'left', justifyContent: 'flex-start' }}>
-                            {label}
-                        </button>
-                    ))}
-                </div>
-            )}
 
         </div>
     );

@@ -80,6 +80,16 @@ export default function Inspector() {
                             ))}
                         </div>
 
+                        {(docSettings.titlePosition === 'left' || docSettings.titlePosition === 'right') && (
+                            <>
+                                <label style={{ ...S.label, marginTop: '12px' }}>Marge titel–velden: {docSettings.titleFieldsGap ?? 16}px</label>
+                                <input type="range" min="4" max="64" step="2"
+                                    value={docSettings.titleFieldsGap ?? 16}
+                                    onChange={(e) => updateDocSettings({ titleFieldsGap: Number(e.target.value) })}
+                                    style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
+                            </>
+                        )}
+
                         <label style={{ ...S.label, marginTop: '12px' }}>Koptekst velden</label>
                         <div style={S.checkboxGrid}>
                             <label style={S.checkboxLabel}><input type="checkbox" checked={headerData.naam} onChange={(e) => updateHeader({ naam: e.target.checked })} style={S.checkbox} /> Naam</label>
@@ -282,6 +292,25 @@ export default function Inspector() {
                         </>
                     )}
 
+                    {/* ── Scaffolding (hoeveelheid concreet) ── */}
+                    {subType === 'hoeveelheid' && (
+                        <>
+                            <label style={{ ...S.label, marginTop: '12px' }}>Scaffolding</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {([
+                                    { val: 'met-hulp',        label: 'Met hulplijnen' },
+                                    { val: 'met-breukvragen', label: 'Met breukvragen' },
+                                    { val: 'zonder-hulp',     label: 'Zonder hulp' },
+                                ] as const).map(({ val, label }) => (
+                                    <button key={val} onClick={() => updateConstraint('answerFormat', val)}
+                                        style={{ ...S.radioBtn((c.answerFormat ?? 'met-hulp') === val), justifyContent: 'flex-start', textAlign: 'left' }}>
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
                     {/* ── Scaffolding (hoeveelheid-rechthoek) ── */}
                     {subType === 'hoeveelheid-rechthoek' && (
                         <>
@@ -312,6 +341,26 @@ export default function Inspector() {
                         </>
                     )}
 
+                    {/* ── Moeilijkheidsgraad (rational optellen/aftrekken) ── */}
+                    {(activeBlock.typeId.includes('optellen') || activeBlock.typeId.includes('aftrekken')) && c.numberType === 'rational' && (
+                        <>
+                            <label style={{ ...S.label, marginTop: '12px' }}>Moeilijkheidsgraad</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {([
+                                    { val: 'same',       label: 'Gelijknamige breuken' },
+                                    { val: 'one_step',   label: 'Ongelijknamige breuken (eenvoudig)' },
+                                    { val: 'multi_step', label: 'Ongelijknamige breuken (moeilijk)' },
+                                ] as const).map(({ val, label }) => (
+                                    <button key={val}
+                                        onClick={() => updateConstraint('fractionDifficulty', val)}
+                                        style={{ ...S.radioBtn((c.fractionDifficulty ?? 'same') === val), justifyContent: 'flex-start', textAlign: 'left' }}>
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
                     {/* ── Scaffolding (hr-std: Kort / Lang / Stappen) ── */}
                     {isHrStd(activeBlock.typeId) && (
                         <>
@@ -323,10 +372,10 @@ export default function Inspector() {
                             </div>
                             {(activeBlock.layoutPreset ?? 'inline-short') === 'stepped' && (
                                 <div style={{ marginTop: '8px' }}>
-                                    <label style={S.label}>Aantal stappenlijnen</label>
+                                    <label style={S.label}>Antal stappenlijnen: {activeBlock.steppedLines ?? 3}</label>
                                     <input
-                                        type="number" min="1" max="10"
-                                        style={S.input}
+                                        type="range" min="1" max="10" step="1"
+                                        style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }}
                                         value={activeBlock.steppedLines ?? 3}
                                         onChange={(e) => updateBlockLayout(activeBlock.id, 'stepped', Number(e.target.value))}
                                     />
@@ -337,8 +386,8 @@ export default function Inspector() {
                 </div>
             </div>
 
-            {/* ── 4. Advanced (accordion) ── */}
-            <div style={S.advancedWrap}>
+            {/* ── 4. Advanced (accordion) — only shown when there is actual content ── */}
+            {false && <div style={S.advancedWrap}>
                 <button style={S.advancedToggle} onClick={() => setAdvancedOpen(!advancedOpen)}>
                     <span>Advanced</span>
                     <span style={{ fontSize: '14px', transform: advancedOpen ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.2s' }}>›</span>
@@ -348,7 +397,7 @@ export default function Inspector() {
                         <p style={{ color: 'var(--text-muted)', fontSize: '12px', margin: 0, fontStyle: 'italic' }}>Binnenkort beschikbaar.</p>
                     </div>
                 )}
-            </div>
+            </div>}
         </aside>
     );
 }

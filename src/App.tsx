@@ -130,10 +130,14 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         if (subType === 'kleuren') {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ fontSize: '13px', fontFamily: 'sans-serif', fontWeight: 'bold' }}>
-                        Kleur {ex.numerator}/{ex.denominator} in:
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontFamily: 'sans-serif', fontWeight: 'bold' }}>
+                        <span>Kleur</span>
+                        {vertFrac(ex.numerator, ex.denominator)}
+                        <span>in:</span>
                     </div>
-                    {shape}
+                    <div style={{ minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {shape}
+                    </div>
                 </div>
             );
         }
@@ -141,21 +145,20 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         // herkennen — build answer area based on format
         let answerArea: React.ReactNode;
         if (answerFormat === 'fraction-questions') {
+            const qLine = (text: string, answer: React.ReactNode) => (
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '4px' }}>
+                    <span>{text}</span>
+                    {answer}
+                </div>
+            );
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', width: '100%' }}>
-                    {shape}
-                    <div style={{ fontSize: '12px', fontFamily: 'sans-serif', lineHeight: '1.8', width: '100%' }}>
-                        <div>In hoeveel gelijke delen is de figuur verdeeld? {showSolutions ? sol(String(ex.denominator)) : blank(28)}</div>
-                        <div>Hoeveel gelijke delen zijn ingekleurd? {showSolutions ? sol(String(ex.numerator)) : blank(28)}</div>
-                        <div style={{ marginTop: '4px' }}>
-                            {showSolutions
-                                ? vertFrac(ex.numerator, ex.denominator, '#e11d48')
-                                : <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: '13px' }}>
-                                    <div style={{ borderBottom: '1.5px solid #000', minWidth: '24px', height: '16px' }} />
-                                    <div style={{ minWidth: '24px', height: '16px' }} />
-                                  </div>
-                            }
-                        </div>
+                    <div style={{ minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {shape}
+                    </div>
+                    <div style={{ fontSize: '12px', fontFamily: 'sans-serif', width: '100%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {qLine('In hoeveel gelijke delen is de figuur verdeeld?', showSolutions ? sol(String(ex.denominator)) : blank(28))}
+                        {qLine('Hoeveel gelijke delen zijn ingekleurd?', showSolutions ? sol(String(ex.numerator)) : blank(28))}
                     </div>
                 </div>
             );
@@ -240,11 +243,19 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
             </div>
         );
 
+        const gridWrap = (
+            <div style={{ minHeight: '52px', display: 'flex', alignItems: 'center' }}>
+                {simpleGrid}
+            </div>
+        );
+
         // ── Met hulplijnen ──
         if (answerFormat === 'met-hulp') {
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    {simpleGrid}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', minHeight: '52px' }}>
+                        {simpleGrid}
+                    </div>
                     {calcLines}
                 </div>
             );
@@ -254,7 +265,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         if (answerFormat === 'met-breukvragen') {
             const qRow = (question: string, answer: React.ReactNode) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'sans-serif', minWidth: '160px' }}>{question}</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'sans-serif', width: '195px', flexShrink: 0 }}>{question}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '13px', fontFamily: 'monospace' }}>{answer}</div>
                 </div>
             );
@@ -264,10 +275,10 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
                 </div>
             );
             return (
-                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                <div style={{ display: 'flex', gap: '16px', width: '100%' }}>
                     <div style={{ flexShrink: 0 }}>
                         {instruction}
-                        {simpleGrid}
+                        {gridWrap}
                     </div>
                     <div style={{ flex: 1, marginTop: '18px' }}>
                         {qRow('Hoe groot is het geheel?', blank())}
@@ -286,8 +297,10 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
 
         // ── Zonder hulp ──
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {simpleGrid}
+            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '52px' }}>
+                    {simpleGrid}
+                </div>
                 {questionLine}
                 <div style={{ borderBottom: '1.5px solid #000', width: '100%', height: '20px' }} />
                 <div style={{ borderBottom: '1.5px solid #000', width: '100%', height: '20px' }} />
@@ -385,7 +398,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         const arcLength  = parseFloat((partLength * ex.numerator).toFixed(2));
 
         const lineEl = (
-            <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0' }}>
+            <div style={{ width: `${cm * 38}px`, display: 'flex', alignItems: 'center', margin: '10px 0' }}>
                 <div style={{ width: '2px', height: '16px', backgroundColor: '#000' }} />
                 <div style={{ flex: 1, height: '2px', backgroundColor: '#000' }} />
                 <div style={{ width: '2px', height: '16px', backgroundColor: '#000' }} />
@@ -438,7 +451,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
                 {instructions}
                 {lineEl}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', fontFamily: 'monospace', marginTop: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'monospace', marginTop: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                         {showSolutions ? sol(String(cm)) : blank(28)}<span>:</span>{showSolutions ? sol(String(ex.denominator)) : blank(24)}<span>=</span>{showSolutions ? sol(String(partLength)) : blank(28)}
                     </div>
@@ -648,7 +661,7 @@ export default function App() {
           <div onClick={(e) => { e.stopPropagation(); setActiveSelection('document'); }} style={styles.clickableZone(activeSelectionId === 'document', '100%', false, docSettings.headerStyle === 'kader')}>
             {docSettings.titlePosition === 'right' ? (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', flex: 1, marginRight: '16px' }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', flex: 1, marginRight: `${docSettings.titleFieldsGap ?? 16}px` }}>
                   {headerData?.naam && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 200px' }}><span style={styles.sheetHeaderLabel}>Naam:</span><div style={styles.sheetHeaderLine}></div></div>}
                   {headerData?.klas && <div style={{ display: 'flex', alignItems: 'flex-end', width: '90px' }}><span style={styles.sheetHeaderLabel}>Klas:</span><div style={styles.sheetHeaderLine}></div></div>}
                   {headerData?.nummer && <div style={{ display: 'flex', alignItems: 'flex-end', width: '80px' }}><span style={styles.sheetHeaderLabel}>Nr:</span><div style={styles.sheetHeaderLine}></div></div>}
@@ -657,6 +670,19 @@ export default function App() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
                   {headerData?.titel && <h1 style={{ margin: '0 0 8px 0', fontSize: '22px', fontFamily: 'sans-serif', fontWeight: 'bold', textAlign: 'right' }}>{headerData.titel}</h1>}
                   {docSettings.showScores && totalScore > 0 && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
+                </div>
+              </div>
+            ) : docSettings.titlePosition === 'left' ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0, marginRight: `${docSettings.titleFieldsGap ?? 16}px` }}>
+                  {headerData?.titel && <h1 style={{ margin: '0 0 8px 0', fontSize: '22px', fontFamily: 'sans-serif', fontWeight: 'bold', textAlign: 'left' }}>{headerData.titel}</h1>}
+                  {docSettings.showScores && totalScore > 0 && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
+                </div>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', flex: 1 }}>
+                  {headerData?.naam && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 200px' }}><span style={styles.sheetHeaderLabel}>Naam:</span><div style={styles.sheetHeaderLine}></div></div>}
+                  {headerData?.klas && <div style={{ display: 'flex', alignItems: 'flex-end', width: '90px' }}><span style={styles.sheetHeaderLabel}>Klas:</span><div style={styles.sheetHeaderLine}></div></div>}
+                  {headerData?.nummer && <div style={{ display: 'flex', alignItems: 'flex-end', width: '80px' }}><span style={styles.sheetHeaderLabel}>Nr:</span><div style={styles.sheetHeaderLine}></div></div>}
+                  {headerData?.datum && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 140px' }}><span style={styles.sheetHeaderLabel}>Datum:</span><div style={styles.sheetHeaderLine}></div></div>}
                 </div>
               </div>
             ) : (
@@ -690,7 +716,7 @@ export default function App() {
                     <div className="no-print" style={styles.blockControls}>
                       {index > 0 && <button onClick={(e) => { e.stopPropagation(); moveBlockUp(block.id); }} style={styles.iconBtn}>↑</button>}
                       {index < blocks.length - 1 && <button onClick={(e) => { e.stopPropagation(); moveBlockDown(block.id); }} style={styles.iconBtn}>↓</button>}
-                      <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} style={styles.deleteBtn}>X</button>
+                      <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} style={styles.deleteBtn}>🗑</button>
                     </div>
                   )}
 
@@ -703,6 +729,7 @@ export default function App() {
                       {block.instructionMode === 'mag' && <span style={styles.badge('mag')}>MAG</span>}
                       {block.instructionMode === 'moet' && <span style={styles.badge('moet')}>MOET</span>}
                       {block.instructionMode === 'plus' && <span style={styles.badge('plus')}>★</span>}
+                      {block.instructionMode === 'aangepast' && block.customInstructionText && <span style={styles.badge('aangepast')}>{block.customInstructionText}</span>}
                       <span style={styles.instructionDisplay}>{block.instructionText || ''}</span>
                     </div>
                     {docSettings.showScores && (block.totalPoints || 0) > 0 && <div style={styles.pointsText}>__ / {block.totalPoints}</div>}
@@ -718,7 +745,8 @@ export default function App() {
                     </div>
                   ) : block.typeId === 'breuken' ? (() => {
                     const subType = block.constraints.subType || 'kleuren';
-                    const is1Col  = subType === 'lijnstuk' || subType === 'veelhoek' || subType === 'hoeveelheid' || subType === 'hoeveelheid-rechthoek' || subType === 'hoeveelheid-abstract';
+                    const answerFmt = block.constraints.answerFormat as string | undefined;
+                    const is1Col  = subType === 'lijnstuk' || subType === 'veelhoek' || (subType === 'hoeveelheid' && answerFmt === 'met-breukvragen');
                     const exList  = block.fractionExercises || [];
                     return (
                       <div style={{ display: 'grid', gridTemplateColumns: is1Col ? '1fr' : '1fr 1fr', gap: `${block.verticalSpacing || 14}px` }}>
@@ -768,7 +796,7 @@ export default function App() {
                           const isMissing2 = ex.missingTerm === 'operand2';
 
                           return (
-                            <div key={ex.id} style={styles.exerciseRow}>
+                            <div key={ex.id} style={{ ...styles.exerciseRow, alignItems: block.layoutPreset === 'stepped' ? 'flex-start' : 'flex-end' }}>
                               <div style={{ display: 'flex', alignItems: 'center' }}>
                                 <div style={{ width: '85px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                                   {renderTerm(ex.operands[0], isMissing1, block.id, ex.id, 0)}
@@ -783,7 +811,7 @@ export default function App() {
                                 {(!isMissing1 && !isMissing2) ? (
                                   Array.from({ length: block.layoutPreset === 'stepped' ? (block.steppedLines || 1) : 1 }).map((_, i) => (
                                     <div key={i} style={{ display: 'flex', alignItems: 'flex-end', width: '100%', height: '32px' }}>
-                                      <span style={{ marginRight: '10px', visibility: i === 0 ? 'visible' : 'hidden' }}>=</span>
+                                      <span style={{ marginRight: '10px' }}>=</span>
                                       {(i === 0 && showSolutions) ? renderAnswer(ex.answer) : <div style={styles.workLine(block.layoutPreset)}></div>}
                                     </div>
                                   ))
@@ -859,12 +887,12 @@ const styles = {
   blockControls: { position: 'absolute', right: '12px', top: '12px', display: 'flex', gap: '6px', zIndex: 10 } as React.CSSProperties,
   iconBtn: { background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-main)', borderRadius: '4px', cursor: 'pointer', padding: '4px 10px', fontSize: '14px', fontWeight: 'bold' } as React.CSSProperties,
   deleteBtn: { background: '#ff4d4d', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', padding: '4px 10px', fontSize: '12px', fontWeight: 'bold' } as React.CSSProperties,
-  badge: (type: 'mag' | 'moet' | 'plus'): React.CSSProperties => ({ backgroundColor: type === 'mag' ? '#4ade80' : type === 'moet' ? '#f87171' : '#3b82f6', color: type === 'mag' ? '#14532d' : type === 'moet' ? '#7f1d1d' : '#eff6ff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', border: type === 'mag' ? '1px solid #22c55e' : type === 'moet' ? '1px solid #ef4444' : '1px solid #2563eb' }),
+  badge: (_type: 'mag' | 'moet' | 'plus' | 'aangepast'): React.CSSProperties => ({ backgroundColor: 'white', color: '#000', padding: '2px 6px', borderRadius: '3px', fontSize: '11px', fontWeight: 'bold', border: '1.5px solid #000' }),
   instructionDisplay: { fontSize: '16px', fontWeight: 'bold', color: '#000', fontFamily: 'sans-serif' } as React.CSSProperties,
   pointsText: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'sans-serif', marginRight: '24px', color: '#000' } as React.CSSProperties,
   exerciseRow: { display: 'flex', alignItems: 'flex-end', fontSize: '17px', fontFamily: 'monospace' } as React.CSSProperties,
   mathInput: { width: '70px', textAlign: 'center', fontSize: '17px', fontFamily: 'Roboto Mono, monospace', border: '1px solid transparent', background: 'transparent', outline: 'none', color: '#000', padding: 0 } as React.CSSProperties,
-  mathDottedLine: { borderBottom: '1.5px dotted #000', width: '40px', margin: '0 6px', display: 'inline-block', height: '16px' } as React.CSSProperties,
+  mathDottedLine: { borderBottom: '1.5px solid #000', width: '40px', margin: '0 6px', display: 'inline-block', height: '16px' } as React.CSSProperties,
   workLine: (layout: string | undefined): React.CSSProperties => ({ borderBottom: '1.5px solid #000', minWidth: '55px', width: layout === 'inline-long' ? '100%' : (layout === 'stepped' ? '100%' : '75px') }),
   solutionText: { color: '#e11d48', fontWeight: 'bold', padding: '0 4px', fontSize: '18px' } as React.CSSProperties,
   fractionWrapper: { display: 'inline-flex', flexDirection: 'column', alignItems: 'center', margin: '0 4px', fontSize: '15px' } as React.CSSProperties,

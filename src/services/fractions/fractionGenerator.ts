@@ -73,20 +73,22 @@ function makeLijnstukExercise(block: MathBlock): FractionExercise {
 }
 
 function makeVeelhoekExercise(block: MathBlock): FractionExercise {
-    const { minDenominator = 2, maxDenominator = 9, maxDimension = 6 } = block.constraints;
+    const { minDenominator = 2, maxDenominator = 9, maxWidth = 6, maxHeight = 6, maxDimension = 6 } = block.constraints;
+    const mW = maxWidth ?? maxDimension;
+    const mH = maxHeight ?? maxDimension;
     const denominator = randInt(minDenominator, maxDenominator);
     const numerator = randInt(1, denominator - 1);
 
-    // Find w×h pairs where w*h is divisible by denominator and both ≤ maxDimension
-    const maxMult = Math.floor((maxDimension * maxDimension) / denominator);
+    // Find w×h pairs where w*h is divisible by denominator, w ≤ mW and h ≤ mH
+    const maxMult = Math.floor((mW * mH) / denominator);
     const multiplier = Math.max(1, randInt(1, Math.max(1, maxMult)));
     const total = denominator * multiplier;
 
     const factors: [number, number][] = [];
-    for (let w = 1; w <= Math.min(total, maxDimension); w++) {
+    for (let w = 1; w <= Math.min(total, mW); w++) {
         if (total % w === 0) {
             const h = total / w;
-            if (h <= maxDimension) factors.push([w, h]);
+            if (h <= mH) factors.push([w, h]);
         }
     }
     const [width, height] = factors.length

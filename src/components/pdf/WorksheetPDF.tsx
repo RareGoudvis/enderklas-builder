@@ -321,12 +321,6 @@ export const WorksheetPDF: React.FC<{
                                     <Text style={{ fontSize: 8, fontFamily: 'Roboto', fontWeight: 'bold', flex: 1 }}>Hoeveel gelijke delen zijn ingekleurd?</Text>
                                     {showSolutions ? <Text style={[S.sol, { fontSize: 8 }]}>{ex.numerator}</Text> : bl()}
                                 </View>
-                                {showSolutions ? pdfVertFrac(ex.numerator, ex.denominator, '#e11d48') : (
-                                    <View style={S.fracStack}>
-                                        <View style={{ borderBottomWidth: 1, width: 20, height: 12 }} />
-                                        <View style={{ width: 20, height: 12 }} />
-                                    </View>
-                                )}
                             </View>
                         </View>
                     );
@@ -373,7 +367,11 @@ export const WorksheetPDF: React.FC<{
 
             return (
                 <View style={{ alignItems: 'center', gap: 4 }}>
-                    <Text style={{ fontSize: 10, fontFamily: 'Roboto', fontWeight: 'bold' }}>Kleur {ex.numerator}/{ex.denominator} in:</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Text style={{ fontSize: 10, fontFamily: 'Roboto', fontWeight: 'bold' }}>Kleur</Text>
+                        {pdfVertFrac(ex.numerator, ex.denominator)}
+                        <Text style={{ fontSize: 10, fontFamily: 'Roboto', fontWeight: 'bold' }}>in:</Text>
+                    </View>
                     {shapeSvg}
                 </View>
             );
@@ -599,7 +597,7 @@ export const WorksheetPDF: React.FC<{
             const answerMode: string = block.constraints.answerMode ?? 'berekeningslijnen';
             const partLength = parseFloat((cm / ex.denominator).toFixed(2));
             const arcLength  = parseFloat((partLength * ex.numerator).toFixed(2));
-            const lineW = Math.min(cm * 10, 380);
+            const lineW = Math.min(cm * 28, 480);
 
             const lineEl = (
                 <View style={{ marginVertical: 8 }}>
@@ -665,7 +663,7 @@ export const WorksheetPDF: React.FC<{
                 <View style={{ gap: 4 }}>
                     {instructions}
                     {lineEl}
-                    <View style={{ gap: 4, marginTop: 4 }}>
+                    <View style={{ gap: 4, marginTop: 4, alignItems: 'center' }}>
                         <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
                             {showSolutions ? <Text style={S.sol}>{String(cm)}</Text> : <View style={{ borderBottomWidth: 1, width: 24, height: 10 }} />}
                             <Text style={S.mono}> : </Text>
@@ -755,7 +753,7 @@ export const WorksheetPDF: React.FC<{
         const isShort = block.layoutPreset === 'inline-short';
 
         return (
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+            <View style={{ flexDirection: 'row', alignItems: block.layoutPreset === 'stepped' ? 'flex-start' : 'flex-end' }}>
                 <View style={{ height: 36, flexDirection: 'row', alignItems: 'center' }}>
                     <View style={S.operandSlot}>{renderTerm(ex.operands[0], m1)}</View>
                     <Text style={S.op}>{ex.operator}</Text>
@@ -767,7 +765,7 @@ export const WorksheetPDF: React.FC<{
                     {mResult ? (
                         Array.from({ length: lineCount }).map((_, i) => (
                             <View key={i} style={[S.answerSlot, { marginBottom: i < lineCount - 1 ? lineGap : 0 }]}>
-                                <Text style={i === 0 ? S.eq : S.eqHidden}>=</Text>
+                                <Text style={S.eq}>=</Text>
                                 {i === 0 && showSolutions
                                     ? renderValue(ex.answer, true)
                                     : <View style={isShort ? S.workLineShort : S.workLineLong} />
@@ -825,7 +823,7 @@ export const WorksheetPDF: React.FC<{
                                     </View>
                                 ) : null}
                             </View>
-                            <View style={{ alignItems: 'flex-end', marginLeft: 12 }}>
+                            <View style={{ alignItems: 'flex-end', marginLeft: docSettings.titleFieldsGap ?? 16 }}>
                                 {headerData?.titel ? (
                                     <Text style={[S.title, { textAlign: 'right', marginTop: 0, marginBottom: 4 }]}>{headerData.titel}</Text>
                                 ) : null}
@@ -833,6 +831,46 @@ export const WorksheetPDF: React.FC<{
                                     <View style={S.scoreBox}>
                                         <Text style={S.scoreLabel}>Score:</Text>
                                         <Text style={S.scoreValue}>___ / {totalScore}</Text>
+                                    </View>
+                                ) : null}
+                            </View>
+                        </View>
+                    ) : docSettings.titlePosition === 'left' ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
+                            <View style={{ alignItems: 'flex-start', marginRight: docSettings.titleFieldsGap ?? 16 }}>
+                                {headerData?.titel ? (
+                                    <Text style={[S.title, { textAlign: 'left', marginTop: 0, marginBottom: 4 }]}>{headerData.titel}</Text>
+                                ) : null}
+                                {docSettings.showScores && totalScore > 0 ? (
+                                    <View style={S.scoreBox}>
+                                        <Text style={S.scoreLabel}>Score:</Text>
+                                        <Text style={S.scoreValue}>___ / {totalScore}</Text>
+                                    </View>
+                                ) : null}
+                            </View>
+                            <View style={[S.headFields, { flex: 1 }]}>
+                                {headerData?.naam ? (
+                                    <View style={[S.headField, { flex: 2, minWidth: 130 }]}>
+                                        <Text style={S.headLabel}>Naam:</Text>
+                                        <View style={S.headLine} />
+                                    </View>
+                                ) : null}
+                                {headerData?.klas ? (
+                                    <View style={[S.headField, { width: 80 }]}>
+                                        <Text style={S.headLabel}>Klas:</Text>
+                                        <View style={S.headLine} />
+                                    </View>
+                                ) : null}
+                                {headerData?.nummer ? (
+                                    <View style={[S.headField, { width: 60 }]}>
+                                        <Text style={S.headLabel}>Nr:</Text>
+                                        <View style={S.headLine} />
+                                    </View>
+                                ) : null}
+                                {headerData?.datum ? (
+                                    <View style={[S.headField, { flex: 1, minWidth: 100 }]}>
+                                        <Text style={S.headLabel}>Datum:</Text>
+                                        <View style={S.headLine} />
                                     </View>
                                 ) : null}
                             </View>
@@ -901,6 +939,7 @@ export const WorksheetPDF: React.FC<{
                                     {block.instructionMode === 'mag' ? <Text style={S.badgeMag}>MAG</Text> : null}
                                     {block.instructionMode === 'moet' ? <Text style={S.badgeMoet}>MOET</Text> : null}
                                     {block.instructionMode === 'plus' ? <Text style={S.badgePlus}>★</Text> : null}
+                                    {block.instructionMode === 'aangepast' && (block as any).customInstructionText ? <Text style={S.badgeAangepast}>{(block as any).customInstructionText}</Text> : null}
                                     <Text style={S.instruction}>{block.instructionText}</Text>
                                 </View>
                                 {docSettings.showScores && (block.totalPoints || 0) > 0 ? (
@@ -927,7 +966,7 @@ export const WorksheetPDF: React.FC<{
                                         {blockHeader}
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                             {(block.fractionExercises || []).map((ex) => (
-                                                <View key={ex.id} style={{ width: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek' || ex.subType === 'hoeveelheid' || ex.subType === 'hoeveelheid-rechthoek' || ex.subType === 'hoeveelheid-abstract') ? '100%' : '50%', marginBottom: spacing, paddingRight: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek' || ex.subType === 'hoeveelheid' || ex.subType === 'hoeveelheid-rechthoek' || ex.subType === 'hoeveelheid-abstract') ? 0 : 16 }}>
+                                                <View key={ex.id} style={{ width: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek' || ex.subType === 'hoeveelheid-rechthoek' || ex.subType === 'hoeveelheid-abstract' || (ex.subType === 'hoeveelheid' && block.constraints.answerFormat === 'met-breukvragen')) ? '100%' : '50%', marginBottom: spacing, paddingRight: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek' || ex.subType === 'hoeveelheid-rechthoek' || ex.subType === 'hoeveelheid-abstract' || (ex.subType === 'hoeveelheid' && block.constraints.answerFormat === 'met-breukvragen')) ? 0 : 16 }}>
                                                     {renderFractionExercisePDF(ex, block)}
                                                 </View>
                                             ))}
@@ -996,9 +1035,10 @@ const S = StyleSheet.create({
     blockHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' },
     instruction: { fontSize: 14, fontWeight: 'bold' },
     points: { fontSize: 12, fontWeight: 'bold' },
-    badgeMag: { fontSize: 8, fontWeight: 'bold', backgroundColor: '#4ade80', color: '#14532d', paddingTop: 2, paddingBottom: 2, paddingLeft: 5, paddingRight: 5, marginRight: 6 },
-    badgeMoet: { fontSize: 8, fontWeight: 'bold', backgroundColor: '#f87171', color: '#7f1d1d', paddingTop: 2, paddingBottom: 2, paddingLeft: 5, paddingRight: 5, marginRight: 6 },
-    badgePlus: { fontSize: 8, fontWeight: 'bold', backgroundColor: '#3b82f6', color: '#eff6ff', paddingTop: 2, paddingBottom: 2, paddingLeft: 5, paddingRight: 5, marginRight: 6 },
+    badgeMag: { fontSize: 8, fontWeight: 'bold', backgroundColor: 'white', color: '#000', borderWidth: 1.5, borderColor: '#000', paddingTop: 2, paddingBottom: 2, paddingLeft: 5, paddingRight: 5, marginRight: 6 },
+    badgeMoet: { fontSize: 8, fontWeight: 'bold', backgroundColor: 'white', color: '#000', borderWidth: 1.5, borderColor: '#000', paddingTop: 2, paddingBottom: 2, paddingLeft: 5, paddingRight: 5, marginRight: 6 },
+    badgePlus: { fontSize: 8, fontWeight: 'bold', backgroundColor: 'white', color: '#000', borderWidth: 1.5, borderColor: '#000', paddingTop: 2, paddingBottom: 2, paddingLeft: 5, paddingRight: 5, marginRight: 6 },
+    badgeAangepast: { fontSize: 8, fontWeight: 'bold', backgroundColor: 'white', color: '#000', borderWidth: 1.5, borderColor: '#000', paddingTop: 2, paddingBottom: 2, paddingLeft: 5, paddingRight: 5, marginRight: 6 },
 
     grid2col: { flexDirection: 'row', flexWrap: 'wrap' },
     grid1col: { flexDirection: 'column' },
@@ -1011,7 +1051,7 @@ const S = StyleSheet.create({
     eqHidden: { fontFamily: 'RobotoMono', fontSize: 14, marginRight: 6, width: 14, opacity: 0 },
     mono: { fontFamily: 'RobotoMono', fontSize: 14 },
     sol: { fontFamily: 'RobotoMono', fontSize: 14, color: '#e11d48', fontWeight: 'bold' },
-    blankDotted: { borderBottomWidth: 1, borderStyle: 'dashed', width: 40, height: 14 },
+    blankDotted: { borderBottomWidth: 1, width: 40, height: 14 },
     workLineShort: { borderBottomWidth: 1.5, width: 60, height: 2 },
     workLineLong: { borderBottomWidth: 1.5, flex: 1, height: 2 },
 
