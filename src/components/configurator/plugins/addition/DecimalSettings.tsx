@@ -1,5 +1,5 @@
 import { useWorksheetStore } from '../../../../store/useWorksheetStore';
-import { getMaskPlaces, getBridgePlaces } from '../../../../services/math/mathEngine';
+import { getMaskPlaces } from '../../../../services/math/mathEngine';
 import type { MathBlock, ConstraintType } from '../../../../services/math/types';
 
 interface Props { block: MathBlock; }
@@ -8,11 +8,9 @@ export default function DecimalSettings({ block }: Props) {
     const updateBlockSettings = useWorksheetStore((state) => state.updateBlockSettings);
     const { maxGetal = 100, decimalPlaces = 2, bridges = {} } = block.constraints;
 
-    const minWeight = Math.pow(10, -decimalPlaces);
-
-    // Ophalen en bijsnijden op de toegestane decimalen
-    const maskPlaces = getMaskPlaces(maxGetal, 'decimal').filter(p => p.weight >= minWeight);
-    const bridgePlaces = getBridgePlaces(maxGetal, 'decimal').filter(p => p.weight >= minWeight);
+    // Mask and bridge places that match the chosen number of decimal places
+    const maskPlaces = getMaskPlaces(maxGetal, 'decimal', decimalPlaces);
+    const bridgePlaces = maskPlaces.filter(p => p.weight < maxGetal);
     const maxPresets = [10, 100, 1000];
 
     const toggleMask = (operand: 'operand1Mask' | 'operand2Mask', posKey: string) => {

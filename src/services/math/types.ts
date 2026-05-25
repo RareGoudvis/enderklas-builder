@@ -22,6 +22,35 @@ export interface Equation {
     steps?: number[];
     isManuallyEdited: boolean;
     missingTerm?: 'result' | 'operand1' | 'operand2';
+    remainder?: number;
+}
+
+export type FractionShape = 'square' | 'rectangle' | 'circle';
+
+export type FractionSubType =
+    | 'kleuren'
+    | 'herkennen'
+    | 'tekenen'
+    | 'hoeveelheid'
+    | 'hoeveelheid-rechthoek'
+    | 'lijnstuk';
+
+export interface FractionExercise {
+    id: string;
+    subType: FractionSubType;
+    numerator: number;
+    denominator: number;
+    // Shape-based (kleuren, herkennen, tekenen)
+    shape?: FractionShape;
+    coloredIndices?: number[];
+    gridRows?: number;
+    gridCols?: number;
+    // Amount-based (hoeveelheid, hoeveelheid-rechthoek)
+    total?: number;
+    objectShape?: 'circle' | 'square';
+    // Line segment (lijnstuk)
+    lineLength?: number; // cm
+    isManuallyEdited: boolean;
 }
 
 export interface MathBlock {
@@ -29,17 +58,32 @@ export interface MathBlock {
     typeId: string;
     instructionText: string;
     layoutPreset: LayoutPreset;
-    instructionMode: 'geen' |'mag' | 'moet'
+    instructionMode: 'geen' | 'mag' | 'moet' | 'plus'
     steppedLines: number;
     numberOfExercises: number;
     totalPoints: number;
     constraints: any;
     exercises: Equation[];
-    verticalSpacing: number; // witruimte na een oefening
+    clockExercises?: ClockExercise[];
+    fractionExercises?: FractionExercise[];
+    verticalSpacing: number;
+}
+
+export interface ClockExercise {
+    id: string;
+    hours: number;        // 1-12 (12h mode) or 0-23 (24h mode)
+    minutes: number;      // 0-59
+    timeText: string;     // "kwart over 3", "25 voor 1"
+    digitalText: string;  // "03:15"
+    isManuallyEdited: boolean;
 }
 
 export interface FooterData {
     school: string;
     klas: string;
     leerkracht: string;
+    showSchool: boolean;
+    showKlas: boolean;
+    showLeerkracht: boolean;
+    showPagina: boolean;
 }

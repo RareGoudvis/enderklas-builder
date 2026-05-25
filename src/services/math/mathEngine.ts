@@ -324,6 +324,7 @@ export const generateSubtractionExercises = (block: MathBlock): Equation[] => {
 // 6. VERMENIGVULDIGEN (MULTIPLICATION)
 // ============================================================================
 
+
 export const generateMultiplicationExercises = (block: MathBlock): Equation[] => {
     const { numberOfExercises, constraints } = block;
 
@@ -331,6 +332,7 @@ export const generateMultiplicationExercises = (block: MathBlock): Equation[] =>
     if (constraints.numberType === 'rational') {
         const {
             fractionMultMode = 'fraction_fraction',
+            fractionOrderMode = 'AB',
             maxNumerator1 = 10, maxDenominator1 = 10, maxNumerator2 = 10, maxDenominator2 = 10,
             maxGetal = 100, decimalPlaces = 2, operand1Mask = {},
             simplifyMaxDenominatorChecked = false, simplifyMaxDenominator = 10
@@ -400,7 +402,8 @@ export const generateMultiplicationExercises = (block: MathBlock): Equation[] =>
 
             const eqType = constraints.equationType || 'normal';
             const missingTerm = eqType === 'puntoefening' ? (Math.random() < 0.5 ? 'operand1' : 'operand2') : 'result';
-            exercises.push({ id: Math.random().toString(36).substring(2, 9), operands: [op1, op2], operator: 'x', answer: simplifiedAnswer, isManuallyEdited: false, missingTerm });
+            const useBA_mult = fractionMultMode !== 'fraction_fraction' && (fractionOrderMode === 'BA' || (fractionOrderMode === 'beide' && Math.random() < 0.5));
+            exercises.push({ id: Math.random().toString(36).substring(2, 9), operands: useBA_mult ? [op2, op1] : [op1, op2], operator: 'x', answer: simplifiedAnswer, isManuallyEdited: false, missingTerm });
         }
         return exercises;
     }
@@ -474,6 +477,274 @@ export const generateMultiplicationExercises = (block: MathBlock): Equation[] =>
             const eqType = constraints.equationType || 'normal';
             const missingTerm = eqType === 'puntoefening' ? (Math.random() < 0.5 ? 'operand1' : 'operand2') : 'result';
             exercises.push({ id: Math.random().toString(36).substring(2, 9), operands: [a, b], operator: 'x', answer, isManuallyEdited: false, missingTerm });
+        }
+    }
+
+    return exercises;
+};
+
+// ============================================================================
+// 7. DELEN (DIVISION)
+// ============================================================================
+
+export const generateDivisionExercises = (block: MathBlock): Equation[] => {
+    const { numberOfExercises, constraints } = block;
+
+    // A. RATIONALE GETALLEN (Breuken)
+    if (constraints.numberType === 'rational') {
+        const {
+            fractionMultMode = 'fraction_fraction',
+            fractionOrderMode = 'AB',
+            maxNumerator1 = 10, maxDenominator1 = 10, maxNumerator2 = 10, maxDenominator2 = 10,
+            maxGetal = 100, decimalPlaces = 2, operand1Mask = {},
+            simplifyMaxDenominatorChecked = false, simplifyMaxDenominator = 10
+        } = constraints;
+
+        const exercises: Equation[] = [];
+        const usedCombinations = new Set<string>();
+        let attempts = 0;
+
+        while (exercises.length < numberOfExercises && attempts < MAX_ATTEMPTS * 2) {
+            attempts++;
+            let op1: any, op2: Fraction;
+            let ansN = 0, ansD = 1;
+
+            // Deler (factor 2) is altijd een breuk
+            const n2 = randInt(1, maxNumerator2);
+            const d2 = randInt(2, maxDenominator2);
+            op2 = { n: n2, d: d2 };
+
+            if (fractionMultMode === 'fraction_fraction') {
+                // (n1/d1) ÷ (n2/d2) = (n1*d2) / (d1*n2)
+                const n1 = randInt(1, maxNumerator1);
+                const d1 = randInt(2, maxDenominator1);
+                op1 = { n: n1, d: d1 };
+                ansN = n1 * d2; ansD = d1 * n2;
+
+            } else if (fractionMultMode === 'natural_fraction') {
+                // n ÷ (n2/d2) = (n*d2) / n2
+                const useSpecificStructure = Object.values(operand1Mask).some(v => v);
+                let intVal = 1;
+                if (useSpecificStructure) {
+                    const maskA = generateMaskedInt(operand1Mask);
+                    intVal = maskA !== null ? (maskA / INTERNAL_SCALE) : randInt(1, maxGetal);
+                } else {
+                    intVal = randInt(1, maxGetal);
+                }
+                op1 = intVal;
+                ansN = intVal * d2; ansD = n2;
+
+            } else if (fractionMultMode === 'decimal_fraction') {
+                // dec ÷ (n2/d2) = (dec*d2) / n2
+                const scale = Math.pow(10, decimalPlaces);
+                const useSpecificStructure = Object.values(operand1Mask).some(v => v);
+                let intVal = 1;
+                if (useSpecificStructure) {
+                    const maskA = generateMaskedInt(operand1Mask);
+                    intVal = maskA !== null ? maskA : randInt(1, maxGetal * scale);
+                } else {
+                    intVal = randInt(1, maxGetal * scale);
+                }
+                const decVal = Math.round((intVal / INTERNAL_SCALE) * scale) / scale;
+                op1 = decVal;
+                const decFractionN = decVal * scale;
+                const decFractionD = scale;
+                ansN = decFractionN * d2; ansD = decFractionD * n2;
+            }
+
+            // Apply fractionOrderMode for non-fraction_fraction modes (BA swaps deeltal/deler)
+            const useBA_div = fractionMultMode !== 'fraction_fraction' &&
+                (fractionOrderMode === 'BA' || (fractionOrderMode === 'beide' && Math.random() < 0.5));
+
+            if (useBA_div) {
+                if (fractionMultMode === 'natural_fraction') {
+                    // (n2/d2) ÷ intVal = n2 / (d2 * intVal)
+                    ansN = n2; ansD = d2 * (op1 as number);
+                } else if (fractionMultMode === 'decimal_fraction') {
+                    // (n2/d2) ÷ decVal = (n2 * scale) / (d2 * round(decVal * scale))
+                    const scale = Math.pow(10, decimalPlaces);
+                    ansN = n2 * scale; ansD = d2 * Math.round((op1 as number) * scale);
+                }
+            }
+
+            if (ansD === 0) continue;
+            const simplifiedAnswer = simplifyFraction(ansN, ansD);
+
+            if (simplifyMaxDenominatorChecked && simplifiedAnswer.d > simplifyMaxDenominator) continue;
+
+            const finalOp1 = useBA_div ? op2 : op1;
+            const finalOp2 = useBA_div ? op1 : op2;
+            const comboId = typeof finalOp1 === 'object'
+                ? `${(finalOp1 as Fraction).n}/${(finalOp1 as Fraction).d}:${(finalOp2 as Fraction).n}/${(finalOp2 as Fraction).d}`
+                : `${finalOp1}:${(finalOp2 as Fraction).n}/${(finalOp2 as Fraction).d}`;
+            if (usedCombinations.has(comboId)) continue;
+            usedCombinations.add(comboId);
+
+            const eqType = constraints.equationType || 'normal';
+            const missingTerm = eqType === 'puntoefening' ? (Math.random() < 0.5 ? 'operand1' : 'operand2') : 'result';
+            exercises.push({ id: Math.random().toString(36).substring(2, 9), operands: [finalOp1, finalOp2], operator: ':', answer: simplifiedAnswer, isManuallyEdited: false, missingTerm });
+        }
+        return exercises;
+    }
+
+    // B. NATUURLIJKE EN DECIMALE GETALLEN
+    const {
+        multiplicationMode = 'tafels', selectedTables = [], tableLimit = 10,
+        maxGetal = 1000, operand1Mask = {}, operand2Mask = {}, numberType = 'natural', decimalPlaces = 2
+    } = constraints;
+
+    const exercises: Equation[] = [];
+    const usedCombinations = new Set<string>();
+    let attempts = 0;
+
+    // Sub-scenario B1: Deeltafels
+    if (multiplicationMode === 'tafels' && numberType === 'natural') {
+        if (selectedTables.length === 0) return [];
+
+        while (exercises.length < numberOfExercises && attempts < MAX_ATTEMPTS) {
+            attempts++;
+            const divisor = selectedTables[randInt(0, selectedTables.length - 1)];
+            if (divisor === 0) continue;
+            const quotient = randInt(1, tableLimit);
+            const dividend = divisor * quotient;
+
+            const comboId = `${dividend}:${divisor}`;
+            if (usedCombinations.has(comboId)) continue;
+            usedCombinations.add(comboId);
+
+            const eqType = constraints.equationType || 'normal';
+            const missingTerm = eqType === 'puntoefening' ? (Math.random() < 0.5 ? 'operand1' : 'operand2') : 'result';
+            exercises.push({ id: Math.random().toString(36).substring(2, 9), operands: [dividend, divisor], operator: ':', answer: quotient, isManuallyEdited: false, missingTerm });
+        }
+    }
+    // Sub-scenario B1b: Delen met rest
+    else if (multiplicationMode === 'met_rest' && numberType === 'natural') {
+        const { metRestLevel = 1 } = constraints;
+        if (selectedTables.length === 0) return [];
+
+        while (exercises.length < numberOfExercises && attempts < MAX_ATTEMPTS) {
+            attempts++;
+            const divisor = selectedTables[randInt(0, selectedTables.length - 1)];
+            if (divisor <= 1) continue;
+
+            const remainder = randInt(1, divisor - 1);
+            let quotient = 0;
+            let dividend = 0;
+
+            if (metRestLevel === 1) {
+                // TE ≤ 10*y: enkelvoudig quotiënt (1-9)
+                quotient = randInt(1, 9);
+                dividend = quotient * divisor + remainder;
+                if (dividend < 10 || dividend > 99) continue;
+            } else if (metRestLevel === 2) {
+                // TE > 10*y: meervoudig quotiënt (≥ 10), deeltal ≤ 99
+                const maxQ = Math.floor(98 / divisor);
+                if (maxQ < 10) continue;
+                quotient = randInt(10, maxQ);
+                dividend = quotient * divisor + remainder;
+                if (dividend < 10 || dividend > 99) continue;
+            } else {
+                // Niveau 3: HTE (3-cijferig deeltal, 100-999)
+                const minQ = Math.ceil(100 / divisor);
+                const maxQ = Math.floor(998 / divisor);
+                if (minQ > maxQ) continue;
+                quotient = randInt(minQ, maxQ);
+                dividend = quotient * divisor + remainder;
+                if (dividend < 100 || dividend > 999) continue;
+            }
+
+            const comboId = `${dividend}:${divisor}r${remainder}`;
+            if (usedCombinations.has(comboId)) continue;
+            usedCombinations.add(comboId);
+
+            exercises.push({
+                id: Math.random().toString(36).substring(2, 9),
+                operands: [dividend, divisor],
+                operator: ':',
+                answer: quotient,
+                remainder,
+                isManuallyEdited: false,
+                missingTerm: 'result'
+            });
+        }
+    }
+    // Sub-scenario B2: Willekeurig / met maskers / niveau-presets
+    // operand1Mask → deeltal (Factor 1, linkerkant), operand2Mask → deler (Factor 2, rechterkant)
+    // maxGetal is het maximum van het deeltal
+    else {
+        const displayScale = numberType === 'decimal' ? Math.pow(10, decimalPlaces) : 1;
+        const { divisionLevel = 0 } = constraints;
+        const useDividendMask = Object.values(operand1Mask).some(v => v);
+        const useDivisorMask = Object.values(operand2Mask).some(v => v);
+
+        while (exercises.length < numberOfExercises && attempts < MAX_ATTEMPTS) {
+            attempts++;
+            let dividendVal = 0, divisorVal = 0, quotientVal = 0;
+
+            if (divisionLevel >= 1 && divisionLevel <= 5 && numberType === 'natural') {
+                // Niveau-presets: achterwaarts genereren (quotiënt × deler = deeltal)
+                if (divisionLevel === 5) {
+                    // Niveau 5: voorwaarts, quotiënt met max 1 decimaal
+                    divisorVal = randInt(2, 9);
+                    dividendVal = randInt(Math.max(10, Math.ceil(maxGetal * 0.1)), maxGetal);
+                    if (dividendVal % divisorVal === 0) continue;
+                    if ((dividendVal * 10) % divisorVal !== 0) continue;
+                    quotientVal = Math.round((dividendVal / divisorVal) * 10) / 10;
+                } else {
+                    // Niveau 1-4: achterwaarts vanuit quotiëntstructuur
+                    divisorVal = randInt(2, 9);
+                    if (divisionLevel === 1) {
+                        quotientVal = randInt(1, 9) * 10; // T
+                    } else if (divisionLevel === 2) {
+                        quotientVal = randInt(1, 9) * 100 + randInt(1, 9); // H+E
+                    } else if (divisionLevel === 3) {
+                        quotientVal = randInt(1, 9) * 100 + randInt(1, 9) * 10 + randInt(1, 9); // H+T+E
+                    } else {
+                        quotientVal = randInt(1, 9) * 10 + randInt(1, 9); // T+E
+                    }
+                    dividendVal = quotientVal * divisorVal;
+                    if (dividendVal > maxGetal || dividendVal <= 0) continue;
+                }
+            } else if (useDividendMask || useDivisorMask) {
+                // Gebruik maskers om deeltal en/of deler te bepalen, controleer op exacte deling
+                const rawA = useDividendMask ? generateMaskedInt(operand1Mask) : null;
+                const rawB = useDivisorMask ? generateMaskedInt(operand2Mask) : null;
+
+                dividendVal = rawA !== null
+                    ? Math.round((rawA / INTERNAL_SCALE) * displayScale) / displayScale
+                    : randInt(1, maxGetal * displayScale) / displayScale;
+
+                divisorVal = rawB !== null
+                    ? Math.round((rawB / INTERNAL_SCALE) * displayScale) / displayScale
+                    : randInt(1, Math.max(1, Math.round(dividendVal * displayScale))) / displayScale;
+
+                if (dividendVal <= 0 || divisorVal <= 0 || dividendVal > maxGetal) continue;
+
+                const rawQuotient = dividendVal / divisorVal;
+                // Quotiënt moet schoon zijn (geen rest): voor natuurlijke getallen = integer, voor decimalen = max decimalPlaces decimalen
+                const scaledQ = rawQuotient * displayScale;
+                if (rawQuotient <= 0 || Math.abs(scaledQ - Math.round(scaledQ)) > 1e-9) continue;
+                quotientVal = Math.round(scaledQ) / displayScale;
+
+            } else {
+                // Geen maskers: bouw clean oefening (deler × geheel quotiënt = deeltal)
+                const intDivisorScaled = randInt(1, (maxGetal - 1) * displayScale);
+                divisorVal = intDivisorScaled / displayScale;
+                if (divisorVal <= 0) continue;
+                const maxQ = Math.floor((maxGetal * displayScale) / intDivisorScaled);
+                if (maxQ < 1) continue;
+                quotientVal = randInt(1, maxQ);
+                dividendVal = Math.round(divisorVal * quotientVal * displayScale) / displayScale;
+                if (dividendVal > maxGetal || dividendVal <= 0) continue;
+            }
+
+            const comboId = `${dividendVal}:${divisorVal}`;
+            if (usedCombinations.has(comboId)) continue;
+            usedCombinations.add(comboId);
+
+            const eqType = constraints.equationType || 'normal';
+            const missingTerm = eqType === 'puntoefening' ? (Math.random() < 0.5 ? 'operand1' : 'operand2') : 'result';
+            exercises.push({ id: Math.random().toString(36).substring(2, 9), operands: [dividendVal, divisorVal], operator: ':', answer: quotientVal, isManuallyEdited: false, missingTerm });
         }
     }
 

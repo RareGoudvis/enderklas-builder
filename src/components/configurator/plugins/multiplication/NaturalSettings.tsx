@@ -3,11 +3,20 @@ import type { MathBlock } from '../../../../services/math/types';
 import { sharedPluginStyles as styles } from '../sharedPluginStyles';
 import { getMaskPlaces } from '../../../../services/math/mathEngine';
 
-interface Props { block: MathBlock; }
+interface Props { block: MathBlock; isDivision?: boolean; }
 
 const AVAILABLE_TABLES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 25, 50, 75];
+const MET_REST_TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-export default function NaturalSettings({ block }: Props) {
+const LEVEL_DESCRIPTIONS: Record<number, string> = {
+    1: 'N1 — 360 : 6 = 60  (quotiënt = T)',
+    2: 'N2 — 636 : 6 = 106  (quotiënt = H+E)',
+    3: 'N3 — 678 : 6 = 113  (quotiënt = H+T+E)',
+    4: 'N4 — 396 : 6 = 66  (quotiënt = T+E)',
+    5: 'N5 — 711 : 6 = 118,5  (uitkomst max 1 decimaal)',
+};
+
+export default function NaturalSettings({ block, isDivision = false }: Props) {
     const updateBlockSettings = useWorksheetStore((state) => state.updateBlockSettings);
     const {
         multiplicationMode = 'tafels',
@@ -15,10 +24,12 @@ export default function NaturalSettings({ block }: Props) {
         tableLimit = 10,
         maxGetal = 1000,
         operand1Mask = {},
-        operand2Mask = {}
+        operand2Mask = {},
+        metRestLevel = 1,
+        divisionLevel = 0,
     } = block.constraints;
 
-    const updateConstraint = (key: string, value: any) => {
+    const updateConstraint = (key: string, value: unknown) => {
         updateBlockSettings(block.id, { constraints: { ...block.constraints, [key]: value } });
     };
 
@@ -26,7 +37,7 @@ export default function NaturalSettings({ block }: Props) {
         if (selectedTables.includes(table)) {
             updateConstraint('selectedTables', selectedTables.filter((t: number) => t !== table));
         } else {
-            updateConstraint('selectedTables', [...selectedTables, table].sort((a, b) => a - b));
+            updateConstraint('selectedTables', [...selectedTables, table].sort((a: number, b: number) => a - b));
         }
     };
 
@@ -36,16 +47,30 @@ export default function NaturalSettings({ block }: Props) {
         updateConstraint(key, { ...currentMask, [place]: !currentMask[place] });
     };
 
+    const applyLevelPreset = (level: number) => {
+        updateBlockSettings(block.id, {
+            constraints: { ...block.constraints, divisionLevel: level, operand1Mask: {}, operand2Mask: {} }
+        });
+    };
+
     return (
         <div>
             {/* SUB-MODUS SELECTIE */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
                 <button
                     onClick={() => updateConstraint('multiplicationMode', 'tafels')}
                     style={styles.radioBtn(multiplicationMode === 'tafels')}
                 >
-                    Tafels
+                    {isDivision ? 'Deeltafels' : 'Tafels'}
                 </button>
+                {isDivision && (
+                    <button
+                        onClick={() => updateConstraint('multiplicationMode', 'met_rest')}
+                        style={styles.radioBtn(multiplicationMode === 'met_rest')}
+                    >
+                        Met rest
+                    </button>
+                )}
                 <button
                     onClick={() => updateConstraint('multiplicationMode', 'andere')}
                     style={styles.radioBtn(multiplicationMode === 'andere')}
@@ -54,40 +79,62 @@ export default function NaturalSettings({ block }: Props) {
                 </button>
             </div>
 
-            {/* SCENARIO A: TAFELS */}
+            {/* TAFELS / DEELTAFELS */}
             {multiplicationMode === 'tafels' && (
                 <div style={{ padding: '16px', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                    <label style={styles.label}>Selecteer tafels:</label>
+                    <label style={styles.label}>{isDivision ? 'Selecteer delers:' : 'Selecteer tafels:'}</label>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
                         {AVAILABLE_TABLES.map(t => (
-                            <button
-                                key={t}
-                                onClick={() => toggleTable(t)}
-                                style={tableBtnStyle(selectedTables.includes(t))}
-                            >
+                            <button key={t} onClick={() => toggleTable(t)} style={tableBtnStyle(selectedTables.includes(t))}>
                                 {t}
                             </button>
                         ))}
                     </div>
-
-                    <label style={styles.label}>Vermenigvuldig tot:</label>
+                    <label style={styles.label}>{isDivision ? 'Quotiënt tot:' : 'Vermenigvuldig tot:'}</label>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => updateConstraint('tableLimit', 10)} style={styles.radioBtn(tableLimit === 10)}>Tot 10x</button>
-                        <button onClick={() => updateConstraint('tableLimit', 20)} style={styles.radioBtn(tableLimit === 20)}>Tot 20x</button>
+                        <button onClick={() => updateConstraint('tableLimit', 10)} style={styles.radioBtn(tableLimit === 10)}>Tot 10×</button>
+                        <button onClick={() => updateConstraint('tableLimit', 20)} style={styles.radioBtn(tableLimit === 20)}>Tot 20×</button>
                     </div>
                 </div>
             )}
 
-            {/* SCENARIO B: ANDERE (SPECIFIEKE OPBOUW) */}
-            {/* SCENARIO B: ANDERE (SPECIFIEKE OPBOUW) */}
-            {multiplicationMode === 'andere' && (() => {
-                // 🔥 Bereken de dynamische maskers gebaseerd op maxGetal
-                const availablePlaces = getMaskPlaces(maxGetal, 'natural');
+            {/* DELEN MET REST (alleen voor deling) */}
+            {isDivision && multiplicationMode === 'met_rest' && (
+                <div style={{ padding: '16px', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <label style={styles.label}>Selecteer delers:</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
+                        {MET_REST_TABLES.map(t => (
+                            <button key={t} onClick={() => toggleTable(t)} style={tableBtnStyle(selectedTables.includes(t))}>
+                                {t}
+                            </button>
+                        ))}
+                    </div>
+                    <label style={styles.label}>Niveau:</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {([
+                            { level: 1, label: 'N1', example: 'TE ≤ 10×deler  (Bv. 52 : 6 = 8 r 4)' },
+                            { level: 2, label: 'N2', example: 'TE > 10×deler  (Bv. 67 : 6 = 11 r 1)' },
+                            { level: 3, label: 'N3', example: 'Driecijferig deeltal  (Bv. 127 : 6 = 21 r 1)' },
+                        ] as const).map(({ level, label, example }) => {
+                            const isActive = metRestLevel === level;
+                            return (
+                                <div key={level} onClick={() => updateConstraint('metRestLevel', level)} style={levelRowStyle(isActive)}>
+                                    <span style={levelLabelStyle(isActive)}>{label}</span>
+                                    <span style={levelExampleStyle}>{example}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
+            {/* ANDERE (met maskers + niveau-presets voor deling) */}
+            {multiplicationMode === 'andere' && (() => {
+                const availablePlaces = getMaskPlaces(maxGetal, 'natural');
                 return (
                     <div>
                         <div style={styles.section}>
-                            <label style={styles.label}>Maximum uitkomst:</label>
+                            <label style={styles.label}>{isDivision ? 'Maximum deeltal:' : 'Maximum uitkomst:'}</label>
                             <div style={styles.buttonGroup}>
                                 {[1000, 10000, 100000, 1000000].map(val => (
                                     <button key={val} onClick={() => updateConstraint('maxGetal', val)} style={styles.radioBtn(maxGetal === val)}>
@@ -97,37 +144,80 @@ export default function NaturalSettings({ block }: Props) {
                             </div>
                         </div>
 
-                        <div style={{ padding: '16px', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                            <h4 style={{ color: 'white', fontSize: '14px', margin: '0 0 16px 0' }}>Specifieke getalopbouw</h4>
-
-                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                                <span style={{ fontSize: '12px', color: 'var(--text-muted)', width: '60px' }}>Factor 1:</span>
-                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                    {availablePlaces.map(place => (
-                                        <button key={`op1-${place.key}`} onClick={() => handleMaskToggle(1, place.key)} style={maskBtnStyle(operand1Mask[place.key])} title={place.label}>
-                                            {place.key}
-                                        </button>
-                                    ))}
+                        {/* Niveau-presets voor deling */}
+                        {isDivision && (
+                            <div style={styles.section}>
+                                <label style={styles.label}>Niveau preset (deler = 1 cijfer):</label>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    {[1, 2, 3, 4, 5].map(level => {
+                                        const isActive = divisionLevel === level;
+                                        const [, example] = LEVEL_DESCRIPTIONS[level].split(' — ');
+                                        return (
+                                            <div key={level} onClick={() => applyLevelPreset(level)} style={levelRowStyle(isActive)}>
+                                                <span style={levelLabelStyle(isActive)}>N{level}</span>
+                                                <span style={levelExampleStyle}>{example}</span>
+                                            </div>
+                                        );
+                                    })}
+                                    <div onClick={() => applyLevelPreset(0)} style={levelRowStyle(divisionLevel === 0)}>
+                                        <span style={levelLabelStyle(divisionLevel === 0)}>Vrij</span>
+                                        <span style={levelExampleStyle}>Vrij via maskers</span>
+                                    </div>
                                 </div>
                             </div>
+                        )}
 
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                <span style={{ fontSize: '12px', color: 'var(--text-muted)', width: '60px' }}>Factor 2:</span>
-                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                    {availablePlaces.map(place => (
-                                        <button key={`op2-${place.key}`} onClick={() => handleMaskToggle(2, place.key)} style={maskBtnStyle(operand2Mask[place.key])} title={place.label}>
-                                            {place.key}
-                                        </button>
-                                    ))}
+                        {/* Maskers: verborgen als een niveau-preset actief is */}
+                        {(!isDivision || divisionLevel === 0) && (
+                            <div style={{ padding: '16px', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <h4 style={{ color: 'white', fontSize: '14px', margin: '0 0 16px 0' }}>Specifieke getalopbouw</h4>
+
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', width: '64px', flexShrink: 0 }}>
+                                        {isDivision ? 'Deeltal:' : 'Factor 1:'}
+                                    </span>
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                        {availablePlaces.map(place => (
+                                            <button key={`op1-${place.key}`} onClick={() => handleMaskToggle(1, place.key)} style={maskBtnStyle(operand1Mask[place.key])} title={place.label}>
+                                                {place.key}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', width: '64px', flexShrink: 0 }}>
+                                        {isDivision ? 'Deler:' : 'Factor 2:'}
+                                    </span>
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                        {availablePlaces.map(place => (
+                                            <button key={`op2-${place.key}`} onClick={() => handleMaskToggle(2, place.key)} style={maskBtnStyle(operand2Mask[place.key])} title={place.label}>
+                                                {place.key}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 );
             })()}
         </div>
     );
 }
+
+const levelRowStyle = (active: boolean): React.CSSProperties => ({
+    display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 10px', borderRadius: '6px',
+    cursor: 'pointer', border: `1px solid ${active ? 'var(--accent-purple)' : 'transparent'}`,
+    backgroundColor: active ? 'rgba(155,48,255,0.15)' : 'rgba(0,0,0,0.12)',
+});
+const levelLabelStyle = (active: boolean): React.CSSProperties => ({
+    fontSize: '12px', fontWeight: 'bold', minWidth: '28px', flexShrink: 0,
+    color: active ? 'var(--accent-purple)' : 'var(--text-muted)',
+});
+const levelExampleStyle: React.CSSProperties = {
+    fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace',
+};
 
 const tableBtnStyle = (active: boolean): React.CSSProperties => ({
     width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',

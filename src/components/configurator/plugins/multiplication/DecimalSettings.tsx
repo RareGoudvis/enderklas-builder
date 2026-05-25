@@ -3,14 +3,14 @@ import type { MathBlock } from '../../../../services/math/types';
 import { sharedPluginStyles as styles } from '../sharedPluginStyles';
 import { getMaskPlaces } from '../../../../services/math/mathEngine';
 
-interface Props { block: MathBlock; }
+interface Props { block: MathBlock; isDivision?: boolean; }
 
-export default function DecimalSettings({ block }: Props) {
+export default function DecimalSettings({ block, isDivision = false }: Props) {
     const updateBlockSettings = useWorksheetStore((state) => state.updateBlockSettings);
     // Standaardwaarden instellen (voor de zekerheid)
     const { maxGetal = 100, decimalPlaces = 2, operand1Mask = {}, operand2Mask = {} } = block.constraints;
 
-    // 🔥 Stuur decimalPlaces mee, zodat de maskers dynamisch inkrimpen!
+    // Stuur decimalPlaces mee, zodat de maskers dynamisch inkrimpen!
     const availablePlaces = getMaskPlaces(maxGetal, 'decimal', decimalPlaces);
 
     const updateConstraint = (key: string, value: any) => {
@@ -55,7 +55,7 @@ export default function DecimalSettings({ block }: Props) {
                 <h4 style={{ color: 'white', fontSize: '14px', margin: '0 0 16px 0' }}>Specifieke getalopbouw</h4>
 
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: '60px' }}>Factor 1:</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: '60px' }}>{isDivision ? 'Deeltal:' : 'Factor 1:'}</span>
                     {/* flexWrap: 'wrap' zorgt dat lange rijen maskers netjes op een nieuwe lijn komen */}
                     <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {availablePlaces.map(place => (
@@ -67,7 +67,7 @@ export default function DecimalSettings({ block }: Props) {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: '60px' }}>Factor 2:</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: '60px' }}>{isDivision ? 'Deler:' : 'Factor 2:'}</span>
                     <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {availablePlaces.map(place => (
                             <button key={`op2-${place.key}`} onClick={() => handleMaskToggle(2, place.key)} style={maskBtnStyle(operand2Mask[place.key])} title={place.label}>

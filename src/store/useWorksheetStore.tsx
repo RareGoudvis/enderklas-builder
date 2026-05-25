@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { MathBlock, Equation, FooterData, LayoutPreset } from '../services/math/types';
+import type { MathBlock, Equation, ClockExercise, FractionExercise, FooterData, LayoutPreset } from '../services/math/types';
 
 interface HeaderData {
     naam: boolean;
@@ -9,24 +9,35 @@ interface HeaderData {
     titel:string;
 }
 
+export interface DocSettings {
+    showScores: boolean;
+    opdrachtTitelStyle: 'regular' | 'boxed' | 'underlined';
+    showDividers: boolean;
+    headerStyle: 'geen' | 'kader';
+}
+
 interface WorksheetState {
     blocks: MathBlock[];
     activeBlockId: string | 'document' | null;
     header: HeaderData;
     footer: FooterData;
+    docSettings: DocSettings;
     showSolutions: boolean;
     addBlockFromType: (typeId: string, label: string) => void;
     removeBlock: (id: string) => void;
-    moveBlockUp: (id: string) => void;    // 🔥 NIEUW
-    moveBlockDown: (id: string) => void;  // 🔥 NIEUW
+    moveBlockUp: (id: string) => void;
+    moveBlockDown: (id: string) => void;
     updateBlockInstruction: (id: string, text: string) => void;
     updateBlockLayout: (id: string, layout: LayoutPreset, steppedLines?: number) => void;
     updateBlockSettings: (id: string, updates: Partial<MathBlock>) => void;
     setBlockExercises: (id: string, exercises: Equation[]) => void;
+    setClockExercises: (id: string, exercises: ClockExercise[]) => void;
+    setFractionExercises: (id: string, exercises: FractionExercise[]) => void;
     updateExercise: (blockId: string, exerciseId: string, updates: Partial<Equation>) => void;
     setActiveSelection: (id: string | 'document' | null) => void;
     updateHeader: (updates: Partial<HeaderData>) => void;
     updateFooter: (updates: Partial<FooterData>) => void;
+    updateDocSettings: (updates: Partial<DocSettings>) => void;
     setShowSolutions: (show: boolean) => void;
 }
 
@@ -34,29 +45,47 @@ export const useWorksheetStore = create<WorksheetState>((set) => ({
     blocks: [],
     activeBlockId: null,
     header: { naam: true, klas: true, nummer: false, datum: false, titel: '' },
-    footer: { school: '', klas: '', leerkracht: '' },
+    footer: { school: '', klas: '', leerkracht: '', showSchool: true, showKlas: true, showLeerkracht: true, showPagina: true },
+    docSettings: { showScores: true, opdrachtTitelStyle: 'regular', showDividers: true, headerStyle: 'geen' },
     showSolutions: false,
 
+    setFractionExercises: (id: string, exercises: FractionExercise[]) => set((state) => ({ blocks: state.blocks.map(b => b.id === id ? { ...b, fractionExercises: exercises } : b) })),
+
     addBlockFromType: (typeId, label) => set((state) => {
-        const defaultConstraints = {
+        const isClockBlock = typeId.startsWith('klok-');
+        const isFractionBlock = typeId === 'breuken';
+        const defaultConstraints = isFractionBlock ? {
+            subType: 'kleuren',
+            shape: 'square',
+            minDenominator: 2,
+            maxDenominator: 8,
+            answerFormat: 'fraction-questions',
+            objectShape: 'circle',
+            maxTotal: 20,
+            maxLineLength: 15,
+            level: 1,
+        } : isClockBlock ? {
+            clockType: 'analoog',
+            exerciseMode: 'lezen',
+            is24hour: false,
+            timeTypes: ['uren', 'halve_uren', 'kwartier_over', 'kwartier_voor'],
+            minuteDirection: 'beide',
+            handChoice: 'beide',
+        } : {
             numberType: 'natural', decimalPlaces: 2, maxGetal: 1000,
             bridges: { E: 'FREE', T: 'FREE' },
             operand1Mask: {}, operand2Mask: {},
-
-            
             fractionDifficulty: 'same',
-            mixedNumber1: false,  // Checkbox breuk 1
-            mixedNumber2: false,  // Checkbox breuk 2
+            mixedNumber1: false,
+            mixedNumber2: false,
             maxNumerator1: 10,
             maxDenominator1: 10,
             maxNumerator2: 10,
             maxDenominator2: 10,
-            linkFractions: true,   // Koppel-knopje staat standaard aan
-
-            //extra dingen voor vermenigvuldigen
-            multiplicationMode: 'tafels', // 'tafels' of 'andere'
-            selectedTables: [2, 3, 4, 5, 10], // Standaard een paar tafels geselecteerd
-            tableLimit: 10 // Tot 10x of Tot 20x
+            linkFractions: true,
+            multiplicationMode: 'tafels',
+            selectedTables: [2, 3, 4, 5, 10],
+            tableLimit: 10
         };
 
         const newBlock: MathBlock = {
@@ -66,9 +95,9 @@ export const useWorksheetStore = create<WorksheetState>((set) => ({
             instructionMode: 'geen',
             layoutPreset: 'inline-short',
             steppedLines: 3,
-            numberOfExercises: 10,
+            numberOfExercises: isFractionBlock ? 6 : 10,
             totalPoints: 5,
-            verticalSpacing: 14, 
+            verticalSpacing: 14,
             constraints: defaultConstraints,
             exercises: []
         };
@@ -99,9 +128,11 @@ export const useWorksheetStore = create<WorksheetState>((set) => ({
     updateBlockLayout: (id, layout, steppedLines) => set((state) => ({ blocks: state.blocks.map(b => b.id === id ? { ...b, layoutPreset: layout, steppedLines: steppedLines ?? b.steppedLines } : b) })),
     updateBlockSettings: (id, updates) => set((state) => ({ blocks: state.blocks.map(b => b.id === id ? { ...b, ...updates } : b) })),
     setBlockExercises: (id, exercises) => set((state) => ({ blocks: state.blocks.map(b => b.id === id ? { ...b, exercises } : b) })),
+    setClockExercises: (id, exercises) => set((state) => ({ blocks: state.blocks.map(b => b.id === id ? { ...b, clockExercises: exercises } : b) })),
     updateExercise: (blockId, exerciseId, updates) => set((state) => ({ blocks: state.blocks.map(b => b.id !== blockId ? b : { ...b, exercises: b.exercises.map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex) }) })),
     setActiveSelection: (id) => set({ activeBlockId: id }),
     updateHeader: (updates) => set((state) => ({ header: { ...state.header, ...updates } })),
     updateFooter: (updates) => set((state) => ({ footer: { ...state.footer, ...updates } })),
+    updateDocSettings: (updates) => set((state) => ({ docSettings: { ...state.docSettings, ...updates } })),
     setShowSolutions: (show) => set({ showSolutions: show })
 }));

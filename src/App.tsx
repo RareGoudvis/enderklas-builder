@@ -1,8 +1,10 @@
 import { useWorksheetStore } from './store/useWorksheetStore';
 import Inspector from './components/configurator/Inspector';
-import { APP_STRUCTURE } from './config/appstructure';
-import type { Fraction } from './services/math/types';
-import logo from './assets/enderklas-logo.png';
+import Sidebar from './components/layout/Sidebar';
+import type { Fraction, ClockExercise, MathBlock, FractionExercise } from './services/math/types';
+import type { ClockType, ExerciseMode, HandChoice } from './services/clock/clockTypes';
+import AnalogClockSVG from './components/viewer/AnalogClockSVG';
+import FractionShapeSVG from './components/viewer/FractionShapeSVG';
 
 // 🔥 NIEUW: Importeer de PDF generator en je PDF component
 import { pdf } from '@react-pdf/renderer';
@@ -32,6 +34,320 @@ const formatMathNumber = (num: number | string | undefined): string => {
 };
 
 // ============================================================================
+// CLOCK EXERCISE RENDERER (preview)
+// ============================================================================
+
+function renderClockExerciseItem(ex: ClockExercise, block: MathBlock, showSolutions: boolean): React.ReactElement {
+    const clockType = (block.constraints.clockType || 'analoog') as ClockType;
+    const exerciseMode = (block.constraints.exerciseMode || 'lezen') as ExerciseMode;
+    const is24hour = block.constraints.is24hour || false;
+    const handChoice = (block.constraints.handChoice || 'beide') as HandChoice;
+
+    const clock = (showH: boolean, showM: boolean) => (
+        <AnalogClockSVG hours={ex.hours} minutes={ex.minutes} showHourHand={showH} showMinuteHand={showM} is24hour={is24hour} size={110} />
+    );
+
+    const digitalBox = (
+        <div style={{ border: '2px solid #000', padding: '5px 10px', fontFamily: 'monospace', fontSize: '18px', fontWeight: 'bold', letterSpacing: '3px' }}>
+            {ex.digitalText}
+        </div>
+    );
+
+    const timeLabel = (
+        <span style={{ fontSize: '13px', fontWeight: 'bold', fontFamily: 'sans-serif', textAlign: 'center' }}>
+            {ex.timeText}
+        </span>
+    );
+
+    const blankLine = <div style={{ borderBottom: '1.5px solid #000', width: '90%', height: '18px' }} />;
+    const sol = (text: string) => <span style={{ color: '#e11d48', fontWeight: 'bold', fontSize: '12px' }}>{text}</span>;
+
+    let inner: React.ReactNode;
+
+    if (exerciseMode === 'tekenen') {
+        let showH = showSolutions, showM = showSolutions;
+        if (!showSolutions) {
+            showH = handChoice === 'minuut';
+            showM = handChoice === 'uur';
+        }
+        inner = <>{clockType === 'digitaal' ? digitalBox : timeLabel}{clock(showH, showM)}</>;
+    } else if (exerciseMode === 'lezen') {
+        const display = clockType === 'analoog' ? clock(true, true) : digitalBox;
+        inner = <>{display}{showSolutions ? sol(ex.timeText) : blankLine}</>;
+    } else {
+        if (clockType === 'analoog') {
+            inner = (
+                <>
+                    {clock(true, true)}
+                    {showSolutions
+                        ? sol(ex.digitalText)
+                        : <div style={{ border: '1.5px solid #000', width: '65px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace', fontSize: '12px', color: '#aaa' }}>__:__</div>
+                    }
+                </>
+            );
+        } else {
+            inner = <>{digitalBox}{showSolutions ? sol(ex.timeText) : blankLine}</>;
+        }
+    }
+
+    return (
+        <div key={ex.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '8px', boxSizing: 'border-box' }}>
+            {inner}
+        </div>
+    );
+}
+
+// ============================================================================
+// UNIFIED FRACTION EXERCISE RENDERER
+// ============================================================================
+
+function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolutions: boolean): React.ReactElement {
+    const subType = ex.subType;
+    const answerFormat: string = block.constraints.answerFormat || 'fraction-questions';
+    const sol = (text: string) => <span style={{ color: '#e11d48', fontWeight: 'bold', fontSize: '14px' }}>{text}</span>;
+    const blank = (w = 40) => <div style={{ borderBottom: '1.5px solid #000', width: `${w}px`, height: '18px', display: 'inline-block', margin: '0 2px' }} />;
+
+    // ── SHAPE-BASED (kleuren / herkennen / tekenen) ──────────────────────────
+    if (subType === 'kleuren' || subType === 'herkennen' || subType === 'tekenen') {
+        const cellSize    = subType === 'tekenen' ? 30 : 38;
+        const showColored = subType === 'herkennen';
+        const shape = (
+            <FractionShapeSVG
+                numerator={ex.numerator} denominator={ex.denominator}
+                shape={ex.shape ?? 'square'} coloredIndices={ex.coloredIndices ?? []}
+                gridRows={ex.gridRows ?? 1} gridCols={ex.gridCols ?? ex.denominator}
+                showColored={showColored} cellSize={cellSize}
+            />
+        );
+
+        if (subType === 'kleuren' || subType === 'tekenen') {
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ fontSize: '13px', fontFamily: 'sans-serif', fontWeight: 'bold' }}>
+                        Kleur {ex.numerator}/{ex.denominator} in:
+                    </div>
+                    {shape}
+                    {showSolutions && (
+                        <FractionShapeSVG
+                            numerator={ex.numerator} denominator={ex.denominator}
+                            shape={ex.shape ?? 'square'} coloredIndices={ex.coloredIndices ?? []}
+                            gridRows={ex.gridRows ?? 1} gridCols={ex.gridCols ?? ex.denominator}
+                            showColored={true} cellSize={cellSize}
+                        />
+                    )}
+                </div>
+            );
+        }
+
+        // herkennen — build answer area based on format
+        let answerArea: React.ReactNode;
+        if (answerFormat === 'fraction-questions') {
+            // Two bold questions on the left, blank fraction box on the right
+            answerArea = (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '8px', width: '100%' }}>
+                    <div style={{ flex: 1, fontSize: '12px', fontFamily: 'sans-serif', lineHeight: '1.7' }}>
+                        <div><strong>Hoeveel gelijke delen neem ik?</strong></div>
+                        <br />
+                        <div><strong>In hoeveel gelijke delen is het geheel verdeeld?</strong></div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '44px' }}>
+                        <div style={{ minWidth: '32px', height: '22px', textAlign: 'center', fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', borderBottom: '2px solid #000', color: showSolutions ? '#e11d48' : 'transparent', paddingBottom: '2px' }}>
+                            {ex.numerator}
+                        </div>
+                        <div style={{ minWidth: '32px', height: '22px', textAlign: 'center', fontSize: '18px', fontFamily: 'monospace', fontWeight: 'bold', color: showSolutions ? '#e11d48' : 'transparent', paddingTop: '2px' }}>
+                            {ex.denominator}
+                        </div>
+                    </div>
+                </div>
+            );
+        } else if (answerFormat === 'phrase') {
+            answerArea = (
+                <div style={{ fontSize: '12px', fontFamily: 'sans-serif', lineHeight: '2', marginTop: '6px' }}>
+                    <div>Er zijn {showSolutions ? sol(String(ex.denominator)) : <span style={{ borderBottom: '1.5px solid #000', display: 'inline-block', width: '28px' }}>&nbsp;</span>} gelijke delen.</div>
+                    <div>{showSolutions ? sol(String(ex.numerator)) : <span style={{ borderBottom: '1.5px solid #000', display: 'inline-block', width: '28px' }}>&nbsp;</span>} delen zijn ingekleurd.</div>
+                </div>
+            );
+        } else if (answerFormat === 'blank-fraction') {
+            answerArea = (
+                <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', marginTop: '8px', fontSize: '20px', fontFamily: 'monospace', fontWeight: 'bold' }}>
+                    <div style={{ borderBottom: '2px solid #000', minWidth: '32px', textAlign: 'center', paddingBottom: '2px', color: showSolutions ? '#e11d48' : 'transparent' }}>{ex.numerator}</div>
+                    <div style={{ minWidth: '32px', textAlign: 'center', paddingTop: '2px', color: showSolutions ? '#e11d48' : 'transparent' }}>{ex.denominator}</div>
+                </div>
+            );
+        } else {
+            // line
+            answerArea = <div style={{ marginTop: '8px' }}>{showSolutions ? sol(`${ex.numerator}/${ex.denominator}`) : blank(80)}</div>;
+        }
+
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', width: '100%' }}>
+                {shape}
+                {answerArea}
+            </div>
+        );
+    }
+
+    // ── AMOUNT (hoeveelheid) ─────────────────────────────────────────────────
+    if (subType === 'hoeveelheid') {
+        const total = ex.total ?? 0;
+        const coloredCount = Math.round(total * ex.numerator / ex.denominator);
+        const groupSize = total / ex.denominator;
+        const objSize = 18, objGap = 3, perRow = 10;
+
+        const objEl = (idx: number, colored: boolean) => ex.objectShape === 'circle'
+            ? <svg key={idx} width={objSize} height={objSize}><circle cx={objSize/2} cy={objSize/2} r={objSize/2-1} fill={colored ? '#93c5fd' : 'white'} stroke="#000" strokeWidth={1.5}/></svg>
+            : <svg key={idx} width={objSize} height={objSize}><rect x={1} y={1} width={objSize-2} height={objSize-2} fill={colored ? '#93c5fd' : 'white'} stroke="#000" strokeWidth={1.5}/></svg>;
+
+        const simpleGrid = (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: `${objGap}px` }}>
+                {Array.from({ length: Math.ceil(total / perRow) }, (_, r) => (
+                    <div key={r} style={{ display: 'flex', gap: `${objGap}px` }}>
+                        {Array.from({ length: Math.min(perRow, total - r * perRow) }, (_, c) => {
+                            const idx = r * perRow + c;
+                            return objEl(idx, showSolutions && idx < coloredCount);
+                        })}
+                    </div>
+                ))}
+            </div>
+        );
+
+        const groupedGrid = (
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                {Array.from({ length: ex.denominator }, (_, g) => (
+                    <div key={g} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRight: g < ex.denominator - 1 ? '1.5px solid #000' : 'none', paddingRight: g < ex.denominator - 1 ? '4px' : '0', gap: '2px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: `${objGap}px`, maxWidth: `${Math.ceil(Math.sqrt(groupSize)) * (objSize + objGap)}px` }}>
+                            {Array.from({ length: groupSize }, (_, k) => objEl(g * groupSize + k, showSolutions && g < ex.numerator))}
+                        </div>
+                        <div style={{ borderBottom: '1.5px solid #000', width: '24px', height: '16px', fontSize: '11px', textAlign: 'center', color: showSolutions ? '#e11d48' : 'transparent' }}>{groupSize}</div>
+                    </div>
+                ))}
+            </div>
+        );
+
+        const fracLabel = (
+            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: '14px', fontFamily: 'monospace' }}>
+                <span style={{ borderBottom: '1.5px solid #000', minWidth: '18px', textAlign: 'center', paddingLeft: '4px', paddingRight: '4px' }}>{ex.numerator}</span>
+                <span style={{ minWidth: '18px', textAlign: 'center', paddingLeft: '4px', paddingRight: '4px' }}>{ex.denominator}</span>
+            </div>
+        );
+
+        const questionLine = (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontFamily: 'monospace', marginTop: '6px' }}>
+                {fracLabel}<span>van {total} =</span>{showSolutions ? sol(String(coloredCount)) : blank()}
+            </div>
+        );
+
+        if (answerFormat === 'zonder-hulp') return <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>{simpleGrid}{questionLine}</div>;
+        if (answerFormat === 'met-hulp')    return <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>{groupedGrid}{questionLine}</div>;
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {simpleGrid}
+                <div style={{ fontSize: '12px', fontFamily: 'sans-serif', lineHeight: '2', marginTop: '4px' }}>
+                    <div>Hoeveel gelijke delen? {showSolutions ? sol(String(ex.denominator)) : blank(28)}</div>
+                    <div>{total} ÷ {showSolutions ? sol(String(ex.denominator)) : blank(28)} = {showSolutions ? sol(String(groupSize)) : blank(28)}</div>
+                    {questionLine}
+                </div>
+            </div>
+        );
+    }
+
+    // ── AMOUNT RECHTHOEK (hoeveelheid-rechthoek) ─────────────────────────────
+    if (subType === 'hoeveelheid-rechthoek') {
+        const total = ex.total ?? 0;
+        const groupSize = total / ex.denominator;
+        const coloredCount = groupSize * ex.numerator;
+
+        const fracLabel = (
+            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: '16px', fontFamily: 'monospace', fontWeight: 'bold' }}>
+                <span style={{ borderBottom: '2px solid #000', minWidth: '20px', textAlign: 'center', paddingLeft: '6px', paddingRight: '6px' }}>{ex.numerator}</span>
+                <span style={{ minWidth: '20px', textAlign: 'center', paddingLeft: '6px', paddingRight: '6px' }}>{ex.denominator}</span>
+            </div>
+        );
+
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontFamily: 'monospace' }}>
+                    {fracLabel}
+                    <span>van {total} =</span>
+                    {showSolutions ? sol(String(coloredCount)) : blank()}
+                </div>
+                {/* Blank rectangle for student to divide */}
+                <div style={{ border: '2px solid #000', width: '100%', height: '56px', boxSizing: 'border-box', backgroundColor: 'white' }} />
+                {answerFormat === 'met-berekening' && (
+                    <div style={{ display: 'flex', gap: '16px', fontSize: '13px', fontFamily: 'monospace', marginTop: '2px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            {total}<span>÷</span>{showSolutions ? sol(String(ex.denominator)) : blank(24)}<span>=</span>{showSolutions ? sol(String(groupSize)) : blank(24)}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            {showSolutions ? sol(String(ex.numerator)) : blank(24)}<span>×</span>{showSolutions ? sol(String(groupSize)) : blank(24)}<span>=</span>{showSolutions ? sol(String(coloredCount)) : blank(24)}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // ── LIJNSTUK ─────────────────────────────────────────────────────────────
+    if (subType === 'lijnstuk') {
+        const cm = ex.lineLength ?? 10;
+        const level = block.constraints.level ?? 1;
+        const partLength = cm / ex.denominator;
+        const arcLength  = partLength * ex.numerator;
+
+        const lineEl = (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', margin: '8px 0' }}>
+                {/* The line */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ width: '2px', height: '14px', backgroundColor: '#000' }} />
+                    <div style={{ flex: 1, height: '2px', backgroundColor: '#000' }} />
+                    <div style={{ width: '2px', height: '14px', backgroundColor: '#000' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', fontSize: '11px', fontFamily: 'sans-serif', color: '#555' }}>
+                    {cm} cm
+                </div>
+            </div>
+        );
+
+        const calcLines = (
+            <div style={{ display: 'flex', gap: '20px', fontSize: '13px', fontFamily: 'monospace', marginTop: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    {showSolutions ? sol(String(cm)) : blank(28)}<span>cm ÷</span>{showSolutions ? sol(String(ex.denominator)) : blank(20)}<span>=</span>{showSolutions ? sol(String(partLength)) : blank(28)}<span>cm</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    {showSolutions ? sol(String(ex.numerator)) : blank(20)}<span>×</span>{showSolutions ? sol(String(partLength)) : blank(28)}<span>cm =</span>{showSolutions ? sol(String(arcLength)) : blank(28)}<span>cm</span>
+                </div>
+            </div>
+        );
+
+        if (level === 1) {
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ fontSize: '12px', fontFamily: 'sans-serif' }}>
+                        Verdeel het lijnstuk in <strong>{ex.denominator}</strong> gelijke delen.<br />
+                        Teken een boogje boven <strong>{ex.numerator}/{ex.denominator}</strong> van het lijnstuk.
+                    </div>
+                    {lineEl}
+                    {calcLines}
+                </div>
+            );
+        }
+        if (level === 2) {
+            return <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>{lineEl}{calcLines}</div>;
+        }
+        // level 3 — two blank lines
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {lineEl}
+                <div style={{ borderBottom: '1.5px solid #000', height: '20px' }} />
+                <div style={{ borderBottom: '1.5px solid #000', height: '20px' }} />
+            </div>
+        );
+    }
+
+    return <></>;
+}
+
+// ============================================================================
 // HOOFD COMPONENT
 // ============================================================================
 
@@ -43,7 +359,7 @@ export default function App() {
     setIsGenerating(true);
     try {
       const fileName = `${headerData.titel || 'Oefenbundel'}${showSolutions ? '_Oplossingen' : ''}.pdf`;
-      const doc = <WorksheetPDF blocks={blocks} headerData={headerData} footerData={footerData} showSolutions={showSolutions} />;
+      const doc = <WorksheetPDF blocks={blocks} headerData={headerData} footerData={footerData} showSolutions={showSolutions} docSettings={docSettings} />;
       const blob = await pdf(doc).toBlob();
 
       if ('showSaveFilePicker' in window) {
@@ -79,12 +395,12 @@ export default function App() {
   const blocks = useWorksheetStore((state) => state.blocks);
   const headerData = useWorksheetStore((state) => state.header);
   const footerData = useWorksheetStore((state) => state.footer);
+  const docSettings = useWorksheetStore((state) => state.docSettings);
   const showSolutions = useWorksheetStore((state) => state.showSolutions);
   const activeSelectionId = useWorksheetStore((state) => state.activeBlockId);
 
   const activeBlock = blocks.find(b => b.id === activeSelectionId);
 
-  const addBlockFromType = useWorksheetStore((state) => state.addBlockFromType);
   const removeBlock = useWorksheetStore((state) => state.removeBlock);
   const moveBlockUp = useWorksheetStore((state) => state.moveBlockUp);
   const moveBlockDown = useWorksheetStore((state) => state.moveBlockDown);
@@ -143,6 +459,23 @@ export default function App() {
     );
   };
 
+  const renderGiven = (val: number | Fraction | undefined) => {
+    if (val === undefined) return null;
+    if (isFraction(val)) {
+      const hasWhole = val.whole !== undefined && val.whole > 0;
+      return (
+        <div style={{ display: 'inline-flex', alignItems: 'center' }}>
+          {hasWhole && <span style={styles.wholeNumberStyle}>{val.whole}</span>}
+          <div style={styles.fractionWrapper}>
+            <span style={styles.fractionTop}>{val.n}</span>
+            <span style={styles.fractionBottom}>{val.d}</span>
+          </div>
+        </div>
+      );
+    }
+    return <span style={{ fontFamily: 'monospace', fontSize: '17px', color: '#000' }}>{formatMathNumber(val as number)}</span>;
+  };
+
   const renderAnswer = (val: number | Fraction | undefined) => {
     if (val === undefined) return null;
 
@@ -171,53 +504,11 @@ export default function App() {
       {/* =========================================================
                 LINKER SIDEBAR
                 ========================================================= */}
-      <aside style={styles.leftSidebar}>
-        <div style={styles.sidebarHeader}>
-          <div style={{ ...styles.logoPlaceholder, padding: '5px', overflow: 'hidden' }}>
-            <img src={logo} alt="Enderklas Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-          <h2 style={styles.sidebarTitle}>Enderklas Builder</h2>
-          <p style={styles.sidebarSubtitle}>Basisonderwijs Vlaanderen</p>
-        </div>
-
-        <hr style={styles.divider} />
-
-        <div style={styles.sidebarContent}>
-          {APP_STRUCTURE.map((domain) => (
-            <div key={domain.id} style={{ marginBottom: '24px' }}>
-              <h3 style={styles.domainTitle}>{domain.label}</h3>
-              {domain.subdomains.map((subdomain) => (
-                <div key={subdomain.id} style={{ marginBottom: '16px' }}>
-                  <h4 style={styles.subdomainTitle}>{subdomain.label}</h4>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {subdomain.types.map((type) => (
-                      <li key={type.id}>
-                        <button onClick={() => addBlockFromType(type.id, type.label)} style={styles.selectorBtn}>
-                          + {type.label}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-
-        <div style={styles.sidebarFooter}>
-          <button onClick={() => setActiveSelection('document')} style={styles.settingsBtn}>
-            Algemene Instellingen
-          </button>
-
-          <button onClick={() => handleDownloadPDF(false)} style={styles.printBtnPrimary} disabled={isGenerating}>
-            {isGenerating ? '⏳ PDF genereren...' : 'Download oefenbundel'}
-          </button>
-
-          <button onClick={() => handleDownloadPDF(true)} style={styles.printBtnSecondary} disabled={isGenerating}>
-            {isGenerating ? '⏳ PDF genereren...' : 'Download oplossingen'}
-          </button>
-        </div>
-      </aside>
+      <Sidebar
+        onOpenSettings={() => setActiveSelection('document')}
+        onDownloadPDF={handleDownloadPDF}
+        isGenerating={isGenerating}
+      />
 
       {/* =========================================================
                 CENTRALE WERKOMGEVING
@@ -234,11 +525,17 @@ export default function App() {
               <div>
                 <label style={styles.panelLabel}>Instructie Modus:</label>
                 <div style={styles.btnGroup}>
-                  {(['geen', 'mag', 'moet'] as const).map(mode => (
-                    <button key={mode} onClick={() => updateBlockSettings(activeBlock.id, { instructionMode: mode })} style={styles.panelRadioBtn(activeBlock.instructionMode === mode || (!activeBlock.instructionMode && mode === 'geen'))}>
-                      {mode === 'geen' ? 'Geen' : mode.toUpperCase()}
-                    </button>
-                  ))}
+                  {(['mag', 'moet', 'plus'] as const).map(mode => {
+                    const isActive = activeBlock.instructionMode === mode;
+                    return (
+                      <button key={mode}
+                        onClick={() => updateBlockSettings(activeBlock.id, { instructionMode: isActive ? 'geen' : mode })}
+                        style={styles.panelRadioBtn(isActive)}
+                        title={mode === 'plus' ? 'Plusoefening (voor hoogbegaafde leerlingen)' : undefined}>
+                        {mode === 'plus' ? '★' : mode.toUpperCase()}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div>
@@ -279,22 +576,22 @@ export default function App() {
         </div>
 
         <div className="print-area" style={styles.a4Sheet}>
-          <div onClick={(e) => { e.stopPropagation(); setActiveSelection('document'); }} style={styles.clickableZone(activeSelectionId === 'document', '100%')}>
-            {headerData?.titel && (
-              <div style={{ textAlign: 'center', marginBottom: '32px', width: '100%' }}>
-                <h1 style={{ margin: 0, fontSize: '24px', fontFamily: 'sans-serif', fontWeight: 'bold' }}>{headerData.titel}</h1>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' }}>
+          <div onClick={(e) => { e.stopPropagation(); setActiveSelection('document'); }} style={styles.clickableZone(activeSelectionId === 'document', '100%', false, docSettings.headerStyle === 'kader')}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', width: '380px' }}>
                 {headerData?.naam && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 200px' }}><span style={styles.sheetHeaderLabel}>Naam:</span><div style={styles.sheetHeaderLine}></div></div>}
                 {headerData?.klas && <div style={{ display: 'flex', alignItems: 'flex-end', width: '90px' }}><span style={styles.sheetHeaderLabel}>Klas:</span><div style={styles.sheetHeaderLine}></div></div>}
                 {headerData?.nummer && <div style={{ display: 'flex', alignItems: 'flex-end', width: '80px' }}><span style={styles.sheetHeaderLabel}>Nr:</span><div style={styles.sheetHeaderLine}></div></div>}
                 {headerData?.datum && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 140px' }}><span style={styles.sheetHeaderLabel}>Datum:</span><div style={styles.sheetHeaderLine}></div></div>}
               </div>
-              {totalScore > 0 && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
+              {docSettings.showScores && totalScore > 0 && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
             </div>
+
+            {headerData?.titel && (
+              <div style={{ textAlign: 'center', marginBottom: '20px', width: '100%' }}>
+                <h1 style={{ margin: 0, fontSize: '24px', fontFamily: 'sans-serif', fontWeight: 'bold' }}>{headerData.titel}</h1>
+              </div>
+            )}
           </div>
 
           <div style={{ width: '100%', marginTop: '12px' }}>
@@ -303,7 +600,7 @@ export default function App() {
               const isNotLastBlock = index < blocks.length - 1;
 
               return (
-                <div key={block.id} onClick={(e) => { e.stopPropagation(); setActiveSelection(block.id); }} style={styles.blockContainer(isActive, isNotLastBlock)}>
+                <div key={block.id} onClick={(e) => { e.stopPropagation(); setActiveSelection(block.id); }} style={styles.blockContainer(isActive, isNotLastBlock, docSettings.showDividers)}>
                   {isActive && (
                     <div className="no-print" style={styles.blockControls}>
                       {index > 0 && <button onClick={(e) => { e.stopPropagation(); moveBlockUp(block.id); }} style={styles.iconBtn}>↑</button>}
@@ -312,62 +609,130 @@ export default function App() {
                     </div>
                   )}
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px',
+                    ...(docSettings.opdrachtTitelStyle === 'boxed' ? { border: '1.5px solid #000', padding: '4px 8px', borderRadius: '3px' } : {}),
+                    ...(docSettings.opdrachtTitelStyle === 'underlined' ? { borderBottom: '2px solid #000', paddingBottom: '4px' } : {}),
+                  }}>
                     <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '12px' }}>
                       {block.instructionMode === 'mag' && <span style={styles.badge('mag')}>MAG</span>}
                       {block.instructionMode === 'moet' && <span style={styles.badge('moet')}>MOET</span>}
+                      {block.instructionMode === 'plus' && <span style={styles.badge('plus')}>★</span>}
                       <span style={styles.instructionDisplay}>{block.instructionText || ''}</span>
                     </div>
-                    {(block.totalPoints || 0) > 0 && <div style={styles.pointsText}>__ / {block.totalPoints}</div>}
+                    {docSettings.showScores && (block.totalPoints || 0) > 0 && <div style={styles.pointsText}>__ / {block.totalPoints}</div>}
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: block.layoutPreset === 'inline-short' ? '1fr 1fr' : '1fr', columnGap: '50px', rowGap: `${block.verticalSpacing || 14}px` }}>
-                    {!block.exercises || block.exercises.length === 0 ? (
-                      <div className="no-print" style={styles.emptyStateText}>(Genereer oefeningen via het rechterpaneel)</div>
-                    ) : (
-                      block.exercises.map((ex) => {
-                        if (!ex || !ex.operands) return null;
-                        const isMissing1 = ex.missingTerm === 'operand1';
-                        const isMissing2 = ex.missingTerm === 'operand2';
-                        const isFrac = isFraction(ex.operands[0]);
+                  {block.typeId.startsWith('klok-') ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: `${block.verticalSpacing || 14}px` }}>
+                      {!block.clockExercises || block.clockExercises.length === 0 ? (
+                        <div className="no-print" style={styles.emptyStateText}>(Genereer oefeningen via het rechterpaneel)</div>
+                      ) : (
+                        block.clockExercises.map((ex) => renderClockExerciseItem(ex, block, showSolutions))
+                      )}
+                    </div>
+                  ) : block.typeId === 'breuken' ? (() => {
+                    const subType = block.constraints.subType || 'kleuren';
+                    const is1Col  = subType === 'lijnstuk';
+                    const exList  = block.fractionExercises || [];
+                    return (
+                      <div style={{ display: 'grid', gridTemplateColumns: is1Col ? '1fr' : '1fr 1fr', gap: `${block.verticalSpacing || 14}px` }}>
+                        {exList.length === 0
+                          ? <div className="no-print" style={styles.emptyStateText}>(Genereer oefeningen via het rechterpaneel)</div>
+                          : exList.map((ex) => (
+                              <div key={ex.id} style={{ display: 'flex', justifyContent: 'center', padding: '8px', boxSizing: 'border-box' }}>
+                                {renderFractionExercise(ex, block, showSolutions)}
+                              </div>
+                            ))
+                        }
+                      </div>
+                    );
+                  })() : (
+                    <div style={{ display: 'grid', gridTemplateColumns: block.layoutPreset === 'inline-short' ? '1fr 1fr' : '1fr', columnGap: '50px', rowGap: `${block.verticalSpacing || 14}px` }}>
+                      {!block.exercises || block.exercises.length === 0 ? (
+                        <div className="no-print" style={styles.emptyStateText}>(Genereer oefeningen via het rechterpaneel)</div>
+                      ) : (
+                        block.exercises.map((ex) => {
+                          if (!ex || !ex.operands) return null;
 
-                        return (
-                          <div key={ex.id} style={styles.exerciseRow}>
-                            <div style={{ display: 'flex', alignItems: 'center', minWidth: '150px', height: isFrac ? '40px' : '24px' }}>
-                              {renderTerm(ex.operands[0], isMissing1, block.id, ex.id, 0)}
-                              <span style={{ margin: '0 6px' }}>{ex.operator || '+'}</span>
-                              {renderTerm(ex.operands[1], isMissing2, block.id, ex.id, 1)}
-                            </div>
+                          // MET REST
+                          if (ex.remainder !== undefined) {
+                            const helpBlank = <div style={{ borderBottom: '1.5px dotted #000', width: '40px', height: '18px', display: 'inline-block', margin: '0 2px' }} />;
+                            const qPart = showSolutions
+                              ? <span style={{ color: '#e11d48', fontWeight: 'bold' }}>{formatMathNumber(ex.answer as number)}</span>
+                              : <div style={{ borderBottom: '1.5px solid #000', width: '40px', height: '18px', display: 'inline-block' }} />;
+                            const rPart = showSolutions
+                              ? <span style={{ color: '#e11d48', fontWeight: 'bold' }}>{String(ex.remainder)}</span>
+                              : <div style={{ borderBottom: '1.5px solid #000', width: '30px', height: '18px', display: 'inline-block' }} />;
+                            return (
+                              <div key={ex.id} style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '17px', fontFamily: 'monospace', height: '24px' }}>
+                                <span>(</span>{helpBlank}<span>)</span>
+                                <span style={{ margin: '0 4px' }}>{formatMathNumber(ex.operands[0] as number)}</span>
+                                <span>:</span>
+                                <span style={{ margin: '0 4px' }}>{formatMathNumber(ex.operands[1] as number)}</span>
+                                <span style={{ margin: '0 4px' }}>=</span>
+                                {qPart}
+                                <span style={{ margin: '0 4px', fontStyle: 'italic' }}>r</span>
+                                {rPart}
+                              </div>
+                            );
+                          }
 
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '8px', gap: `${(block.verticalSpacing || 14) * 0.8}px` }}>
-                              {(!isMissing1 && !isMissing2) ? (
-                                Array.from({ length: block.layoutPreset === 'stepped' ? (block.steppedLines || 1) : 1 }).map((_, i) => (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', width: '100%', height: '24px', marginTop: i === 0 && isFrac ? '8px' : '0' }}>
-                                    <span style={{ marginRight: '10px', visibility: i === 0 ? 'visible' : 'hidden' }}>=</span>
-                                    {(i === 0 && showSolutions) ? renderAnswer(ex.answer) : <div style={styles.workLine(block.layoutPreset)}></div>}
-                                  </div>
-                                ))
-                              ) : (
-                                <div style={{ display: 'flex', alignItems: 'center', width: '100%', height: '24px', marginTop: isFrac ? '8px' : '0' }}>
-                                  <span style={{ marginRight: '10px' }}>=</span>
-                                  {renderAnswer(ex.answer)}
+                          // NORMAL MATH
+                          const isMissing1 = ex.missingTerm === 'operand1';
+                          const isMissing2 = ex.missingTerm === 'operand2';
+
+                          return (
+                            <div key={ex.id} style={styles.exerciseRow}>
+                              <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <div style={{ width: '85px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                  {renderTerm(ex.operands[0], isMissing1, block.id, ex.id, 0)}
                                 </div>
-                              )}
+                                <span style={{ width: '26px', textAlign: 'center', flexShrink: 0 }}>{ex.operator || '+'}</span>
+                                <div style={{ width: '85px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+                                  {renderTerm(ex.operands[1], isMissing2, block.id, ex.id, 1)}
+                                </div>
+                              </div>
+
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '8px', gap: `${(block.verticalSpacing || 14) * 0.8}px` }}>
+                                {(!isMissing1 && !isMissing2) ? (
+                                  Array.from({ length: block.layoutPreset === 'stepped' ? (block.steppedLines || 1) : 1 }).map((_, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', width: '100%', height: '24px' }}>
+                                      <span style={{ marginRight: '10px', visibility: i === 0 ? 'visible' : 'hidden' }}>=</span>
+                                      {(i === 0 && showSolutions) ? renderAnswer(ex.answer) : <div style={styles.workLine(block.layoutPreset)}></div>}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div style={{ display: 'flex', alignItems: 'center', width: '100%', height: '24px' }}>
+                                    <span style={{ marginRight: '10px' }}>=</span>
+                                    {renderGiven(ex.answer)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
 
+          <div className="no-print" style={{ position: 'absolute', top: '1044px', left: 0, right: 0, borderTop: '2px dashed rgba(220,38,38,0.55)', zIndex: 5, pointerEvents: 'none' }}>
+            <span style={{ position: 'absolute', right: '12px', top: '-16px', fontSize: '10px', color: 'rgba(220,38,38,0.6)', fontFamily: 'sans-serif', letterSpacing: '0.5px', userSelect: 'none' }}>— paginaeinde —</span>
+          </div>
+
           <div onClick={(e) => { e.stopPropagation(); setActiveSelection('document'); }} style={styles.clickableZone(activeSelectionId === 'document', '100%', true)}>
-            <div style={{ fontFamily: 'sans-serif' }}>{footerData?.school || 'School'} &nbsp;|&nbsp; {footerData?.klas || 'Klas'} &nbsp;|&nbsp; {footerData?.leerkracht || 'Leerkracht'}</div>
-            {/* Dit blijft hier voor de preview. In de PDF regelt WorksheetPDF.tsx de paginanummers! */}
-            <div style={{ fontFamily: 'sans-serif' }}>Pagina 1</div>
+            <div style={{ fontFamily: 'sans-serif' }}>
+              {[
+                footerData?.showSchool ? (footerData?.school || 'School') : null,
+                footerData?.showKlas ? (footerData?.klas || 'Klas') : null,
+                footerData?.showLeerkracht ? (footerData?.leerkracht || 'Leerkracht') : null,
+              ].filter(Boolean).join(' | ')}
+            </div>
+            {footerData?.showPagina && <div style={{ fontFamily: 'sans-serif' }}>Pagina 1</div>}
           </div>
         </div>
       </main>
@@ -382,21 +747,6 @@ export default function App() {
 // ============================================================================
 const styles = {
   appContainer: { display: 'flex', width: '100vw', height: '100vh', padding: '16px', gap: '16px', overflow: 'hidden', backgroundColor: 'var(--bg-dark)' } as React.CSSProperties,
-  leftSidebar: { width: '280px', minWidth: '280px', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '12px', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } as React.CSSProperties,
-  sidebarHeader: { padding: '24px 20px 16px 20px' } as React.CSSProperties,
-  logoPlaceholder: { width: '100%', height: '75px', border: '0px dashed var(--border-color)', borderRadius: '0px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', backgroundColor: 'var(--bg-panel)' } as React.CSSProperties,
-  logoText: { fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'bold', letterSpacing: '1px' } as React.CSSProperties,
-  sidebarTitle: { margin: 0, fontSize: '18px', color: 'var(--text-main)', fontWeight: 700 } as React.CSSProperties,
-  sidebarSubtitle: { margin: '4px 0 0 0', fontSize: '12px', color: 'var(--accent-purple)', fontWeight: 600 } as React.CSSProperties,
-  divider: { border: 'none', height: '1px', backgroundColor: 'var(--border-color)', margin: '0 20px' } as React.CSSProperties,
-  sidebarContent: { flex: 1, overflowY: 'auto', padding: '20px' } as React.CSSProperties,
-  domainTitle: { fontSize: '14px', textTransform: 'uppercase', color: 'var(--accent-purple)', letterSpacing: '1px', margin: '0 0 12px 0', fontWeight: 700 } as React.CSSProperties,
-  subdomainTitle: { fontSize: '14px', color: 'var(--text-main)', margin: '0 0 8px 0', fontWeight: 600 } as React.CSSProperties,
-  selectorBtn: { width: '100%', textAlign: 'left', background: 'none', border: 'none', color: 'var(--text-muted)', padding: '6px 8px 6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', transition: 'all 0.2s' } as React.CSSProperties,
-  sidebarFooter: { padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.1)' } as React.CSSProperties,
-  settingsBtn: { width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: 'transparent', color: 'var(--text-main)', border: '1px solid var(--border-color)' } as React.CSSProperties,
-  printBtnPrimary: { width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', border: 'none', backgroundColor: '#ffffff', color: '#111115' } as React.CSSProperties,
-  printBtnSecondary: { width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', border: 'none', backgroundColor: 'var(--accent-purple)', color: '#ffffff' } as React.CSSProperties,
   mainContent: { position: 'relative', flex: 1, backgroundColor: 'var(--bg-dark)', borderRadius: '12px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' } as React.CSSProperties,
   opdrachtSettingsContainer: { position: 'sticky', top: '16px', zIndex: 100, display: 'flex', flexWrap: 'wrap', padding: '16px 24px', width: '100%', maxWidth: '800px', backgroundColor: 'rgba(21, 21, 25, 0.90)', backdropFilter: 'blur(12px)', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '16px', boxSizing: 'border-box', boxShadow: '0 10px 30px rgba(0,0,0,0.6)' } as React.CSSProperties,
   settingsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', width: '100%', alignItems: 'start' } as React.CSSProperties,
@@ -409,24 +759,25 @@ const styles = {
   sheetHeaderLabel: { fontSize: '13px', fontWeight: 'bold' as const, marginRight: '6px', color: '#000', fontFamily: 'sans-serif' } as React.CSSProperties,
   sheetHeaderLine: { flex: 1, borderBottom: '1.5px solid #000', height: '16px' } as React.CSSProperties,
   scoreBox: { border: '2px solid #000', padding: '8px 14px', fontSize: '15px', fontWeight: 'bold', borderRadius: '4px', fontFamily: 'sans-serif' } as React.CSSProperties,
-  clickableZone: (isActive: boolean, width: string, isFooter: boolean = false): React.CSSProperties => ({
+  clickableZone: (isActive: boolean, width: string, isFooter: boolean = false, hasKader: boolean = false): React.CSSProperties => ({
     display: 'flex', flexDirection: isFooter ? 'row' : 'column', justifyContent: isFooter ? 'space-between' : 'flex-start', width: width, cursor: 'pointer', padding: '12px', borderRadius: '6px', transition: 'all 0.2s', boxSizing: 'border-box',
-    backgroundColor: isActive ? 'rgba(155, 48, 255, 0.04)' : 'transparent', border: isActive ? '1px dashed var(--accent-purple)' : '1px dashed transparent',
+    backgroundColor: isActive ? 'rgba(155, 48, 255, 0.04)' : 'transparent',
+    border: isActive ? '1px dashed var(--accent-purple)' : (hasKader ? '1.5px solid #000' : '1px dashed transparent'),
     ...(isFooter && { marginTop: 'auto', borderTop: isActive ? '1px dashed var(--accent-purple)' : '1px solid #000', paddingTop: '12px', fontSize: '11px', color: '#444' })
   }),
-  blockContainer: (isActive: boolean, isNotLastBlock: boolean): React.CSSProperties => ({
+  blockContainer: (isActive: boolean, isNotLastBlock: boolean, showDividers: boolean = true): React.CSSProperties => ({
     padding: '16px', position: 'relative', cursor: 'pointer', borderRadius: '8px', boxSizing: 'border-box', margin: '4px', marginBottom: '12px', transition: 'all 0.2s',
     border: isActive ? '2px dashed var(--accent-purple)' : '2px dashed transparent',
-    borderBottom: !isActive && isNotLastBlock ? '1px solid #e5e5e5' : (isActive ? '2px dashed var(--accent-purple)' : 'none'),
+    borderBottom: !isActive && isNotLastBlock && showDividers ? '1px solid #e5e5e5' : (isActive ? '2px dashed var(--accent-purple)' : 'none'),
     backgroundColor: isActive ? 'rgba(155, 48, 255, 0.02)' : 'transparent',
   }),
   blockControls: { position: 'absolute', right: '12px', top: '12px', display: 'flex', gap: '6px', zIndex: 10 } as React.CSSProperties,
   iconBtn: { background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-main)', borderRadius: '4px', cursor: 'pointer', padding: '4px 10px', fontSize: '14px', fontWeight: 'bold' } as React.CSSProperties,
   deleteBtn: { background: '#ff4d4d', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', padding: '4px 10px', fontSize: '12px', fontWeight: 'bold' } as React.CSSProperties,
-  badge: (type: 'mag' | 'moet'): React.CSSProperties => ({ backgroundColor: type === 'mag' ? '#4ade80' : '#f87171', color: type === 'mag' ? '#14532d' : '#7f1d1d', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', border: type === 'mag' ? '1px solid #22c55e' : '1px solid #ef4444' }),
+  badge: (type: 'mag' | 'moet' | 'plus'): React.CSSProperties => ({ backgroundColor: type === 'mag' ? '#4ade80' : type === 'moet' ? '#f87171' : '#3b82f6', color: type === 'mag' ? '#14532d' : type === 'moet' ? '#7f1d1d' : '#eff6ff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', border: type === 'mag' ? '1px solid #22c55e' : type === 'moet' ? '1px solid #ef4444' : '1px solid #2563eb' }),
   instructionDisplay: { fontSize: '16px', fontWeight: 'bold', color: '#000', fontFamily: 'sans-serif' } as React.CSSProperties,
   pointsText: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'sans-serif', marginRight: '24px', color: '#000' } as React.CSSProperties,
-  exerciseRow: { display: 'flex', alignItems: 'flex-start', fontSize: '17px', fontFamily: 'monospace' } as React.CSSProperties,
+  exerciseRow: { display: 'flex', alignItems: 'center', fontSize: '17px', fontFamily: 'monospace' } as React.CSSProperties,
   mathInput: { width: '70px', textAlign: 'center', fontSize: '17px', fontFamily: 'Roboto Mono, monospace', border: '1px solid transparent', background: 'transparent', outline: 'none', color: '#000', padding: 0 } as React.CSSProperties,
   mathDottedLine: { borderBottom: '1.5px dotted #000', width: '40px', margin: '0 6px', display: 'inline-block', height: '16px' } as React.CSSProperties,
   workLine: (layout: string | undefined): React.CSSProperties => ({ borderBottom: '1.5px solid #000', minWidth: '55px', width: layout === 'inline-long' ? '100%' : (layout === 'stepped' ? '100%' : '75px') }),

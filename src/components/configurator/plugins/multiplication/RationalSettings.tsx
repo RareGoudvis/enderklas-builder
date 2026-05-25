@@ -3,14 +3,15 @@ import type { MathBlock } from '../../../../services/math/types';
 import { sharedPluginStyles as styles } from '../sharedPluginStyles';
 import { getMaskPlaces } from '../../../../services/math/mathEngine';
 
-interface Props { block: MathBlock; }
+interface Props { block: MathBlock; isDivision?: boolean; }
 
-export default function RationalSettings({ block }: Props) {
+export default function RationalSettings({ block, isDivision = false }: Props) {
     const updateBlockSettings = useWorksheetStore((state) => state.updateBlockSettings);
 
     // Fallback waarden voor als het blok net nieuw is aangemaakt
     const {
         fractionMultMode = 'fraction_fraction',
+        fractionOrderMode = 'AB',
         maxNumerator1 = 10, maxDenominator1 = 10,
         maxNumerator2 = 10, maxDenominator2 = 10,
         linkFractions = true,
@@ -42,7 +43,6 @@ export default function RationalSettings({ block }: Props) {
         updateConstraint('operand1Mask', { ...currentMask, [place]: !currentMask[place] });
     };
 
-    // Bepaal welke maskers getoond moeten worden voor Factor 1
     const factor1Type = fractionMultMode === 'natural_fraction' ? 'natural' : 'decimal';
     const availablePlaces = getMaskPlaces(maxGetal, factor1Type, decimalPlaces);
 
@@ -52,11 +52,34 @@ export default function RationalSettings({ block }: Props) {
             <div style={styles.section}>
                 <label style={styles.label}>Moeilijkheidsgraad (Combinatie):</label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <button onClick={() => updateConstraint('fractionMultMode', 'natural_fraction')} style={radioListBtnStyle(fractionMultMode === 'natural_fraction')}>Natuurlijk getal × Breuk</button>
-                    <button onClick={() => updateConstraint('fractionMultMode', 'fraction_fraction')} style={radioListBtnStyle(fractionMultMode === 'fraction_fraction')}>Breuk × Breuk</button>
-                    <button onClick={() => updateConstraint('fractionMultMode', 'decimal_fraction')} style={radioListBtnStyle(fractionMultMode === 'decimal_fraction')}>Kommagetal × Breuk</button>
+                    <button onClick={() => updateConstraint('fractionMultMode', 'natural_fraction')} style={radioListBtnStyle(fractionMultMode === 'natural_fraction')}>Natuurlijk getal {isDivision ? '÷' : '×'} Breuk</button>
+                    <button onClick={() => updateConstraint('fractionMultMode', 'fraction_fraction')} style={radioListBtnStyle(fractionMultMode === 'fraction_fraction')}>Breuk {isDivision ? '÷' : '×'} Breuk</button>
+                    <button onClick={() => updateConstraint('fractionMultMode', 'decimal_fraction')} style={radioListBtnStyle(fractionMultMode === 'decimal_fraction')}>Kommagetal {isDivision ? '÷' : '×'} Breuk</button>
                 </div>
             </div>
+
+            {/* VOLGORDE (voor natural_fraction en decimal_fraction) */}
+            {fractionMultMode !== 'fraction_fraction' && (() => {
+                const sym = isDivision ? '÷' : '×';
+                const typeA = fractionMultMode === 'natural_fraction' ? 'Nat. getal' : 'Kommagetal';
+                const options: { key: string; label: string }[] = [
+                    { key: 'AB', label: `${typeA} ${sym} Breuk` },
+                    { key: 'BA', label: `Breuk ${sym} ${typeA}` },
+                    { key: 'beide', label: 'Beide' },
+                ];
+                return (
+                    <div style={styles.section}>
+                        <label style={styles.label}>{isDivision ? 'Deeltal / Deler:' : 'Volgorde:'}</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            {options.map(opt => (
+                                <button key={opt.key} onClick={() => updateConstraint('fractionOrderMode', opt.key)} style={radioListBtnStyle(fractionOrderMode === opt.key || (!fractionOrderMode && opt.key === 'AB'))}>
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })()}
 
             {/* DYNAMISCHE GETALOPBOUW */}
             <div style={{ padding: '16px', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
@@ -64,56 +87,68 @@ export default function RationalSettings({ block }: Props) {
 
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
 
-                    {/* FACTOR 1: AFHANKELIJK VAN DE MODUS */}
                     {fractionMultMode === 'fraction_fraction' ? (
-                        <div style={fractionColStyle}>
-                            <label style={miniLabelStyle}>Factor 1 (Breuk)</label>
-                            <input type="number" min="1" value={maxNumerator1} onChange={(e) => handleFractionChange('N', 1, Number(e.target.value))} style={numInputStyle} title="Max. Teller" />
-                            <hr style={fractionLineStyle} />
-                            <input type="number" min="2" value={maxDenominator1} onChange={(e) => handleFractionChange('D', 1, Number(e.target.value))} style={numInputStyle} title="Max. Noemer" />
-                        </div>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-                            <label style={miniLabelStyle}>Factor 1 ({fractionMultMode === 'natural_fraction' ? 'Natuurlijk' : 'Decimaal'})</label>
+                        <>
+                            <div style={fractionColStyle}>
+                                <label style={miniLabelStyle}>Breuk</label>
+                                <input type="number" min="1" value={maxNumerator1} onChange={(e) => handleFractionChange('N', 1, Number(e.target.value))} style={numInputStyle} title="Max. Teller" />
+                                <hr style={fractionLineStyle} />
+                                <input type="number" min="2" value={maxDenominator1} onChange={(e) => handleFractionChange('D', 1, Number(e.target.value))} style={numInputStyle} title="Max. Noemer" />
+                            </div>
 
-                            {/* Instellingen voor het kommagetal/natuurlijk getal */}
-                            {fractionMultMode === 'decimal_fraction' && (
-                                <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
-                                    {[1, 2, 3].map(val => (
-                                        <button key={val} onClick={() => updateConstraint('decimalPlaces', val)} style={smallTabBtn(decimalPlaces === val)}>
-                                            {val} dec
+                            <button
+                                onClick={() => updateConstraint('linkFractions', !linkFractions)}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', opacity: linkFractions ? 1 : 0.4 }}
+                            >
+                                <span style={{ fontSize: '20px', color: linkFractions ? 'var(--accent-purple)' : 'var(--text-muted)' }}>{linkFractions ? '🔗' : '⛓️‍💥'}</span>
+                            </button>
+
+                            <div style={{ ...fractionColStyle, opacity: linkFractions ? 0.6 : 1 }}>
+                                <label style={miniLabelStyle}>Breuk</label>
+                                <input type="number" min="1" value={maxNumerator2} onChange={(e) => handleFractionChange('N', 2, Number(e.target.value))} disabled={linkFractions} style={numInputStyle} />
+                                <hr style={fractionLineStyle} />
+                                <input type="number" min="2" value={maxDenominator2} onChange={(e) => handleFractionChange('D', 2, Number(e.target.value))} disabled={linkFractions} style={numInputStyle} />
+                            </div>
+                        </>
+                    ) : (() => {
+                        const isBA = fractionOrderMode === 'BA';
+                        const natDecLabel = fractionMultMode === 'natural_fraction' ? 'Nat. getal' : 'Kommagetal';
+                        const sym = isDivision ? '÷' : '×';
+
+                        const NatDecCol = (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                                <label style={miniLabelStyle}>{natDecLabel}</label>
+                                {fractionMultMode === 'decimal_fraction' && (
+                                    <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                                        {[1, 2, 3].map(val => (
+                                            <button key={val} onClick={() => updateConstraint('decimalPlaces', val)} style={smallTabBtn(decimalPlaces === val)}>
+                                                {val} dec
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                    {availablePlaces.map(place => (
+                                        <button key={`op1-${place.key}`} onClick={() => handleMaskToggle(place.key)} style={maskBtnStyle(operand1Mask[place.key])} title={place.label}>
+                                            {place.key}
                                         </button>
                                     ))}
                                 </div>
-                            )}
-                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                {availablePlaces.map(place => (
-                                    <button key={`op1-${place.key}`} onClick={() => handleMaskToggle(place.key)} style={maskBtnStyle(operand1Mask[place.key])} title={place.label}>
-                                        {place.key}
-                                    </button>
-                                ))}
                             </div>
-                        </div>
-                    )}
+                        );
 
-                    {/* KOPPEL KNOP (Enkel bij Breuk x Breuk) */}
-                    {fractionMultMode === 'fraction_fraction' && (
-                        <button
-                            onClick={() => updateConstraint('linkFractions', !linkFractions)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', opacity: linkFractions ? 1 : 0.4 }}
-                        >
-                            <span style={{ fontSize: '20px', color: linkFractions ? 'var(--accent-purple)' : 'var(--text-muted)' }}>{linkFractions ? '🔗' : '⛓️‍💥'}</span>
-                        </button>
-                    )}
-                    {fractionMultMode !== 'fraction_fraction' && <div style={{ fontSize: '20px', color: 'var(--text-muted)' }}>×</div>}
+                        const BreukCol = (
+                            <div style={fractionColStyle}>
+                                <label style={miniLabelStyle}>Breuk</label>
+                                <input type="number" min="1" value={maxNumerator2} onChange={(e) => handleFractionChange('N', 2, Number(e.target.value))} style={numInputStyle} />
+                                <hr style={fractionLineStyle} />
+                                <input type="number" min="2" value={maxDenominator2} onChange={(e) => handleFractionChange('D', 2, Number(e.target.value))} style={numInputStyle} />
+                            </div>
+                        );
 
-                    {/* FACTOR 2: ALTIJD EEN BREUK */}
-                    <div style={{ ...fractionColStyle, opacity: (linkFractions && fractionMultMode === 'fraction_fraction') ? 0.6 : 1 }}>
-                        <label style={miniLabelStyle}>Factor 2 (Breuk)</label>
-                        <input type="number" min="1" value={maxNumerator2} onChange={(e) => handleFractionChange('N', 2, Number(e.target.value))} disabled={linkFractions && fractionMultMode === 'fraction_fraction'} style={numInputStyle} />
-                        <hr style={fractionLineStyle} />
-                        <input type="number" min="2" value={maxDenominator2} onChange={(e) => handleFractionChange('D', 2, Number(e.target.value))} disabled={linkFractions && fractionMultMode === 'fraction_fraction'} style={numInputStyle} />
-                    </div>
+                        const Op = <div style={{ fontSize: '20px', color: 'var(--text-muted)' }}>{sym}</div>;
+                        return isBA ? <>{BreukCol}{Op}{NatDecCol}</> : <>{NatDecCol}{Op}{BreukCol}</>;
+                    })()}
 
                 </div>
             </div>
