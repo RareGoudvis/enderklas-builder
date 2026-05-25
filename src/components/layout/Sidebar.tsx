@@ -42,7 +42,7 @@ export default function Sidebar({ onOpenSettings, onDownloadPDF, isGenerating }:
                                                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-input)'; e.currentTarget.style.color = 'var(--text-main)'; }}
                                                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
                                             >
-                                                + {subdomain.label}
+                                                <span style={S.addIcon}>+</span> {subdomain.label}
                                             </button>
                                         ) : (
                                             <>
@@ -56,7 +56,7 @@ export default function Sidebar({ onOpenSettings, onDownloadPDF, isGenerating }:
                                                                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-input)'; e.currentTarget.style.color = 'var(--text-main)'; }}
                                                                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
                                                             >
-                                                                + {type.label}
+                                                                <span style={S.addIcon}>+</span> {type.label}
                                                             </button>
                                                         </li>
                                                     ))}
@@ -91,6 +91,7 @@ export default function Sidebar({ onOpenSettings, onDownloadPDF, isGenerating }:
 }
 
 const S = {
+    addIcon: { fontWeight: '700', fontSize: '15px', marginTop: '-3px' },
     aside: { width: '280px', minWidth: '280px', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '12px', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } as React.CSSProperties,
     header: { padding: '24px 20px 16px 20px' } as React.CSSProperties,
     logoWrap: { width: '100%', height: '75px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', padding: '5px', overflow: 'hidden' } as React.CSSProperties,
@@ -104,6 +105,6 @@ const S = {
     comingSoon: { fontSize: '11px', color: 'var(--border-color)', margin: '2px 0 0 6px', fontStyle: 'italic' } as React.CSSProperties,
     footer: { padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.1)' } as React.CSSProperties,
     settingsBtn: { width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: 'transparent', color: 'var(--text-main)', border: '1px solid var(--border-color)' } as React.CSSProperties,
-    downloadBtn: { width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', border: 'none', backgroundColor: '#ffffff', color: '#111115' } as React.CSSProperties,
-    downloadSolBtn: { width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', border: 'none', backgroundColor: 'var(--accent-purple)', color: '#ffffff' } as React.CSSProperties,
+    downloadBtn: { width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', border: 'none', backgroundColor: 'var(--accent-purple)', color: '#ffffff' } as React.CSSProperties,
+    downloadSolBtn: { width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', border: 'none', backgroundColor: 'var(--accent-purple-dark)', color: '#ffffff' } as React.CSSProperties,
 };

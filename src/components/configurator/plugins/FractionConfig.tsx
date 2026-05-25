@@ -4,31 +4,31 @@ import { sharedPluginStyles as styles } from './sharedPluginStyles';
 
 interface Props { block: MathBlock; }
 
-// Dropdown groups — "hoeveelheid" group maps to both hoeveelheid & hoeveelheid-rechthoek
-type DropdownGroup = Exclude<FractionSubType, 'hoeveelheid' | 'hoeveelheid-rechthoek'> | 'hoeveelheid-groep';
+type DropdownGroup = Exclude<FractionSubType, 'hoeveelheid' | 'hoeveelheid-rechthoek' | 'hoeveelheid-abstract'> | 'hoeveelheid-groep';
 
 const DROPDOWN_OPTIONS: { value: DropdownGroup; label: string }[] = [
-    { value: 'kleuren',          label: 'Breuken kleuren' },
-    { value: 'herkennen',        label: 'Breuken herkennen' },
-    { value: 'tekenen',          label: 'Breuken tekenen' },
+    { value: 'kleuren',           label: 'Breuken kleuren' },
+    { value: 'herkennen',         label: 'Breuken herkennen' },
     { value: 'hoeveelheid-groep', label: 'Breuk van een hoeveelheid' },
-    { value: 'lijnstuk',         label: 'Lijnstuk verdelen' },
+    { value: 'lijnstuk',          label: 'Lijnstuk verdelen' },
+    { value: 'veelhoek',          label: 'Breuk van een veelhoek' },
 ];
 
-const HOEVEELHEID_VARIANTS: { value: FractionSubType | null; label: string; description: string }[] = [
-    { value: 'hoeveelheid',           label: 'Concreet',    description: 'Objecten (cirkels of vierkanten)' },
-    { value: 'hoeveelheid-rechthoek', label: 'Schematisch', description: 'Lege rechthoek om in te delen' },
-    { value: null,                    label: 'Abstract',    description: '(Binnenkort beschikbaar)' },
+const HOEVEELHEID_VARIANTS: { value: FractionSubType; label: string; description: string }[] = [
+    { value: 'hoeveelheid',          label: 'Concreet',    description: 'Objecten (cirkels of vierkanten)' },
+    { value: 'hoeveelheid-rechthoek',label: 'Schematisch', description: 'Lege rechthoek om in te delen' },
+    { value: 'hoeveelheid-abstract', label: 'Abstract',    description: 'Rekenregel zonder model' },
 ];
 
 function defaultsFor(subType: FractionSubType): Record<string, unknown> {
     switch (subType) {
-        case 'kleuren':   return { shape: 'square', minDenominator: 2, maxDenominator: 8 };
-        case 'herkennen': return { shape: 'square', minDenominator: 2, maxDenominator: 8, answerFormat: 'fraction-questions' };
-        case 'tekenen':   return { shape: 'square', minDenominator: 2, maxDenominator: 8 };
+        case 'kleuren':               return { shape: 'rectangle', minDenominator: 2, maxDenominator: 8 };
+        case 'herkennen':             return { shape: 'rectangle', minDenominator: 2, maxDenominator: 8, answerFormat: 'fraction-questions' };
         case 'hoeveelheid':           return { objectShape: 'circle', minDenominator: 2, maxDenominator: 5, maxTotal: 20, answerFormat: 'met-hulp' };
         case 'hoeveelheid-rechthoek': return { minDenominator: 2, maxDenominator: 5, maxTotal: 20, answerFormat: 'met-berekening' };
-        case 'lijnstuk':  return { minDenominator: 2, maxDenominator: 6, maxLineLength: 15, level: 1 };
+        case 'hoeveelheid-abstract':  return { minDenominator: 2, maxDenominator: 9, level: 1, answerMode: 'berekeningslijnen', maxAbstractN3: 1000 };
+        case 'lijnstuk':              return { minDenominator: 2, maxDenominator: 6, minLineLength: 4, maxLineLength: 12, level: 1, answerMode: 'berekeningslijnen' };
+        case 'veelhoek':              return { minDenominator: 2, maxDenominator: 9, maxDimension: 6 };
     }
 }
 
@@ -56,15 +56,23 @@ export default function FractionConfig({ block }: Props) {
         }
     };
 
-    const isHoeveelheid      = subType === 'hoeveelheid';
-    const isRechthoek        = subType === 'hoeveelheid-rechthoek';
-    const isHoeveelheidGroep = isHoeveelheid || isRechthoek;
-    const isShape      = ['kleuren', 'herkennen', 'tekenen'].includes(subType);
-    const isAmount     = isHoeveelheidGroep;
-    const isHerkennen  = subType === 'herkennen';
-    const isLijnstuk   = subType === 'lijnstuk';
+    const isHoeveelheid       = subType === 'hoeveelheid';
+    const isRechthoek         = subType === 'hoeveelheid-rechthoek';
+    const isAbstract          = subType === 'hoeveelheid-abstract';
+    const isHoeveelheidGroep  = isHoeveelheid || isRechthoek || isAbstract;
+    const isShape             = subType === 'kleuren' || subType === 'herkennen';
+    const isHerkennen         = subType === 'herkennen';
+    const isLijnstuk          = subType === 'lijnstuk';
+    const isVeelhoek          = subType === 'veelhoek';
 
     const dropdownValue: DropdownGroup = isHoeveelheidGroep ? 'hoeveelheid-groep' : subType as DropdownGroup;
+
+    const minDen = c.minDenominator ?? 2;
+    const maxDen = c.maxDenominator ?? 8;
+    const absMaxDen = isLijnstuk ? 8 : (isHoeveelheidGroep || isVeelhoek) ? 10 : 16;
+
+    const minLen = c.minLineLength ?? 4;
+    const maxLen = c.maxLineLength ?? 12;
 
     return (
         <div style={styles.container}>
@@ -88,18 +96,15 @@ export default function FractionConfig({ block }: Props) {
                 <div style={styles.section}>
                     <label style={styles.label}>Variant:</label>
                     {HOEVEELHEID_VARIANTS.map(({ value, label, description }) => {
-                        const disabled = value === null;
-                        const isActive = !disabled && subType === value;
+                        const isActive = subType === value;
                         return (
                             <button
                                 key={label}
-                                disabled={disabled}
-                                onClick={() => value !== null && handleSubTypeChange(value)}
+                                onClick={() => handleSubTypeChange(value)}
                                 style={{
                                     ...styles.radioBtn(isActive),
                                     display: 'flex', flexDirection: 'column', width: '100%',
                                     marginBottom: '6px', textAlign: 'left', justifyContent: 'flex-start',
-                                    opacity: disabled ? 0.4 : 1, cursor: disabled ? 'not-allowed' : 'pointer',
                                     padding: '8px 10px',
                                 }}
                             >
@@ -111,23 +116,21 @@ export default function FractionConfig({ block }: Props) {
                 </div>
             )}
 
-            {/* ── SHAPE (kleuren / herkennen / tekenen) ── */}
+            {/* ── SHAPE (kleuren / herkennen) — Rechthoek & Cirkel only ── */}
             {isShape && (
                 <div style={styles.section}>
                     <label style={styles.label}>Vorm:</label>
                     <div style={styles.buttonGroup}>
-                        {(['square', 'rectangle', 'circle'] as const)
-                            .filter(s => !(subType === 'tekenen' && s === 'circle'))
-                            .map(s => (
-                                <button key={s} onClick={() => updateConstraint('shape', s)} style={styles.radioBtn(c.shape === s)}>
-                                    {s === 'square' ? 'Vierkant' : s === 'rectangle' ? 'Rechthoek' : 'Cirkel'}
-                                </button>
-                            ))}
+                        {(['rectangle', 'circle'] as const).map(s => (
+                            <button key={s} onClick={() => updateConstraint('shape', s)} style={styles.radioBtn(c.shape === s || (s === 'rectangle' && !c.shape))}>
+                                {s === 'rectangle' ? 'Rechthoek' : 'Cirkel'}
+                            </button>
+                        ))}
                     </div>
                 </div>
             )}
 
-            {/* ── OBJECT SHAPE (hoeveelheid) ── */}
+            {/* ── OBJECT SHAPE (hoeveelheid concreet) ── */}
             {isHoeveelheid && (
                 <div style={styles.section}>
                     <label style={styles.label}>Objectvorm:</label>
@@ -138,29 +141,37 @@ export default function FractionConfig({ block }: Props) {
                 </div>
             )}
 
-            {/* ── DENOMINATOR RANGE ── */}
+            {/* ── DENOMINATOR RANGE (sliders) ── */}
             <div style={styles.section}>
-                <label style={styles.label}>Noemer bereik:</label>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                    <div style={{ flex: 1 }}>
-                        <label style={{ ...styles.label, marginBottom: '4px' }}>Min</label>
-                        <input type="number" min="2" max={c.maxDenominator ?? 8}
-                            value={c.minDenominator ?? 2}
-                            onChange={(e) => updateConstraint('minDenominator', Math.min(Number(e.target.value), c.maxDenominator ?? 8))}
-                            style={inputStyle} />
+                <label style={styles.label}>Noemer bereik: {minDen} – {maxDen}</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                    <div>
+                        <label style={{ ...styles.label, marginBottom: '3px' }}>Min: {minDen}</label>
+                        <input type="range" min="2" max={absMaxDen} step="1"
+                            value={minDen}
+                            onChange={(e) => {
+                                const v = Math.max(2, Number(e.target.value));
+                                updateConstraint('minDenominator', v);
+                                if (v > maxDen) updateConstraint('maxDenominator', v);
+                            }}
+                            style={sliderStyle} />
                     </div>
-                    <div style={{ flex: 1 }}>
-                        <label style={{ ...styles.label, marginBottom: '4px' }}>Max</label>
-                        <input type="number" min={c.minDenominator ?? 2} max={isLijnstuk ? 8 : isAmount ? 10 : 12}
-                            value={c.maxDenominator ?? 8}
-                            onChange={(e) => updateConstraint('maxDenominator', Math.max(Number(e.target.value), c.minDenominator ?? 2))}
-                            style={inputStyle} />
+                    <div>
+                        <label style={{ ...styles.label, marginBottom: '3px' }}>Max: {maxDen}</label>
+                        <input type="range" min="2" max={absMaxDen} step="1"
+                            value={maxDen}
+                            onChange={(e) => {
+                                const v = Math.min(absMaxDen, Number(e.target.value));
+                                updateConstraint('maxDenominator', v);
+                                if (v < minDen) updateConstraint('minDenominator', v);
+                            }}
+                            style={sliderStyle} />
                     </div>
                 </div>
             </div>
 
-            {/* ── MAX TOTAL (hoeveelheid / rechthoek) ── */}
-            {isAmount && (
+            {/* ── MAX TOTAL (hoeveelheid concreet / rechthoek) ── */}
+            {(isHoeveelheid || isRechthoek) && (
                 <div style={styles.section}>
                     <label style={styles.label}>Max. aantal objecten:</label>
                     <input type="number" min="4" max="50" step="2"
@@ -173,14 +184,99 @@ export default function FractionConfig({ block }: Props) {
                 </div>
             )}
 
-            {/* ── MAX LINE LENGTH (lijnstuk) ── */}
+            {/* ── ABSTRACT LEVEL ── */}
+            {isAbstract && (
+                <div style={styles.section}>
+                    <label style={styles.label}>Niveau:</label>
+                    {[
+                        { val: 1, label: 'N1 — Geheel max. 10× de noemer', desc: 'bv. ¼ van 40' },
+                        { val: 2, label: 'N2 — Geheel max. 100×, eindigt op 0', desc: 'bv. ¼ van 200' },
+                        { val: 3, label: 'N3 — Geheel deelbaar, tot max.', desc: 'bv. ¼ van 864' },
+                    ].map(({ val, label, desc }) => (
+                        <button key={val} onClick={() => updateConstraint('level', val)}
+                            style={{
+                                ...styles.radioBtn(c.level === val || (!c.level && val === 1)),
+                                display: 'flex', flexDirection: 'column', width: '100%',
+                                marginBottom: '6px', textAlign: 'left', justifyContent: 'flex-start', padding: '8px 10px',
+                            }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '12px' }}>{label}</span>
+                            <span style={{ fontSize: '11px', opacity: 0.8, marginTop: '2px' }}>{desc}</span>
+                        </button>
+                    ))}
+                    {(c.level === 3 || (!c.level)) && (
+                        <div style={{ marginTop: '6px' }}>
+                            <label style={styles.label}>Max. getal (N3):</label>
+                            <input type="number" min="100" max="100000" step="100"
+                                value={c.maxAbstractN3 ?? 1000}
+                                onChange={(e) => updateConstraint('maxAbstractN3', Number(e.target.value))}
+                                style={inputStyle} />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* ── ANSWER MODE (abstract + lijnstuk) ── */}
+            {(isAbstract || isLijnstuk) && (
+                <div style={styles.section}>
+                    <label style={styles.label}>Antwoordvorm:</label>
+                    {[
+                        { val: 'berekeningslijnen', label: 'Berekeningslijnen', desc: 'Rekenstappen met blanco vakjes' },
+                        { val: 'structuurlijnen',   label: 'Structuurlijnen',   desc: '_____ : _____ = _________' },
+                        { val: 'blanco',            label: 'Blanco',            desc: 'Twee schrijflijnen' },
+                    ].map(({ val, label, desc }) => (
+                        <button key={val}
+                            onClick={() => updateConstraint('answerMode', val)}
+                            style={{
+                                ...styles.radioBtn((c.answerMode ?? 'berekeningslijnen') === val),
+                                display: 'flex', flexDirection: 'column', width: '100%',
+                                marginBottom: '6px', textAlign: 'left', justifyContent: 'flex-start', padding: '8px 10px',
+                            }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '12px' }}>{label}</span>
+                            <span style={{ fontSize: '11px', opacity: 0.8, marginTop: '2px' }}>{desc}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* ── LINE LENGTH SLIDERS (lijnstuk) ── */}
             {isLijnstuk && (
                 <div style={styles.section}>
-                    <label style={styles.label}>Max. lijnlengte (cm):</label>
-                    <input type="number" min="4" max="20" step="1"
-                        value={c.maxLineLength ?? 15}
-                        onChange={(e) => updateConstraint('maxLineLength', Number(e.target.value))}
-                        style={inputStyle} />
+                    <label style={styles.label}>Lijnlengte (cm): {minLen} – {maxLen}</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
+                        <div>
+                            <label style={{ ...styles.label, marginBottom: '4px' }}>Min: {minLen} cm</label>
+                            <input type="range" min="1" max="16" step="1"
+                                value={minLen}
+                                onChange={(e) => {
+                                    const v = Number(e.target.value);
+                                    updateConstraint('minLineLength', v);
+                                    if (v > maxLen) updateConstraint('maxLineLength', v);
+                                }}
+                                style={sliderStyle} />
+                        </div>
+                        <div>
+                            <label style={{ ...styles.label, marginBottom: '4px' }}>Max: {maxLen} cm</label>
+                            <input type="range" min="1" max="16" step="1"
+                                value={maxLen}
+                                onChange={(e) => {
+                                    const v = Number(e.target.value);
+                                    updateConstraint('maxLineLength', v);
+                                    if (v < minLen) updateConstraint('minLineLength', v);
+                                }}
+                                style={sliderStyle} />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── MAX DIMENSION (veelhoek) ── */}
+            {isVeelhoek && (
+                <div style={styles.section}>
+                    <label style={styles.label}>Max. afmeting (vakjes): {c.maxDimension ?? 6}</label>
+                    <input type="range" min="2" max="8" step="1"
+                        value={c.maxDimension ?? 6}
+                        onChange={(e) => updateConstraint('maxDimension', Number(e.target.value))}
+                        style={sliderStyle} />
                 </div>
             )}
 
@@ -202,7 +298,7 @@ export default function FractionConfig({ block }: Props) {
                 </div>
             )}
 
-            {/* ── ANSWER FORMAT (hoeveelheid) ── */}
+            {/* ── ANSWER FORMAT (hoeveelheid concreet) ── */}
             {isHoeveelheid && (
                 <div style={styles.section}>
                     <label style={styles.label}>Antwoordvorm:</label>
@@ -222,7 +318,7 @@ export default function FractionConfig({ block }: Props) {
             {/* ── ANSWER FORMAT (hoeveelheid-rechthoek) ── */}
             {isRechthoek && (
                 <div style={styles.section}>
-                    <label style={styles.label}>Niveau:</label>
+                    <label style={styles.label}>Antwoordvorm:</label>
                     {[
                         { val: 'met-berekening',    label: 'Met berekeningslijnen' },
                         { val: 'zonder-berekening', label: 'Zonder berekeningslijnen' },
@@ -235,22 +331,6 @@ export default function FractionConfig({ block }: Props) {
                 </div>
             )}
 
-            {/* ── LEVEL (lijnstuk) ── */}
-            {isLijnstuk && (
-                <div style={styles.section}>
-                    <label style={styles.label}>Niveau:</label>
-                    {[
-                        { val: 1, label: 'Niveau 1 — Volledige vraagstelling' },
-                        { val: 2, label: 'Niveau 2 — Berekeningslijnen' },
-                        { val: 3, label: 'Niveau 3 — Blanco lijnen' },
-                    ].map(({ val, label }) => (
-                        <button key={val} onClick={() => updateConstraint('level', val)}
-                            style={{ ...styles.radioBtn(c.level === val), display: 'flex', width: '100%', marginBottom: '6px', textAlign: 'left', justifyContent: 'flex-start' }}>
-                            {label}
-                        </button>
-                    ))}
-                </div>
-            )}
         </div>
     );
 }
@@ -282,4 +362,10 @@ const inputStyle: React.CSSProperties = {
     outline: 'none',
     fontSize: '13px',
     boxSizing: 'border-box',
+};
+
+const sliderStyle: React.CSSProperties = {
+    width: '100%',
+    accentColor: 'var(--accent-purple)',
+    cursor: 'pointer',
 };

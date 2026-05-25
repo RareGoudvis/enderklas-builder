@@ -1,4 +1,3 @@
 # Look at me!
 Yes, look at this beauty! It was vibe-coded, like basically everything nowadays, so I'm pretty sure it's better than you. 
 Anyway, moving on...
-```

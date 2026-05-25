@@ -119,6 +119,16 @@ export default function Inspector() {
                                 ))}
                             </div>
                         </div>
+                        <div style={{ marginTop: '8px' }}>
+                            <label style={styles.label}>Titel Positie</label>
+                            <div style={styles.btnGroup}>
+                                {(['center', 'right'] as const).map((p) => (
+                                    <button key={p} onClick={() => updateDocSettings({ titlePosition: p })} style={styles.radioBtn((docSettings.titlePosition ?? 'center') === p)}>
+                                        {p === 'center' ? 'Gecentreerd' : 'Rechts'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </aside>

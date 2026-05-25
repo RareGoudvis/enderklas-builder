@@ -24,7 +24,7 @@ function randInt(min: number, max: number) {
 }
 
 function makeShapeExercise(subType: FractionSubType, block: MathBlock): FractionExercise {
-    const { shape = 'square', minDenominator = 2, maxDenominator = 8 } = block.constraints;
+    const { shape = 'rectangle', minDenominator = 2, maxDenominator = 8 } = block.constraints;
     const valid = [2, 3, 4, 5, 6, 8, 9, 10, 12].filter(d => d >= minDenominator && d <= maxDenominator);
     const denominator = valid.length ? valid[randInt(0, valid.length - 1)] : 4;
     const numerator = randInt(1, denominator - 1);
@@ -72,21 +72,77 @@ function makeLijnstukExercise(block: MathBlock): FractionExercise {
     };
 }
 
+function makeVeelhoekExercise(block: MathBlock): FractionExercise {
+    const { minDenominator = 2, maxDenominator = 9, maxDimension = 6 } = block.constraints;
+    const denominator = randInt(minDenominator, maxDenominator);
+    const numerator = randInt(1, denominator - 1);
+
+    // Find w×h pairs where w*h is divisible by denominator and both ≤ maxDimension
+    const maxMult = Math.floor((maxDimension * maxDimension) / denominator);
+    const multiplier = Math.max(1, randInt(1, Math.max(1, maxMult)));
+    const total = denominator * multiplier;
+
+    const factors: [number, number][] = [];
+    for (let w = 1; w <= Math.min(total, maxDimension); w++) {
+        if (total % w === 0) {
+            const h = total / w;
+            if (h <= maxDimension) factors.push([w, h]);
+        }
+    }
+    const [width, height] = factors.length
+        ? factors[randInt(0, factors.length - 1)]
+        : [denominator, multiplier];
+
+    return {
+        id: Math.random().toString(36).substring(2, 9),
+        subType: 'veelhoek',
+        numerator, denominator,
+        rectangleWidth: width,
+        rectangleHeight: height,
+        isManuallyEdited: false,
+    };
+}
+
+function makeAbstractExercise(block: MathBlock): FractionExercise {
+    const { minDenominator = 2, maxDenominator = 9, level = 1, maxAbstractN3 = 1000 } = block.constraints;
+    const denominator = randInt(minDenominator, maxDenominator);
+    const numerator = randInt(1, denominator - 1);
+    let total: number;
+    if (level === 1) {
+        total = denominator * randInt(1, 10);
+    } else if (level === 2) {
+        total = denominator * randInt(1, 10) * 10;
+    } else {
+        const maxMult = Math.floor(maxAbstractN3 / denominator);
+        total = denominator * Math.max(1, randInt(1, maxMult));
+    }
+    return {
+        id: Math.random().toString(36).substring(2, 9),
+        subType: 'hoeveelheid-abstract',
+        numerator, denominator,
+        total,
+        isManuallyEdited: false,
+    };
+}
+
 export function generateFractionExercises(block: MathBlock): FractionExercise[] {
     const subType = (block.constraints.subType || 'kleuren') as FractionSubType;
     const count = block.numberOfExercises || 6;
 
-    return Array.from({ length: count }, () => {
+    return Array.from({ length: count }, (): FractionExercise => {
         switch (subType) {
             case 'kleuren':
             case 'herkennen':
-            case 'tekenen':
                 return makeShapeExercise(subType, block);
             case 'hoeveelheid':
             case 'hoeveelheid-rechthoek':
                 return makeAmountExercise(subType, block);
+            case 'hoeveelheid-abstract':
+                return makeAbstractExercise(block);
             case 'lijnstuk':
                 return makeLijnstukExercise(block);
+            case 'veelhoek':
+                return makeVeelhoekExercise(block);
         }
     });
 }

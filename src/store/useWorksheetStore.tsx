@@ -14,6 +14,7 @@ export interface DocSettings {
     opdrachtTitelStyle: 'regular' | 'boxed' | 'underlined';
     showDividers: boolean;
     headerStyle: 'geen' | 'kader';
+    titlePosition: 'center' | 'right';
 }
 
 interface WorksheetState {
@@ -46,7 +47,7 @@ export const useWorksheetStore = create<WorksheetState>((set) => ({
     activeBlockId: null,
     header: { naam: true, klas: true, nummer: false, datum: false, titel: '' },
     footer: { school: '', klas: '', leerkracht: '', showSchool: true, showKlas: true, showLeerkracht: true, showPagina: true },
-    docSettings: { showScores: true, opdrachtTitelStyle: 'regular', showDividers: true, headerStyle: 'geen' },
+    docSettings: { showScores: true, opdrachtTitelStyle: 'regular', showDividers: true, headerStyle: 'geen', titlePosition: 'center' },
     showSolutions: false,
 
     setFractionExercises: (id: string, exercises: FractionExercise[]) => set((state) => ({ blocks: state.blocks.map(b => b.id === id ? { ...b, fractionExercises: exercises } : b) })),
@@ -56,14 +57,18 @@ export const useWorksheetStore = create<WorksheetState>((set) => ({
         const isFractionBlock = typeId === 'breuken';
         const defaultConstraints = isFractionBlock ? {
             subType: 'kleuren',
-            shape: 'square',
+            shape: 'rectangle',
             minDenominator: 2,
             maxDenominator: 8,
             answerFormat: 'fraction-questions',
             objectShape: 'circle',
             maxTotal: 20,
-            maxLineLength: 15,
+            minLineLength: 4,
+            maxLineLength: 12,
             level: 1,
+            answerMode: 'berekeningslijnen',
+            maxDimension: 6,
+            maxAbstractN3: 1000,
         } : isClockBlock ? {
             clockType: 'analoog',
             exerciseMode: 'lezen',

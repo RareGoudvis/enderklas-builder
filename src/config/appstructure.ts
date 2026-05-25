@@ -66,7 +66,6 @@ export const APP_STRUCTURE: Domain[] = [
                 id: 'tekenen-herkennen',
                 label: 'Tekenen / Herkennen',
                 types: [
-                    { id: 'meetkunde-lijnen', label: 'Lijnen, rechten en punten' },
                 ]
             }
         ]

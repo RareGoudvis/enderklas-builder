@@ -242,13 +242,20 @@ export const WorksheetPDF: React.FC<{
         const subType = ex.subType;
         const FILL = '#93c5fd';
 
-        // ── SHAPE (kleuren / herkennen / tekenen) ────────────────────────────
-        if (subType === 'kleuren' || subType === 'herkennen' || subType === 'tekenen') {
-            const isTekenen   = subType === 'tekenen';
+        // helpers for vertical fraction in PDF
+        const pdfVertFrac = (n: number, d: number, color = 'black') => (
+            <View style={S.fracStack}>
+                <Text style={[S.fracTop, { color, borderBottomColor: color }]}>{n}</Text>
+                <Text style={[S.fracBot, { color }]}>{d}</Text>
+            </View>
+        );
+
+        // ── SHAPE (kleuren / herkennen) ──────────────────────────────────────
+        if (subType === 'kleuren' || subType === 'herkennen') {
             const isHerkennen = subType === 'herkennen';
             const showColored = isHerkennen;
             const answerFormat: string = block.constraints.answerFormat || 'fraction-questions';
-            const cs = isTekenen ? 22 : 28;
+            const cs = 28;
             const coloredIndices = ex.coloredIndices ?? [];
             const gridRows = ex.gridRows ?? 1;
             const gridCols = ex.gridCols ?? ex.denominator;
@@ -299,69 +306,74 @@ export const WorksheetPDF: React.FC<{
             })();
 
             if (isHerkennen) {
+                const bl = (w = 20) => <View style={{ borderBottomWidth: 1, width: w, height: 10 }} />;
                 let answerEl: React.ReactElement;
                 if (answerFormat === 'fraction-questions') {
-                    answerEl = (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 8 }}>
-                            <View style={{ flex: 1 }}>
-                                <Text style={{ fontSize: 8, fontFamily: 'Roboto', fontWeight: 'bold', marginBottom: 4 }}>Hoeveel gelijke delen neem ik?</Text>
-                                <Text style={{ fontSize: 8, fontFamily: 'Roboto', fontWeight: 'bold' }}>In hoeveel gelijke delen is het geheel verdeeld?</Text>
-                            </View>
-                            <View style={S.fracStack}>
-                                <Text style={[S.fracTop, showSolutions ? { color: '#e11d48', borderBottomColor: '#e11d48' } : { color: 'transparent' }]}>{ex.numerator}</Text>
-                                <Text style={[S.fracBot, showSolutions ? { color: '#e11d48' } : { color: 'transparent' }]}>{ex.denominator}</Text>
+                    return (
+                        <View>
+                            <View style={{ alignItems: 'center', marginBottom: 6 }}>{shapeSvg}</View>
+                            <View>
+                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 4 }}>
+                                    <Text style={{ fontSize: 8, fontFamily: 'Roboto', fontWeight: 'bold', flex: 1 }}>In hoeveel gelijke delen is de figuur verdeeld?</Text>
+                                    {showSolutions ? <Text style={[S.sol, { fontSize: 8 }]}>{ex.denominator}</Text> : bl()}
+                                </View>
+                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 4 }}>
+                                    <Text style={{ fontSize: 8, fontFamily: 'Roboto', fontWeight: 'bold', flex: 1 }}>Hoeveel gelijke delen zijn ingekleurd?</Text>
+                                    {showSolutions ? <Text style={[S.sol, { fontSize: 8 }]}>{ex.numerator}</Text> : bl()}
+                                </View>
+                                {showSolutions ? pdfVertFrac(ex.numerator, ex.denominator, '#e11d48') : (
+                                    <View style={S.fracStack}>
+                                        <View style={{ borderBottomWidth: 1, width: 20, height: 12 }} />
+                                        <View style={{ width: 20, height: 12 }} />
+                                    </View>
+                                )}
                             </View>
                         </View>
                     );
                 } else if (answerFormat === 'phrase') {
                     answerEl = (
                         <View style={{ marginTop: 4 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 2 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 3, flexWrap: 'wrap' }}>
                                 <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>Er zijn </Text>
-                                {showSolutions ? <Text style={[S.sol, { fontSize: 9 }]}>{ex.denominator}</Text> : <View style={{ borderBottomWidth: 1, width: 20, height: 10 }} />}
-                                <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}> gelijke delen.</Text>
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-                                {showSolutions ? <Text style={[S.sol, { fontSize: 9 }]}>{ex.numerator}</Text> : <View style={{ borderBottomWidth: 1, width: 20, height: 10 }} />}
-                                <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}> delen zijn ingekleurd.</Text>
+                                {showSolutions ? <Text style={[S.sol, { fontSize: 9 }]}>{ex.numerator}</Text> : bl()}
+                                <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}> van de {ex.denominator} gelijke delen gekleurd. Dat is </Text>
+                                {showSolutions ? pdfVertFrac(ex.numerator, ex.denominator, '#e11d48') : (
+                                    <View style={S.fracStack}>
+                                        <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />
+                                        <View style={{ width: 18, height: 10 }} />
+                                    </View>
+                                )}
+                                <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>.</Text>
                             </View>
                         </View>
                     );
                 } else if (answerFormat === 'blank-fraction') {
-                    answerEl = showSolutions ? (
-                        <View style={S.fracContainer}>
-                            <View style={S.fracStack}>
-                                <Text style={[S.fracTop, { color: '#e11d48', borderBottomColor: '#e11d48' }]}>{ex.numerator}</Text>
-                                <Text style={[S.fracBot, { color: '#e11d48' }]}>{ex.denominator}</Text>
+                    answerEl = showSolutions
+                        ? <View style={S.fracContainer}>{pdfVertFrac(ex.numerator, ex.denominator, '#e11d48')}</View>
+                        : (
+                            <View style={S.fracContainer}>
+                                <View style={S.fracStack}>
+                                    <View style={{ borderBottomWidth: 1, width: 20, height: 12 }} />
+                                    <View style={{ width: 20, height: 12 }} />
+                                </View>
                             </View>
-                        </View>
-                    ) : (
-                        <View style={S.fracContainer}>
-                            <View style={S.fracStack}>
-                                <View style={{ borderBottomWidth: 1, width: 20, height: 12 }} />
-                                <View style={{ width: 20, height: 12 }} />
-                            </View>
-                        </View>
-                    );
+                        );
                 } else {
                     answerEl = showSolutions
                         ? <Text style={[S.sol, { fontSize: 10, marginTop: 4 }]}>{ex.numerator}/{ex.denominator}</Text>
                         : <View style={{ borderBottomWidth: 1.5, width: 60, height: 12, marginTop: 4 }} />;
                 }
                 return (
-                    <View style={{ alignItems: 'center' }}>
-                        {shapeSvg}
+                    <View>
+                        <View style={{ alignItems: 'center' }}>{shapeSvg}</View>
                         {answerEl}
                     </View>
                 );
             }
 
-            const label = subType === 'tekenen'
-                ? `Teken ${ex.numerator}/${ex.denominator} in:`
-                : `Kleur ${ex.numerator}/${ex.denominator} in:`;
             return (
                 <View style={{ alignItems: 'center', gap: 4 }}>
-                    <Text style={{ fontSize: 10, fontFamily: 'Roboto', fontWeight: 'bold' }}>{label}</Text>
+                    <Text style={{ fontSize: 10, fontFamily: 'Roboto', fontWeight: 'bold' }}>Kleur {ex.numerator}/{ex.denominator} in:</Text>
                     {shapeSvg}
                 </View>
             );
@@ -373,7 +385,6 @@ export const WorksheetPDF: React.FC<{
             const os = 12, gap = 2, perRow = 10;
             const total = ex.total ?? 0;
             const coloredCount = Math.round(total * ex.numerator / ex.denominator);
-            const groupSize = total / ex.denominator;
             const objectShape = ex.objectShape ?? 'circle';
 
             const objEl = (idx: number, colored: boolean): React.ReactElement => (
@@ -383,6 +394,19 @@ export const WorksheetPDF: React.FC<{
                         : <Rect x={1} y={1} width={os - 2} height={os - 2} fill={colored ? FILL : 'white'} stroke="black" strokeWidth={1} />
                     }
                 </Svg>
+            );
+
+            const simpleGrid = (
+                <View>
+                    {Array.from({ length: Math.ceil(total / perRow) }, (_, row) => (
+                        <View key={row} style={{ flexDirection: 'row', gap, marginBottom: gap }}>
+                            {Array.from({ length: Math.min(perRow, total - row * perRow) }, (_, col) => {
+                                const idx = row * perRow + col;
+                                return objEl(idx, showSolutions && idx < coloredCount);
+                            })}
+                        </View>
+                    ))}
+                </View>
             );
 
             const fracLabel = (
@@ -402,48 +426,71 @@ export const WorksheetPDF: React.FC<{
                 </View>
             );
 
-            const simpleGrid = (
-                <View>
-                    {Array.from({ length: Math.ceil(total / perRow) }, (_, row) => (
-                        <View key={row} style={{ flexDirection: 'row', gap, marginBottom: gap }}>
-                            {Array.from({ length: Math.min(perRow, total - row * perRow) }, (_, col) => {
-                                const idx = row * perRow + col;
-                                return objEl(idx, showSolutions && idx < coloredCount);
-                            })}
-                        </View>
-                    ))}
-                </View>
-            );
-
-            const groupedGrid = (
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
-                    {Array.from({ length: ex.denominator }, (_, g) => (
-                        <View key={g} style={{ alignItems: 'center', marginRight: g < ex.denominator - 1 ? 6 : 0, borderRightWidth: g < ex.denominator - 1 ? 1 : 0, paddingRight: g < ex.denominator - 1 ? 6 : 0 }}>
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap, maxWidth: Math.ceil(Math.sqrt(groupSize)) * (os + gap) }}>
-                                {Array.from({ length: groupSize }, (_, k) => objEl(g * groupSize + k, showSolutions && g < ex.numerator))}
-                            </View>
-                            {showSolutions ? <Text style={[S.sol, { fontSize: 8, marginTop: 2 }]}>{groupSize}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10, marginTop: 2 }} />}
-                        </View>
-                    ))}
-                </View>
-            );
-
-            if (amountFormat === 'zonder-hulp') return <View>{simpleGrid}{questionLine}</View>;
-            if (amountFormat === 'met-hulp')    return <View>{groupedGrid}{questionLine}</View>;
-            return (
-                <View>
-                    {simpleGrid}
-                    <View style={{ marginTop: 4 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 2 }}>
-                            <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>Hoeveel delen? </Text>
-                            {showSolutions ? <Text style={[S.sol, { fontSize: 9 }]}>{ex.denominator}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 2 }}>
-                            <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>{total} ÷ {ex.denominator} = </Text>
-                            {showSolutions ? <Text style={[S.sol, { fontSize: 9 }]}>{groupSize}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
-                        </View>
-                        {questionLine}
+            const bl2 = (w = 24) => <View style={{ borderBottomWidth: 1, width: w, height: 10 }} />;
+            const calcLines = (
+                <View style={{ gap: 4, marginTop: 4 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+                        {bl2()}<Text style={S.mono}> : </Text>{bl2(18)}<Text style={S.mono}> = </Text>{bl2()}
                     </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+                        {bl2(18)}<Text style={S.mono}> × </Text>{bl2()}<Text style={S.mono}> = </Text>{bl2()}
+                    </View>
+                </View>
+            );
+
+            if (amountFormat === 'met-hulp') {
+                return (
+                    <View style={{ gap: 4, alignItems: 'center' }}>
+                        {simpleGrid}
+                        {calcLines}
+                    </View>
+                );
+            }
+
+            if (amountFormat === 'met-breukvragen') {
+                const bl = (w = 24) => <View style={{ borderBottomWidth: 1, width: w, height: 10 }} />;
+                const qRow = (q: string, ans: React.ReactNode) => (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        <Text style={{ fontSize: 8, fontFamily: 'Roboto', fontWeight: 'bold', width: 110 }}>{q}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>{ans}</View>
+                    </View>
+                );
+                const instruction = (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: 4 }}>
+                        <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>Verdeel en kleur</Text>
+                        {pdfVertFrac(ex.numerator, ex.denominator)}
+                        <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>van deze hoeveelheid:</Text>
+                    </View>
+                );
+                return (
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <View>
+                            {instruction}
+                            {simpleGrid}
+                        </View>
+                        <View style={{ flex: 1, marginTop: 18 }}>
+                            {qRow('Hoe groot is het geheel?', bl())}
+                            {qRow('In hoeveel gelijke delen verdeel ik?', bl())}
+                            {qRow('Hoe groot is één deel?', <>{bl()}<Text style={S.mono}>:</Text>{bl(18)}<Text style={S.mono}>=</Text>{bl()}</>)}
+                            {qRow('Hoeveel gelijke delen neem ik?', bl())}
+                            {qRow('Hoeveel is dat samen?', <>{bl(18)}<Text style={S.mono}>×</Text>{bl()}<Text style={S.mono}>=</Text>{bl()}</>)}
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 4 }}>
+                                {pdfVertFrac(ex.numerator, ex.denominator)}
+                                <Text style={S.mono}> van </Text>{bl()}
+                                <Text style={S.mono}> is </Text>{bl()}
+                            </View>
+                        </View>
+                    </View>
+                );
+            }
+
+            // zonder-hulp
+            return (
+                <View style={{ gap: 4 }}>
+                    {simpleGrid}
+                    {questionLine}
+                    <View style={{ borderBottomWidth: 1.5, height: 16 }} />
+                    <View style={{ borderBottomWidth: 1.5, height: 16 }} />
                 </View>
             );
         }
@@ -452,43 +499,96 @@ export const WorksheetPDF: React.FC<{
         if (subType === 'hoeveelheid-rechthoek') {
             const rectFormat: string = block.constraints.answerFormat || 'met-berekening';
             const total = ex.total ?? 0;
-            const groupSize = total / ex.denominator;
-            const coloredCount = groupSize * ex.numerator;
-
-            const fracLabel = (
-                <View style={S.fracContainer}>
-                    <View style={S.fracStack}>
-                        <Text style={S.fracTop}>{ex.numerator}</Text>
-                        <Text style={S.fracBot}>{ex.denominator}</Text>
+            const bl3 = (w = 18) => <View style={{ borderBottomWidth: 1, width: w, height: 10 }} />;
+            const calcLines = (
+                <View style={{ gap: 4, marginTop: 2 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+                        {bl3()}<Text style={S.mono}> : </Text>{bl3()}<Text style={S.mono}> = </Text>{bl3()}
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+                        {bl3()}<Text style={S.mono}> × </Text>{bl3()}<Text style={S.mono}> = </Text>{bl3()}
                     </View>
                 </View>
             );
-
             return (
                 <View style={{ gap: 4 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {fracLabel}
+                        {pdfVertFrac(ex.numerator, ex.denominator)}
                         <Text style={S.mono}> van {total} = </Text>
-                        {showSolutions ? <Text style={S.sol}>{String(coloredCount)}</Text> : <View style={{ borderBottomWidth: 1.5, width: 28, height: 12 }} />}
+                        <View style={{ borderBottomWidth: 1.5, width: 28, height: 12 }} />
                     </View>
-                    <View style={{ borderWidth: 1.5, width: '100%', height: 40 }} />
-                    {rectFormat === 'met-berekening' && (
-                        <View style={{ flexDirection: 'row', gap: 12, marginTop: 2 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
-                                <Text style={S.mono}>{total} ÷ </Text>
-                                {showSolutions ? <Text style={S.sol}>{String(ex.denominator)}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
+                    <View style={{ borderWidth: 1.5, width: '100%', minHeight: 85 }} />
+                    {rectFormat === 'met-berekening' && calcLines}
+                </View>
+            );
+        }
+
+        // ── AMOUNT ABSTRACT (hoeveelheid-abstract) ───────────────────────────
+        if (subType === 'hoeveelheid-abstract') {
+            const total = ex.total ?? 0;
+            const groupSize = parseFloat((total / ex.denominator).toFixed(4));
+            const coloredCount = parseFloat((groupSize * ex.numerator).toFixed(4));
+            const answerMode: string = block.constraints.answerMode ?? 'berekeningslijnen';
+            const bl4 = (w = 22) => <View style={{ borderBottomWidth: 1, width: w, height: 10 }} />;
+            const sv = (v: number) => showSolutions ? <Text style={S.sol}>{String(v)}</Text> : bl4();
+
+            const questionLine = (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                    {pdfVertFrac(ex.numerator, ex.denominator)}
+                    <Text style={S.mono}> van {total} is </Text>
+                    {showSolutions ? <Text style={S.sol}>{String(coloredCount)}</Text> : bl4(30)}
+                </View>
+            );
+
+            if (answerMode === 'structuurlijnen') {
+                return (
+                    <View style={{ gap: 4 }}>
+                        {questionLine}
+                        <View style={{ alignItems: 'center', gap: 6, marginTop: 4 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+                                <View style={{ borderBottomWidth: 1, width: 50, height: 10 }} />
+                                <Text style={S.mono}> : </Text>
+                                <View style={{ borderBottomWidth: 1, width: 50, height: 10 }} />
                                 <Text style={S.mono}> = </Text>
-                                {showSolutions ? <Text style={S.sol}>{String(groupSize)}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
+                                <View style={{ borderBottomWidth: 1, width: 65, height: 10 }} />
                             </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
-                                {showSolutions ? <Text style={S.sol}>{String(ex.numerator)}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
+                            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+                                <View style={{ borderBottomWidth: 1, width: 50, height: 10 }} />
                                 <Text style={S.mono}> × </Text>
-                                {showSolutions ? <Text style={S.sol}>{String(groupSize)}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
+                                <View style={{ borderBottomWidth: 1, width: 50, height: 10 }} />
                                 <Text style={S.mono}> = </Text>
-                                {showSolutions ? <Text style={S.sol}>{String(coloredCount)}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
+                                <View style={{ borderBottomWidth: 1, width: 65, height: 10 }} />
                             </View>
                         </View>
-                    )}
+                    </View>
+                );
+            }
+
+            if (answerMode === 'blanco') {
+                return (
+                    <View style={{ gap: 4 }}>
+                        {questionLine}
+                        <View style={{ alignItems: 'center', gap: 8, marginTop: 4 }}>
+                            <View style={{ borderBottomWidth: 1.5, width: 170, height: 16 }} />
+                            <View style={{ borderBottomWidth: 1.5, width: 170, height: 16 }} />
+                        </View>
+                    </View>
+                );
+            }
+
+            // berekeningslijnen
+            const calcRow = (
+                <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2, flexWrap: 'wrap' }}>
+                    {sv(total)}<Text style={S.mono}> : </Text>{sv(ex.denominator)}<Text style={S.mono}> = </Text>{sv(groupSize)}
+                    <Text style={[S.mono, { marginLeft: 6, marginRight: 6 }]}>en</Text>
+                    {sv(ex.numerator)}<Text style={S.mono}> × </Text>{sv(groupSize)}<Text style={S.mono}> = </Text>
+                    {showSolutions ? <Text style={S.sol}>{String(coloredCount)}</Text> : bl4()}
+                </View>
+            );
+            return (
+                <View style={{ gap: 4 }}>
+                    {questionLine}
+                    {calcRow}
                 </View>
             );
         }
@@ -496,59 +596,126 @@ export const WorksheetPDF: React.FC<{
         // ── LIJNSTUK ─────────────────────────────────────────────────────────
         if (subType === 'lijnstuk') {
             const cm = ex.lineLength ?? 10;
-            const level = block.constraints.level ?? 1;
-            const partLength = cm / ex.denominator;
-            const arcLength  = partLength * ex.numerator;
-            const lineW = Math.min(cm * 10, 400);
+            const answerMode: string = block.constraints.answerMode ?? 'berekeningslijnen';
+            const partLength = parseFloat((cm / ex.denominator).toFixed(2));
+            const arcLength  = parseFloat((partLength * ex.numerator).toFixed(2));
+            const lineW = Math.min(cm * 10, 380);
 
             const lineEl = (
-                <View style={{ marginVertical: 6 }}>
+                <View style={{ marginVertical: 8 }}>
                     <Svg width={lineW + 4} height={20} viewBox={`0 0 ${lineW + 4} 20`}>
                         <Line x1={2} y1={4} x2={2} y2={16} stroke="black" strokeWidth={1.5} />
                         <Line x1={2} y1={10} x2={lineW + 2} y2={10} stroke="black" strokeWidth={1.5} />
                         <Line x1={lineW + 2} y1={4} x2={lineW + 2} y2={16} stroke="black" strokeWidth={1.5} />
                     </Svg>
-                    <Text style={{ fontSize: 8, fontFamily: 'Roboto', color: '#555', textAlign: 'center' }}>{cm} cm</Text>
                 </View>
             );
 
-            const calcLines = (
-                <View style={{ flexDirection: 'row', gap: 12, marginTop: 4 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
-                        {showSolutions ? <Text style={S.sol}>{String(cm)}</Text> : <View style={{ borderBottomWidth: 1, width: 24, height: 10 }} />}
-                        <Text style={S.mono}> cm ÷ </Text>
-                        {showSolutions ? <Text style={S.sol}>{String(ex.denominator)}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
-                        <Text style={S.mono}> = </Text>
-                        {showSolutions ? <Text style={S.sol}>{String(partLength)}</Text> : <View style={{ borderBottomWidth: 1, width: 24, height: 10 }} />}
-                        <Text style={S.mono}> cm</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
-                        {showSolutions ? <Text style={S.sol}>{String(ex.numerator)}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
-                        <Text style={S.mono}> × </Text>
-                        {showSolutions ? <Text style={S.sol}>{String(partLength)}</Text> : <View style={{ borderBottomWidth: 1, width: 24, height: 10 }} />}
-                        <Text style={S.mono}> cm = </Text>
-                        {showSolutions ? <Text style={S.sol}>{String(arcLength)}</Text> : <View style={{ borderBottomWidth: 1, width: 24, height: 10 }} />}
-                        <Text style={S.mono}> cm</Text>
+            const instructions = (
+                <View style={{ gap: 3 }}>
+                    <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>Verdeel het lijnstuk in gelijke delen.</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>Teken een boogje boven</Text>
+                        {pdfVertFrac(ex.numerator, ex.denominator)}
+                        <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>van het lijnstuk.</Text>
                     </View>
                 </View>
             );
 
-            if (level === 1) {
+            if (answerMode === 'structuurlijnen') {
                 return (
                     <View style={{ gap: 4 }}>
-                        <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>Verdeel het lijnstuk in <Text style={{ fontWeight: 'bold' }}>{ex.denominator}</Text> gelijke delen.</Text>
-                        <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>Teken een boogje boven <Text style={{ fontWeight: 'bold' }}>{ex.numerator}/{ex.denominator}</Text> van het lijnstuk.</Text>
+                        {instructions}
                         {lineEl}
-                        {calcLines}
+                        <View style={{ alignItems: 'center', gap: 6, marginTop: 4 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+                                <View style={{ borderBottomWidth: 1, width: 50, height: 10 }} />
+                                <Text style={S.mono}> : </Text>
+                                <View style={{ borderBottomWidth: 1, width: 50, height: 10 }} />
+                                <Text style={S.mono}> = </Text>
+                                <View style={{ borderBottomWidth: 1, width: 65, height: 10 }} />
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+                                <View style={{ borderBottomWidth: 1, width: 50, height: 10 }} />
+                                <Text style={S.mono}> × </Text>
+                                <View style={{ borderBottomWidth: 1, width: 50, height: 10 }} />
+                                <Text style={S.mono}> = </Text>
+                                <View style={{ borderBottomWidth: 1, width: 65, height: 10 }} />
+                            </View>
+                        </View>
                     </View>
                 );
             }
-            if (level === 2) return <View style={{ gap: 4 }}>{lineEl}{calcLines}</View>;
+
+            if (answerMode === 'blanco') {
+                return (
+                    <View style={{ gap: 4 }}>
+                        {instructions}
+                        {lineEl}
+                        <View style={{ alignItems: 'center', gap: 8, marginTop: 4 }}>
+                            <View style={{ borderBottomWidth: 1.5, width: 170, height: 16 }} />
+                            <View style={{ borderBottomWidth: 1.5, width: 170, height: 16 }} />
+                        </View>
+                    </View>
+                );
+            }
+
+            // berekeningslijnen (default)
             return (
                 <View style={{ gap: 4 }}>
+                    {instructions}
                     {lineEl}
-                    <View style={{ borderBottomWidth: 1.5, height: 16 }} />
-                    <View style={{ borderBottomWidth: 1.5, height: 16 }} />
+                    <View style={{ gap: 4, marginTop: 4 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+                            {showSolutions ? <Text style={S.sol}>{String(cm)}</Text> : <View style={{ borderBottomWidth: 1, width: 24, height: 10 }} />}
+                            <Text style={S.mono}> : </Text>
+                            {showSolutions ? <Text style={S.sol}>{String(ex.denominator)}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
+                            <Text style={S.mono}> = </Text>
+                            {showSolutions ? <Text style={S.sol}>{String(partLength)}</Text> : <View style={{ borderBottomWidth: 1, width: 24, height: 10 }} />}
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+                            {showSolutions ? <Text style={S.sol}>{String(ex.numerator)}</Text> : <View style={{ borderBottomWidth: 1, width: 18, height: 10 }} />}
+                            <Text style={S.mono}> × </Text>
+                            {showSolutions ? <Text style={S.sol}>{String(partLength)}</Text> : <View style={{ borderBottomWidth: 1, width: 24, height: 10 }} />}
+                            <Text style={S.mono}> = </Text>
+                            {showSolutions ? <Text style={S.sol}>{String(arcLength)}</Text> : <View style={{ borderBottomWidth: 1, width: 24, height: 10 }} />}
+                        </View>
+                    </View>
+                </View>
+            );
+        }
+
+        // ── VEELHOEK ─────────────────────────────────────────────────────────
+        if (subType === 'veelhoek') {
+            const w = ex.rectangleWidth ?? 3;
+            const h = ex.rectangleHeight ?? 3;
+            const cs = 18;
+            const pad = 2;
+            const totalCells = w * h;
+            const coloredCells = (totalCells / ex.denominator) * ex.numerator;
+
+            return (
+                <View style={{ gap: 6 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>Verdeel en kleur</Text>
+                        {pdfVertFrac(ex.numerator, ex.denominator)}
+                        <Text style={{ fontSize: 9, fontFamily: 'Roboto' }}>van deze figuur.</Text>
+                    </View>
+                    <Svg width={w * cs + pad * 2} height={h * cs + pad * 2} viewBox={`${-pad} ${-pad} ${w * cs + pad * 2} ${h * cs + pad * 2}`}>
+                        {Array.from({ length: h }, (_, row) =>
+                            Array.from({ length: w }, (_, col) => {
+                                const idx = row * w + col;
+                                return (
+                                    <Rect key={idx}
+                                        x={col * cs} y={row * cs} width={cs} height={cs}
+                                        fill={showSolutions && idx < coloredCells ? FILL : 'white'}
+                                        stroke="#93c5fd" strokeWidth={0.5}
+                                    />
+                                );
+                            })
+                        )}
+                        <Rect x={0} y={0} width={w * cs} height={h * cs} fill="none" stroke="black" strokeWidth={2} />
+                    </Svg>
                 </View>
             );
         }
@@ -630,46 +797,89 @@ export const WorksheetPDF: React.FC<{
 
                 {/* HEADER AREA (headnotes + title), optionally framed */}
                 <View style={docSettings.headerStyle === 'kader' ? S.headerKader : undefined}>
-                    {/* HEADNOTES ROW + SCORE BOX */}
-                    <View style={S.headRow}>
-                        <View style={S.headFields}>
-                            {headerData?.naam ? (
-                                <View style={[S.headField, { flex: 2, minWidth: 130 }]}>
-                                    <Text style={S.headLabel}>Naam:</Text>
-                                    <View style={S.headLine} />
-                                </View>
-                            ) : null}
-                            {headerData?.klas ? (
-                                <View style={[S.headField, { width: 80 }]}>
-                                    <Text style={S.headLabel}>Klas:</Text>
-                                    <View style={S.headLine} />
-                                </View>
-                            ) : null}
-                            {headerData?.nummer ? (
-                                <View style={[S.headField, { width: 60 }]}>
-                                    <Text style={S.headLabel}>Nr:</Text>
-                                    <View style={S.headLine} />
-                                </View>
-                            ) : null}
-                            {headerData?.datum ? (
-                                <View style={[S.headField, { flex: 1, minWidth: 100 }]}>
-                                    <Text style={S.headLabel}>Datum:</Text>
-                                    <View style={S.headLine} />
-                                </View>
-                            ) : null}
-                        </View>
-                        {docSettings.showScores && totalScore > 0 ? (
-                            <View style={S.scoreBox}>
-                                <Text style={S.scoreLabel}>Score:</Text>
-                                <Text style={S.scoreValue}>___ / {totalScore}</Text>
+                    {docSettings.titlePosition === 'right' ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
+                            <View style={[S.headFields, { flex: 1 }]}>
+                                {headerData?.naam ? (
+                                    <View style={[S.headField, { flex: 2, minWidth: 130 }]}>
+                                        <Text style={S.headLabel}>Naam:</Text>
+                                        <View style={S.headLine} />
+                                    </View>
+                                ) : null}
+                                {headerData?.klas ? (
+                                    <View style={[S.headField, { width: 80 }]}>
+                                        <Text style={S.headLabel}>Klas:</Text>
+                                        <View style={S.headLine} />
+                                    </View>
+                                ) : null}
+                                {headerData?.nummer ? (
+                                    <View style={[S.headField, { width: 60 }]}>
+                                        <Text style={S.headLabel}>Nr:</Text>
+                                        <View style={S.headLine} />
+                                    </View>
+                                ) : null}
+                                {headerData?.datum ? (
+                                    <View style={[S.headField, { flex: 1, minWidth: 100 }]}>
+                                        <Text style={S.headLabel}>Datum:</Text>
+                                        <View style={S.headLine} />
+                                    </View>
+                                ) : null}
                             </View>
-                        ) : null}
-                    </View>
-
-                    {/* TITLE */}
-                    {headerData?.titel ? (
-                        <Text style={S.title}>{headerData.titel}</Text>
-                    ) : null}
+                            <View style={{ alignItems: 'flex-end', marginLeft: 12 }}>
+                                {headerData?.titel ? (
+                                    <Text style={[S.title, { textAlign: 'right', marginTop: 0, marginBottom: 4 }]}>{headerData.titel}</Text>
+                                ) : null}
+                                {docSettings.showScores && totalScore > 0 ? (
+                                    <View style={S.scoreBox}>
+                                        <Text style={S.scoreLabel}>Score:</Text>
+                                        <Text style={S.scoreValue}>___ / {totalScore}</Text>
+                                    </View>
+                                ) : null}
+                            </View>
+                        </View>
+                    ) : (
+                        <>
+                            {/* HEADNOTES ROW + SCORE BOX */}
+                            <View style={S.headRow}>
+                                <View style={S.headFields}>
+                                    {headerData?.naam ? (
+                                        <View style={[S.headField, { flex: 2, minWidth: 130 }]}>
+                                            <Text style={S.headLabel}>Naam:</Text>
+                                            <View style={S.headLine} />
+                                        </View>
+                                    ) : null}
+                                    {headerData?.klas ? (
+                                        <View style={[S.headField, { width: 80 }]}>
+                                            <Text style={S.headLabel}>Klas:</Text>
+                                            <View style={S.headLine} />
+                                        </View>
+                                    ) : null}
+                                    {headerData?.nummer ? (
+                                        <View style={[S.headField, { width: 60 }]}>
+                                            <Text style={S.headLabel}>Nr:</Text>
+                                            <View style={S.headLine} />
+                                        </View>
+                                    ) : null}
+                                    {headerData?.datum ? (
+                                        <View style={[S.headField, { flex: 1, minWidth: 100 }]}>
+                                            <Text style={S.headLabel}>Datum:</Text>
+                                            <View style={S.headLine} />
+                                        </View>
+                                    ) : null}
+                                </View>
+                                {docSettings.showScores && totalScore > 0 ? (
+                                    <View style={S.scoreBox}>
+                                        <Text style={S.scoreLabel}>Score:</Text>
+                                        <Text style={S.scoreValue}>___ / {totalScore}</Text>
+                                    </View>
+                                ) : null}
+                            </View>
+                            {/* TITLE */}
+                            {headerData?.titel ? (
+                                <Text style={S.title}>{headerData.titel}</Text>
+                            ) : null}
+                        </>
+                    )}
                 </View>
 
                 {/* EXERCISE BLOCKS */}
@@ -717,7 +927,7 @@ export const WorksheetPDF: React.FC<{
                                         {blockHeader}
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                             {(block.fractionExercises || []).map((ex) => (
-                                                <View key={ex.id} style={{ width: ex.subType === 'lijnstuk' ? '100%' : '50%', marginBottom: spacing, paddingRight: ex.subType === 'lijnstuk' ? 0 : 16 }}>
+                                                <View key={ex.id} style={{ width: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek') ? '100%' : '50%', marginBottom: spacing, paddingRight: (ex.subType === 'lijnstuk' || ex.subType === 'veelhoek') ? 0 : 16 }}>
                                                     {renderFractionExercisePDF(ex, block)}
                                                 </View>
                                             ))}

@@ -25,15 +25,16 @@ export interface Equation {
     remainder?: number;
 }
 
-export type FractionShape = 'square' | 'rectangle' | 'circle';
+export type FractionShape = 'rectangle' | 'circle';
 
 export type FractionSubType =
     | 'kleuren'
     | 'herkennen'
-    | 'tekenen'
     | 'hoeveelheid'
     | 'hoeveelheid-rechthoek'
-    | 'lijnstuk';
+    | 'hoeveelheid-abstract'
+    | 'lijnstuk'
+    | 'veelhoek';
 
 export interface FractionExercise {
     id: string;
@@ -49,7 +50,10 @@ export interface FractionExercise {
     total?: number;
     objectShape?: 'circle' | 'square';
     // Line segment (lijnstuk)
-    lineLength?: number; // cm
+    lineLength?: number;
+    // Veelhoek grid rectangle
+    rectangleWidth?: number;
+    rectangleHeight?: number;
     isManuallyEdited: boolean;
 }
 
