@@ -1,11 +1,7 @@
 import React from 'react';
 
 export const sharedPluginStyles = {
-    container: {
-        borderTop: '1px solid var(--border-color)',
-        paddingTop: '20px',
-        marginTop: '16px' // Handig voor consistentie met de rest van de zijbalk
-    } as React.CSSProperties,
+    container: {} as React.CSSProperties,
 
     section: {
         marginBottom: '24px'

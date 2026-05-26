@@ -57,6 +57,13 @@ export interface FractionExercise {
     isManuallyEdited: boolean;
 }
 
+export interface SplitsenExercise {
+    id: string;
+    total: number;
+    pairs: Array<{ given: number; answer: number }>;
+    isManuallyEdited: boolean;
+}
+
 export interface MathBlock {
     id: string;
     typeId: string;
@@ -71,6 +78,8 @@ export interface MathBlock {
     exercises: Equation[];
     clockExercises?: ClockExercise[];
     fractionExercises?: FractionExercise[];
+    splitsenExercises?: SplitsenExercise[];
+    cijferExercises?: CijferExercise[];
     verticalSpacing: number;
 }
 
@@ -93,4 +102,36 @@ export interface FooterData {
     showPagina: boolean;
     centerText: string;
     showCenterText: boolean;
+}
+
+export type ScaffoldingLevel = 1 | 2 | 3;
+export type CijferOperator = '+' | '-' | 'x' | ':';
+
+export interface CijferConstraints {
+    operator: CijferOperator;
+    numberType: 'natural' | 'decimal';
+    maxRange: number;
+    decimalPlaces: 1 | 2 | 3;
+    withEstimation: boolean;
+    scaffolding: ScaffoldingLevel;
+    withRemainder: boolean;
+    numberOfTerms: number;
+    gridCellSize: number;
+    operand0Mask: Record<string, boolean>;
+    operand1Mask: Record<string, boolean>;
+    operand2Mask: Record<string, boolean>;
+    operand3Mask: Record<string, boolean>;
+    bridges: Record<string, 'FREE' | 'REQUIRED' | 'FORBIDDEN'>;
+    extraCols: number;
+    extraRows: number;
+    showQR?: boolean;
+}
+
+export interface CijferExercise {
+    id: string;
+    operands: number[];
+    operator: CijferOperator;
+    answer: number;
+    remainder: number;
+    isManuallyEdited: boolean;
 }

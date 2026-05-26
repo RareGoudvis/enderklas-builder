@@ -6,9 +6,13 @@ import MultiplicationConfig from './plugins/MultiplicationConfig';
 import DivisionConfig from './plugins/DivisionConfig';
 import ClockConfig from './plugins/ClockConfig';
 import FractionConfig from './plugins/FractionConfig';
+import SplitsenConfig from './plugins/SplitsenConfig';
+import CijferConfig from './plugins/CijferConfig';
 import { generateAdditionExercises, generateSubtractionExercises, generateMultiplicationExercises, generateDivisionExercises } from '../../services/math/mathEngine';
 import { generateClockExercises } from '../../services/clock/clockGenerator';
 import { generateFractionExercises } from '../../services/fractions/fractionGenerator';
+import { generateSplitsenExercises } from '../../services/splitsen/splitsenGenerator';
+import { generateCijferExercises } from '../../services/cijferen/cijferGenerator';
 
 const HR_STD_TYPES = ['optellen', 'aftrekken', 'vermenigvuldigen', 'delen'];
 const isHrStd = (typeId: string) => HR_STD_TYPES.some(t => typeId.includes(t));
@@ -32,6 +36,8 @@ export default function Inspector() {
     const setBlockExercises = useWorksheetStore((state) => state.setBlockExercises);
     const setClockExercises = useWorksheetStore((state) => state.setClockExercises);
     const setFractionExercises = useWorksheetStore((state) => state.setFractionExercises);
+    const setSplitsenExercises = useWorksheetStore((state) => state.setSplitsenExercises);
+    const setCijferExercises = useWorksheetStore((state) => state.setCijferExercises);
 
     const handleGenerate = () => {
         if (!activeBlock) return;
@@ -39,6 +45,10 @@ export default function Inspector() {
             setClockExercises(activeBlock.id, generateClockExercises(activeBlock));
         } else if (activeBlock.typeId === 'breuken') {
             setFractionExercises(activeBlock.id, generateFractionExercises(activeBlock));
+        } else if (activeBlock.typeId === 'splitsen') {
+            setSplitsenExercises(activeBlock.id, generateSplitsenExercises(activeBlock));
+        } else if (activeBlock.typeId.startsWith('cijferen-')) {
+            setCijferExercises(activeBlock.id, generateCijferExercises(activeBlock));
         } else if (activeBlock.typeId.includes('optellen')) {
             setBlockExercises(activeBlock.id, generateAdditionExercises(activeBlock));
         } else if (activeBlock.typeId.includes('aftrekken')) {
@@ -214,12 +224,14 @@ export default function Inspector() {
                     <button onClick={handleGenerate} style={S.generateBtn}>✨ Genereer</button>
                 </div>
                 <div style={S.engineBody}>
-                    {activeBlock.typeId.includes('optellen') && <AdditionConfig block={activeBlock} />}
-                    {activeBlock.typeId.includes('aftrekken') && <SubtractionConfig block={activeBlock} />}
-                    {activeBlock.typeId.includes('vermenigvuldigen') && <MultiplicationConfig block={activeBlock} />}
-                    {activeBlock.typeId.includes('delen') && <DivisionConfig block={activeBlock} />}
+                    {activeBlock.typeId.includes('optellen') && !activeBlock.typeId.startsWith('cijferen-') && <AdditionConfig block={activeBlock} />}
+                    {activeBlock.typeId.includes('aftrekken') && !activeBlock.typeId.startsWith('cijferen-') && <SubtractionConfig block={activeBlock} />}
+                    {activeBlock.typeId.includes('vermenigvuldigen') && !activeBlock.typeId.startsWith('cijferen-') && <MultiplicationConfig block={activeBlock} />}
+                    {activeBlock.typeId.includes('delen') && !activeBlock.typeId.startsWith('cijferen-') && <DivisionConfig block={activeBlock} />}
                     {activeBlock.typeId.startsWith('klok-') && <ClockConfig block={activeBlock} />}
                     {activeBlock.typeId === 'breuken' && <FractionConfig block={activeBlock} />}
+                    {activeBlock.typeId === 'splitsen' && <SplitsenConfig block={activeBlock} />}
+                    {activeBlock.typeId.startsWith('cijferen-') && <CijferConfig block={activeBlock} />}
                 </div>
             </div>
 
@@ -348,7 +360,7 @@ export default function Inspector() {
                     )}
 
                     {/* ── Moeilijkheidsgraad (rational optellen/aftrekken) ── */}
-                    {(activeBlock.typeId.includes('optellen') || activeBlock.typeId.includes('aftrekken')) && c.numberType === 'rational' && (
+                    {(activeBlock.typeId.includes('optellen') || activeBlock.typeId.includes('aftrekken')) && !activeBlock.typeId.startsWith('cijferen-') && c.numberType === 'rational' && (
                         <>
                             <label style={{ ...S.label, marginTop: '12px' }}>Moeilijkheidsgraad</label>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -367,8 +379,53 @@ export default function Inspector() {
                         </>
                     )}
 
+                    {/* ── Scaffolding (cijferen: Structuur+Getallen / Enkel Structuur / Enkel Ruitjes) ── */}
+                    {activeBlock.typeId.startsWith('cijferen-') && (
+                        <>
+                            <label style={{ ...S.label, marginTop: '12px' }}>Scaffolding</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {([
+                                    { level: 1, label: 'Structuur en ingevulde getallen' },
+                                    { level: 2, label: 'Structuur zonder getallen' },
+                                    { level: 3, label: 'Lege ruitjes' },
+                                ] as const).map(({ level, label }) => {
+                                    const isActive = (c.scaffolding ?? 3) === level;
+                                    return (
+                                        <button
+                                            key={level}
+                                            onClick={() => updateBlockSettings(activeBlock.id, { constraints: { ...c, scaffolding: level } })}
+                                            style={{
+                                                ...S.radioBtn(isActive),
+                                                justifyContent: 'flex-start', padding: '7px 12px',
+                                                color: isActive ? 'white' : 'var(--text-main)',
+                                            }}
+                                        >
+                                            {label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── Q/R-vak toggle (cijferen delen only) ── */}
+                    {activeBlock.typeId.startsWith('cijferen-') && c.operator === ':' && (
+                        <>
+                            <label style={{ ...S.label, marginTop: '12px' }}>Q/R-vak</label>
+                            <label style={S.checkboxLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={c.showQR !== false}
+                                    onChange={(e) => updateConstraint('showQR', e.target.checked)}
+                                    style={S.checkbox}
+                                />
+                                Toon Q/R-vak
+                            </label>
+                        </>
+                    )}
+
                     {/* ── Scaffolding (hr-std: Kort / Lang / Stappen) ── */}
-                    {isHrStd(activeBlock.typeId) && (
+                    {isHrStd(activeBlock.typeId) && !activeBlock.typeId.startsWith('cijferen-') && (
                         <>
                             <label style={{ ...S.label, marginTop: '12px' }}>Scaffolding</label>
                             <div style={S.btnGroup}>
@@ -392,18 +449,42 @@ export default function Inspector() {
                 </div>
             </div>
 
-            {/* ── 4. Advanced (accordion) — only shown when there is actual content ── */}
-            {false && <div style={S.advancedWrap}>
-                <button style={S.advancedToggle} onClick={() => setAdvancedOpen(!advancedOpen)}>
-                    <span>Advanced</span>
-                    <span style={{ fontSize: '14px', transform: advancedOpen ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.2s' }}>›</span>
-                </button>
-                {advancedOpen && (
-                    <div style={{ ...S.card, marginTop: '8px', opacity: 0.5 }}>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '12px', margin: 0, fontStyle: 'italic' }}>Binnenkort beschikbaar.</p>
-                    </div>
-                )}
-            </div>}
+            {/* ── 4. Geavanceerd (accordion) ── */}
+            {activeBlock.typeId.startsWith('cijferen-') && (
+                <div style={S.advancedWrap}>
+                    <button style={S.advancedToggle} onClick={() => setAdvancedOpen(!advancedOpen)}>
+                        <span>Geavanceerd</span>
+                        <span style={{ fontSize: '14px', transform: advancedOpen ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block', transition: 'transform 0.2s' }}>›</span>
+                    </button>
+                    {advancedOpen && (
+                        <div style={{ ...S.card, marginTop: '8px' }}>
+                            <div style={S.col}>
+                                <label style={S.label}>Ruitjesgrootte: {c.gridCellSize || 25}pt (~{Math.round((c.gridCellSize || 25) / 2.835)}mm)</label>
+                                <input
+                                    type="range" min="16" max="32" step="2"
+                                    value={c.gridCellSize || 25}
+                                    onChange={(e) => updateConstraint('gridCellSize', Number(e.target.value))}
+                                    style={{ width: '100%', accentColor: 'var(--accent-bewerkingen)', cursor: 'pointer' }}
+                                />
+                                <label style={{ ...S.label, marginTop: '10px' }}>Extra kolommen: {c.extraCols || 0}</label>
+                                <input
+                                    type="range" min="0" max="6" step="1"
+                                    value={c.extraCols || 0}
+                                    onChange={(e) => updateConstraint('extraCols', Number(e.target.value))}
+                                    style={{ width: '100%', accentColor: 'var(--accent-bewerkingen)', cursor: 'pointer' }}
+                                />
+                                <label style={{ ...S.label, marginTop: '10px' }}>Extra rijen: {c.extraRows || 0}</label>
+                                <input
+                                    type="range" min="0" max="10" step="1"
+                                    value={c.extraRows || 0}
+                                    onChange={(e) => updateConstraint('extraRows', Number(e.target.value))}
+                                    style={{ width: '100%', accentColor: 'var(--accent-bewerkingen)', cursor: 'pointer' }}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </aside>
     );
 }
@@ -424,10 +505,10 @@ const S = {
     btnGroup: { display: 'flex', gap: '3px', backgroundColor: 'var(--bg-input)', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-color)' } as React.CSSProperties,
     radioBtn: (active: boolean): React.CSSProperties => ({ padding: '6px 10px', fontSize: '12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: active ? 'var(--accent-purple)' : 'transparent', color: active ? 'white' : 'var(--text-muted)', fontWeight: active ? 'bold' : 'normal', flex: 1, whiteSpace: 'nowrap' }),
 
-    engineCard: { backgroundColor: 'var(--bg-panel)', borderRadius: '10px', border: '1px solid rgba(172,41,233,0.35)', overflow: 'hidden' } as React.CSSProperties,
-    engineHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', backgroundColor: 'rgba(172,41,233,0.08)', borderBottom: '1px solid rgba(172,41,233,0.2)' } as React.CSSProperties,
+    engineCard: { backgroundColor: 'var(--bg-panel)', borderRadius: '10px', border: '1px solid rgba(172,41,233,0.35)' } as React.CSSProperties,
+    engineHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', backgroundColor: 'rgba(172,41,233,0.08)', borderBottom: '1px solid rgba(172,41,233,0.2)', borderRadius: '10px 10px 0 0' } as React.CSSProperties,
     engineLabel: { fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: 'var(--accent-purple)' } as React.CSSProperties,
-    engineBody: { padding: '14px 16px' } as React.CSSProperties,
+    engineBody: { padding: '14px 16px', maxHeight: '520px', overflowY: 'auto' } as React.CSSProperties,
     generateBtn: { padding: '6px 14px', backgroundColor: 'var(--accent-purple)', border: 'none', color: 'white', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' } as React.CSSProperties,
 
     advancedWrap: { marginBottom: '8px' } as React.CSSProperties,

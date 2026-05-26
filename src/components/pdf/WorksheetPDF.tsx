@@ -2,13 +2,15 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font, Svg, Circle, Line, Rect, Path } from '@react-pdf/renderer';
 import type { MathBlock, Fraction, Equation, ClockExercise, FractionExercise } from '../../services/math/types';
 import type { DocSettings } from '../../store/useWorksheetStore';
+import SplitsenPDF from './blocks/SplitsenPDF';
+import CijferPDF from './blocks/CijferPDF';
 
 // Import real WOFF font files from @fontsource — these are valid binary fonts,
 // unlike the HTML files that were previously in public/fonts/.
 import robotoRegularUrl from '@fontsource/roboto/files/roboto-latin-400-normal.woff?url';
 import robotoBoldUrl from '@fontsource/roboto/files/roboto-latin-700-normal.woff?url';
-import robotoMonoRegularUrl from '@fontsource/roboto-mono/files/roboto-mono-latin-400-normal.woff?url';
-import robotoMonoBoldUrl from '@fontsource/roboto-mono/files/roboto-mono-latin-700-normal.woff?url';
+import azeretMonoRegularUrl from '@fontsource/azeret-mono/files/azeret-mono-latin-400-normal.woff?url';
+import azeretMonoBoldUrl from '@fontsource/azeret-mono/files/azeret-mono-latin-700-normal.woff?url';
 
 // ============================================================================
 // FONTS
@@ -22,10 +24,10 @@ Font.register({
 });
 
 Font.register({
-    family: 'RobotoMono',
+    family: 'AzeretMono',
     fonts: [
-        { src: robotoMonoRegularUrl, fontWeight: 'normal' },
-        { src: robotoMonoBoldUrl, fontWeight: 'bold' },
+        { src: azeretMonoRegularUrl, fontWeight: 'normal' },
+        { src: azeretMonoBoldUrl, fontWeight: 'bold' },
     ],
 });
 
@@ -961,7 +963,17 @@ export const WorksheetPDF: React.FC<{
                                             ))}
                                         </View>
                                     </>
-                                ) : block.typeId === 'breuken' ? (
+                                ) : block.typeId === 'splitsen' ? (
+                            <>
+                                {blockHeader}
+                                <SplitsenPDF block={block} showSolutions={showSolutions} />
+                            </>
+                        ) : block.typeId.startsWith('cijferen-') ? (
+                            <>
+                                {blockHeader}
+                                <CijferPDF block={block} showSolutions={showSolutions} />
+                            </>
+                        ) : block.typeId === 'breuken' ? (
                                     <>
                                         {blockHeader}
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -1054,20 +1066,20 @@ const S = StyleSheet.create({
 
     // operandSlot: fixed-width right-aligned box so columns stay consistent across rows
     operandSlot: { width: 50, alignItems: 'flex-end' },
-    op: { fontFamily: 'RobotoMono', fontSize: 14, marginLeft: 5, marginRight: 5 },
+    op: { fontFamily: 'AzeretMono', fontSize: 14, marginLeft: 5, marginRight: 5 },
     answerSlot: { flexDirection: 'row', alignItems: 'flex-end', height: 36 },
-    eq: { fontFamily: 'RobotoMono', fontSize: 14, marginRight: 6, width: 14 },
-    eqHidden: { fontFamily: 'RobotoMono', fontSize: 14, marginRight: 6, width: 14, opacity: 0 },
-    mono: { fontFamily: 'RobotoMono', fontSize: 14 },
-    sol: { fontFamily: 'RobotoMono', fontSize: 14, color: '#e11d48', fontWeight: 'bold' },
+    eq: { fontFamily: 'AzeretMono', fontSize: 14, marginRight: 6, width: 14 },
+    eqHidden: { fontFamily: 'AzeretMono', fontSize: 14, marginRight: 6, width: 14, opacity: 0 },
+    mono: { fontFamily: 'AzeretMono', fontSize: 14 },
+    sol: { fontFamily: 'AzeretMono', fontSize: 14, color: '#e11d48', fontWeight: 'bold' },
     blankDotted: { borderBottomWidth: 1, width: 40, height: 14 },
     workLineShort: { borderBottomWidth: 1.5, width: 60, height: 2 },
     workLineLong: { borderBottomWidth: 1.5, flex: 1, height: 2 },
 
     fracContainer: { flexDirection: 'row', alignItems: 'center' },
     fracStack: { flexDirection: 'column', alignItems: 'center' },
-    fracTop: { borderBottomWidth: 1, fontSize: 10, fontFamily: 'RobotoMono', paddingLeft: 3, paddingRight: 3, minWidth: 18, textAlign: 'center' },
-    fracBot: { fontSize: 10, fontFamily: 'RobotoMono', paddingLeft: 3, paddingRight: 3, minWidth: 18, textAlign: 'center' },
+    fracTop: { borderBottomWidth: 1, fontSize: 10, fontFamily: 'AzeretMono', paddingLeft: 3, paddingRight: 3, minWidth: 18, textAlign: 'center' },
+    fracBot: { fontSize: 10, fontFamily: 'AzeretMono', paddingLeft: 3, paddingRight: 3, minWidth: 18, textAlign: 'center' },
 
     footer: { position: 'absolute', bottom: 24, left: 40, right: 40, flexDirection: 'row', justifyContent: 'space-between', fontSize: 9, color: '#666', borderTopWidth: 1, paddingTop: 6 },
 });

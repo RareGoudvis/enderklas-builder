@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { MathBlock, Equation, ClockExercise, FractionExercise, FooterData, LayoutPreset } from '../services/math/types';
+import type { MathBlock, Equation, ClockExercise, FractionExercise, SplitsenExercise, CijferExercise, FooterData, LayoutPreset } from '../services/math/types';
 
 interface HeaderData {
     naam: boolean;
@@ -38,7 +38,10 @@ interface WorksheetState {
     setBlockExercises: (id: string, exercises: Equation[]) => void;
     setClockExercises: (id: string, exercises: ClockExercise[]) => void;
     setFractionExercises: (id: string, exercises: FractionExercise[]) => void;
+    setSplitsenExercises: (id: string, exercises: SplitsenExercise[]) => void;
+    setCijferExercises: (id: string, exercises: CijferExercise[]) => void;
     updateExercise: (blockId: string, exerciseId: string, updates: Partial<Equation>) => void;
+    updateCijferExercise: (blockId: string, exerciseId: string, updates: Partial<CijferExercise>) => void;
     setActiveSelection: (id: string | 'document' | null) => void;
     updateHeader: (updates: Partial<HeaderData>) => void;
     updateFooter: (updates: Partial<FooterData>) => void;
@@ -82,11 +85,40 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     canRedo: () => get()._historyIndex < get()._history.length - 1,
 
     setFractionExercises: (id: string, exercises: FractionExercise[]) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, fractionExercises: exercises } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
+    setSplitsenExercises: (id: string, exercises: SplitsenExercise[]) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, splitsenExercises: exercises } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
+    setCijferExercises: (id: string, exercises: CijferExercise[]) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, cijferExercises: exercises } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
 
     addBlockFromType: (typeId, label, overrideConstraints) => set((state) => {
         const isClockBlock = typeId.startsWith('klok-');
         const isFractionBlock = typeId === 'breuken';
-        const defaultConstraints = isFractionBlock ? {
+        const isSplitsenBlock = typeId === 'splitsen';
+        const isCijferBlock = typeId.startsWith('cijferen-');
+        const defaultConstraints = isCijferBlock ? {
+            operator: '+',
+            numberType: 'natural',
+            maxRange: 1000,
+            decimalPlaces: 2,
+            withEstimation: false,
+            scaffolding: 3,
+            withRemainder: false,
+            numberOfTerms: 2,
+            gridCellSize: 25,
+            operand0Mask: {},
+            operand1Mask: {},
+            operand2Mask: {},
+            operand3Mask: {},
+            bridges: {},
+            extraCols: 0,
+            extraRows: 0,
+        } : isSplitsenBlock ? {
+            maxGetal: 10,
+            operand1Mask: {},
+            operand2Mask: {},
+            fixedTotal: null,
+            layout: 'basic',
+            rowsPerBox: 4,
+            rowHeight: 28,
+        } : isFractionBlock ? {
             subType: 'kleuren',
             shape: 'rectangle',
             minDenominator: 2,
@@ -131,7 +163,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
             instructionMode: 'geen',
             layoutPreset: 'inline-short',
             steppedLines: 3,
-            numberOfExercises: isFractionBlock ? 6 : 10,
+            numberOfExercises: isFractionBlock ? 6 : isSplitsenBlock ? 5 : isCijferBlock ? 2 : 10,
             totalPoints: 5,
             verticalSpacing: 14,
             constraints: { ...defaultConstraints, ...overrideConstraints },
@@ -169,6 +201,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     setBlockExercises: (id, exercises) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, exercises } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
     setClockExercises: (id, exercises) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, clockExercises: exercises } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
     updateExercise: (blockId, exerciseId, updates) => set((state) => { const nb = state.blocks.map(b => b.id !== blockId ? b : { ...b, exercises: b.exercises.map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex) }); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
+    updateCijferExercise: (blockId, exerciseId, updates) => set((state) => { const nb = state.blocks.map(b => b.id !== blockId ? b : { ...b, cijferExercises: (b.cijferExercises || []).map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex) }); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
     setActiveSelection: (id) => set({ activeBlockId: id }),
     updateHeader: (updates) => set((state) => ({ header: { ...state.header, ...updates } })),
     updateFooter: (updates) => set((state) => ({ footer: { ...state.footer, ...updates } })),

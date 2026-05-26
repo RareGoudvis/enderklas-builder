@@ -143,7 +143,7 @@ export default function Sidebar() {
 
             <div style={S.footer}>
                 <div style={S.footerRow}>
-                    <div style={S.footerText}>Deze website werkt gemaakt door Ruben V.H. en wordt gratis ter beschikking gesteld. 
+                    <div style={S.footerText}>Deze website werd gemaakt door Ruben V.H. en wordt gratis ter beschikking gesteld. 
                         De code in beschikbaar voor inzage (<a href="https://x.com/ruben_vah" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>DM me op X.</a>) 
                         <br/> Deze code valt onder de <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>AGPL-3.0 licentie.</a> licentie.</div>
                     <button style={S.themeBtn} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title={theme === 'dark' ? 'Licht thema' : 'Donker thema'}>

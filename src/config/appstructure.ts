@@ -50,10 +50,7 @@ export const APP_STRUCTURE: Domain[] = [
                 placeholder: true,
                 types: [
                     ph('getalbegrip-tekenen-noteren', 'Tekenen / noteren (MAB)'),
-                    phAcc('getalbegrip-splitsen', 'Splitsen', [
-                        phLeaf('getalbegrip-splitsen-nat', 'Natuurlijke getallen'),
-                        phLeaf('getalbegrip-splitsen-dec', 'Decimale getallen'),
-                    ]),
+                    { id: 'getalbegrip-splitsen', label: 'Splitsen', typeId: 'splitsen', defaultConstraints: { maxGetal: 10, layout: 'basic', rowsPerBox: 4 } },
                     phAcc('getalbegrip-ordenen', 'Ordenen', [
                         phLeaf('getalbegrip-ordenen-nat', 'Natuurlijke getallen'),
                         phLeaf('getalbegrip-ordenen-dec', 'Decimale getallen'),
@@ -181,24 +178,39 @@ export const APP_STRUCTURE: Domain[] = [
             {
                 id: 'cijferen',
                 label: 'Cijferen',
-                placeholder: true,
                 types: [
-                    phAcc('cijferen-optellen', 'Optellen', [
-                        phLeaf('cijferen-optellen-nat', 'Natuurlijke getallen'),
-                        phLeaf('cijferen-optellen-dec', 'Decimale getallen'),
-                    ]),
-                    phAcc('cijferen-aftrekken', 'Aftrekken', [
-                        phLeaf('cijferen-aftrekken-nat', 'Natuurlijke getallen'),
-                        phLeaf('cijferen-aftrekken-dec', 'Decimale getallen'),
-                    ]),
-                    phAcc('cijferen-vermenigvuldigen', 'Vermenigvuldigen', [
-                        phLeaf('cijferen-vermenigvuldigen-nat', 'Natuurlijke getallen'),
-                        phLeaf('cijferen-vermenigvuldigen-dec', 'Decimale getallen'),
-                    ]),
-                    phAcc('cijferen-delen', 'Delen', [
-                        phLeaf('cijferen-delen-nat', 'Natuurlijke getallen'),
-                        phLeaf('cijferen-delen-dec', 'Decimale getallen'),
-                    ]),
+                    {
+                        id: 'cijferen-optellen',
+                        label: 'Optellen',
+                        children: [
+                            { id: 'cijferen-optellen-nat', label: 'Natuurlijke getallen', typeId: 'cijferen-optellen-nat', defaultConstraints: { operator: '+', numberType: 'natural' } },
+                            { id: 'cijferen-optellen-dec', label: 'Kommagetallen', typeId: 'cijferen-optellen-dec', defaultConstraints: { operator: '+', numberType: 'decimal' } },
+                        ],
+                    },
+                    {
+                        id: 'cijferen-aftrekken',
+                        label: 'Aftrekken',
+                        children: [
+                            { id: 'cijferen-aftrekken-nat', label: 'Natuurlijke getallen', typeId: 'cijferen-aftrekken-nat', defaultConstraints: { operator: '-', numberType: 'natural' } },
+                            { id: 'cijferen-aftrekken-dec', label: 'Kommagetallen', typeId: 'cijferen-aftrekken-dec', defaultConstraints: { operator: '-', numberType: 'decimal' } },
+                        ],
+                    },
+                    {
+                        id: 'cijferen-vermenigvuldigen',
+                        label: 'Vermenigvuldigen',
+                        children: [
+                            { id: 'cijferen-vermenigvuldigen-nat', label: 'Natuurlijke getallen', typeId: 'cijferen-vermenigvuldigen-nat', defaultConstraints: { operator: 'x', numberType: 'natural' } },
+                            { id: 'cijferen-vermenigvuldigen-dec', label: 'Kommagetallen', typeId: 'cijferen-vermenigvuldigen-dec', defaultConstraints: { operator: 'x', numberType: 'decimal' } },
+                        ],
+                    },
+                    {
+                        id: 'cijferen-delen',
+                        label: 'Delen',
+                        children: [
+                            { id: 'cijferen-delen-nat', label: 'Natuurlijke getallen', typeId: 'cijferen-delen-nat', defaultConstraints: { operator: ':', numberType: 'natural' } },
+                            { id: 'cijferen-delen-dec', label: 'Kommagetallen', typeId: 'cijferen-delen-dec', defaultConstraints: { operator: ':', numberType: 'decimal' } },
+                        ],
+                    },
                 ],
             },
         ],

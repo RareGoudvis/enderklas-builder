@@ -65,11 +65,11 @@ export default function AnalogClockSVG({ hours, minutes, showHourHand, showMinut
                         return (
                             <React.Fragment key={i}>
                                 <text x={numInner.x} y={numInner.y} textAnchor="middle" dominantBaseline="central"
-                                    fontSize={hourFontSize} fontFamily="sans-serif" fill="#000">
+                                    fontSize={hourFontSize} fontFamily="Azeret Mono, monospace" fill="#000">
                                     {label12}
                                 </text>
                                 <text x={numOuter.x} y={numOuter.y} textAnchor="middle" dominantBaseline="central"
-                                    fontSize={smallFontSize} fontFamily="sans-serif" fill="#000" fontWeight="bold">
+                                    fontSize={smallFontSize} fontFamily="Azeret Mono, monospace" fill="#000" fontWeight="bold">
                                     {label24}
                                 </text>
                             </React.Fragment>
@@ -102,7 +102,7 @@ export default function AnalogClockSVG({ hours, minutes, showHourHand, showMinut
                             <text key={i}
                                 x={numPos.x} y={numPos.y}
                                 textAnchor="middle" dominantBaseline="central"
-                                fontSize={hourFontSize} fontFamily="sans-serif" fill="#000">
+                                fontSize={hourFontSize} fontFamily="Azeret Mono, monospace" fill="#000">
                                 {label}
                             </text>
                         );

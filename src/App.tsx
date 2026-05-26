@@ -6,6 +6,8 @@ import type { Fraction, ClockExercise, MathBlock, FractionExercise } from './ser
 import type { ClockType, ExerciseMode, HandChoice } from './services/clock/clockTypes';
 import AnalogClockSVG from './components/viewer/AnalogClockSVG';
 import FractionShapeSVG from './components/viewer/FractionShapeSVG';
+import SplitsenViewer from './components/viewer/SplitsenViewer';
+import CijferViewer from './components/viewer/CijferViewer';
 
 import { pdf } from '@react-pdf/renderer';
 import { WorksheetPDF } from './components/pdf/WorksheetPDF';
@@ -48,13 +50,13 @@ function renderClockExerciseItem(ex: ClockExercise, block: MathBlock, showSoluti
     );
 
     const digitalBox = (
-        <div style={{ border: '2px solid #000', padding: '5px 10px', fontFamily: 'monospace', fontSize: '18px', fontWeight: 'bold', letterSpacing: '3px' }}>
+        <div style={{ border: '2px solid #000', padding: '5px 10px', fontFamily: 'Azeret Mono, monospace', fontSize: '18px', fontWeight: 'bold', letterSpacing: '3px' }}>
             {ex.digitalText}
         </div>
     );
 
     const timeLabel = (
-        <span style={{ fontSize: '13px', fontWeight: 'bold', fontFamily: 'sans-serif', textAlign: 'center' }}>
+        <span style={{ fontSize: '13px', fontWeight: 'bold', fontFamily: 'Azeret Mono, monospace', textAlign: 'center' }}>
             {ex.timeText}
         </span>
     );
@@ -81,7 +83,7 @@ function renderClockExerciseItem(ex: ClockExercise, block: MathBlock, showSoluti
                     {clock(true, true)}
                     {showSolutions
                         ? sol(ex.digitalText)
-                        : <div style={{ border: '1.5px solid #000', width: '65px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace', fontSize: '12px', color: '#aaa' }}>__:__</div>
+                        : <div style={{ border: '1.5px solid #000', width: '65px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Azeret Mono, monospace', fontSize: '12px', color: '#aaa' }}>__:__</div>
                     }
                 </>
             );
@@ -109,7 +111,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
 
     // ── vertical fraction helper ──────────────────────────────────────────────
     const vertFrac = (n: number, d: number, color?: string) => (
-        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: '13px', fontFamily: 'monospace', fontWeight: 'bold', lineHeight: 1.1, color: color || '#000' }}>
+        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', lineHeight: 1.1, color: color || '#000' }}>
             <span style={{ borderBottom: `1.5px solid ${color || '#000'}`, minWidth: '16px', textAlign: 'center', paddingLeft: '3px', paddingRight: '3px' }}>{n}</span>
             <span style={{ minWidth: '16px', textAlign: 'center', paddingLeft: '3px', paddingRight: '3px' }}>{d}</span>
         </div>
@@ -130,7 +132,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         if (subType === 'kleuren') {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontFamily: 'sans-serif', fontWeight: 'bold' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold' }}>
                         <span>Kleur</span>
                         {vertFrac(ex.numerator, ex.denominator)}
                         <span>in:</span>
@@ -156,7 +158,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
                     <div style={{ minHeight: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {shape}
                     </div>
-                    <div style={{ fontSize: '12px', fontFamily: 'sans-serif', width: '100%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ fontSize: '12px', fontFamily: 'Azeret Mono, monospace', width: '100%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         {qLine('In hoeveel gelijke delen is de figuur verdeeld?', showSolutions ? sol(String(ex.denominator)) : blank(28))}
                         {qLine('Hoeveel gelijke delen zijn ingekleurd?', showSolutions ? sol(String(ex.numerator)) : blank(28))}
                     </div>
@@ -164,7 +166,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
             );
         } else if (answerFormat === 'phrase') {
             answerArea = (
-                <div style={{ fontSize: '12px', fontFamily: 'sans-serif', lineHeight: '2', marginTop: '6px' }}>
+                <div style={{ fontSize: '12px', fontFamily: 'Azeret Mono, monospace', lineHeight: '2', marginTop: '6px' }}>
                     <div>
                         Er zijn {showSolutions ? sol(String(ex.numerator)) : <span style={{ borderBottom: '1.5px solid #000', display: 'inline-block', width: '24px' }}>&nbsp;</span>} van de{' '}
                         {ex.denominator} gelijke delen gekleurd. Dat is{' '}
@@ -179,7 +181,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
             );
         } else if (answerFormat === 'blank-fraction') {
             answerArea = (
-                <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', marginTop: '8px', fontSize: '20px', fontFamily: 'monospace', fontWeight: 'bold' }}>
+                <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', marginTop: '8px', fontSize: '20px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold' }}>
                     <div style={{ borderBottom: '2px solid #000', minWidth: '32px', textAlign: 'center', paddingBottom: '2px', color: showSolutions ? '#e11d48' : 'transparent' }}>{ex.numerator}</div>
                     <div style={{ minWidth: '32px', textAlign: 'center', paddingTop: '2px', color: showSolutions ? '#e11d48' : 'transparent' }}>{ex.denominator}</div>
                 </div>
@@ -220,20 +222,20 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         );
 
         const fracLabel = (
-            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: '14px', fontFamily: 'monospace', lineHeight: 1.2 }}>
+            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: '14px', fontFamily: 'Azeret Mono, monospace', lineHeight: 1.2 }}>
                 <span style={{ borderBottom: '1.5px solid #000', minWidth: '18px', textAlign: 'center', paddingLeft: '4px', paddingRight: '4px' }}>{ex.numerator}</span>
                 <span style={{ minWidth: '18px', textAlign: 'center', paddingLeft: '4px', paddingRight: '4px' }}>{ex.denominator}</span>
             </div>
         );
 
         const questionLine = (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontFamily: 'monospace' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontFamily: 'Azeret Mono, monospace' }}>
                 {fracLabel}<span>van {total} =</span>{showSolutions ? sol(String(coloredCount)) : blank()}
             </div>
         );
 
         const calcLines = (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px', fontFamily: 'monospace', marginTop: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', marginTop: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                     {blank(28)}<span>:</span>{blank(24)}<span>=</span>{blank(28)}
                 </div>
@@ -265,12 +267,12 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         if (answerFormat === 'met-breukvragen') {
             const qRow = (question: string, answer: React.ReactNode) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'sans-serif', width: '195px', flexShrink: 0 }}>{question}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '13px', fontFamily: 'monospace' }}>{answer}</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'Azeret Mono, monospace', width: '195px', flexShrink: 0 }}>{question}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace' }}>{answer}</div>
                 </div>
             );
             const instruction = (
-                <div style={{ fontSize: '12px', fontFamily: 'sans-serif', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ fontSize: '12px', fontFamily: 'Azeret Mono, monospace', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>Verdeel en kleur</span>{vertFrac(ex.numerator, ex.denominator)}<span>van deze hoeveelheid:</span>
                 </div>
             );
@@ -286,7 +288,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
                         {qRow('Hoe groot is één deel?', <>{blank(28)}<span>:</span>{blank(24)}<span>=</span>{blank(28)}</>)}
                         {qRow('Hoeveel gelijke delen neem ik?', blank())}
                         {qRow('Hoeveel is dat samen?', <>{blank(24)}<span>×</span>{blank(28)}<span>=</span>{blank(28)}</>)}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontFamily: 'monospace', marginTop: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', marginTop: '4px' }}>
                             {showSolutions ? vertFrac(ex.numerator, ex.denominator, '#e11d48') : vertFrac(ex.numerator, ex.denominator)}
                             <span> van </span>{blank(28)}<span> is </span>{blank(28)}
                         </div>
@@ -312,7 +314,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
     if (subType === 'hoeveelheid-rechthoek') {
         const total = ex.total ?? 0;
         const rectCalcLines = (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px', fontFamily: 'monospace', marginTop: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', marginTop: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                     {blank(28)}<span>:</span>{blank(24)}<span>=</span>{blank(28)}
                 </div>
@@ -323,7 +325,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         );
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontFamily: 'monospace' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontFamily: 'Azeret Mono, monospace' }}>
                     {vertFrac(ex.numerator, ex.denominator)}<span> van {total} =</span>{blank()}
                 </div>
                 <div style={{ border: '2px solid #000', width: '100%', minHeight: '113px', backgroundColor: 'white' }} />
@@ -341,7 +343,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         const sv = (v: number) => showSolutions ? sol(String(v)) : blank(28);
 
         const questionLine = (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontFamily: 'monospace', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontFamily: 'Azeret Mono, monospace', flexWrap: 'wrap' }}>
                 {vertFrac(ex.numerator, ex.denominator)}<span> van {total} is</span>{showSolutions ? sol(String(coloredCount)) : blank(36)}
             </div>
         );
@@ -351,10 +353,10 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {questionLine}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'monospace' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace' }}>
                             {blank(56)}<span>:</span>{blank(56)}<span>=</span>{blank(72)}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'monospace' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace' }}>
                             {blank(56)}<span>×</span>{blank(56)}<span>=</span>{blank(72)}
                         </div>
                     </div>
@@ -376,7 +378,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
 
         // berekeningslijnen
         const calcRow = (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontFamily: 'monospace', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', flexWrap: 'wrap' }}>
                 {sv(total)}<span>:</span>{sv(ex.denominator)}<span>=</span>{sv(groupSize)}
                 <span style={{ margin: '0 6px' }}>en</span>
                 {sv(ex.numerator)}<span>×</span>{sv(groupSize)}<span>=</span>{showSolutions ? sol(String(coloredCount)) : blank(28)}
@@ -406,7 +408,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
         );
 
         const instructions = (
-            <div style={{ fontSize: '12px', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <div style={{ fontSize: '12px', fontFamily: 'Azeret Mono, monospace', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <span>Verdeel het lijnstuk in gelijke delen.</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     Teken een boogje boven{' '}
@@ -422,10 +424,10 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
                     {instructions}
                     {lineEl}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'monospace' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace' }}>
                             {blank(56)}<span>:</span>{blank(56)}<span>=</span>{blank(72)}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'monospace' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace' }}>
                             {blank(56)}<span>×</span>{blank(56)}<span>=</span>{blank(72)}
                         </div>
                     </div>
@@ -451,7 +453,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
                 {instructions}
                 {lineEl}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'monospace', marginTop: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', marginTop: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                         {showSolutions ? sol(String(cm)) : blank(28)}<span>:</span>{showSolutions ? sol(String(ex.denominator)) : blank(24)}<span>=</span>{showSolutions ? sol(String(partLength)) : blank(28)}
                     </div>
@@ -473,7 +475,7 @@ function renderFractionExercise(ex: FractionExercise, block: MathBlock, showSolu
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-                <div style={{ fontSize: '13px', fontFamily: 'sans-serif', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ fontSize: '13px', fontFamily: 'Azeret Mono, monospace', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     Verdeel en kleur <span style={{ display: 'inline-flex' }}>{vertFrac(ex.numerator, ex.denominator)}</span> van deze figuur.
                 </div>
                 <div style={{ outline: '3px solid #000', width: 'fit-content' }}>
@@ -615,7 +617,7 @@ export default function App() {
         </div>
       );
     }
-    return <span style={{ fontFamily: 'monospace', fontSize: '17px', color: '#000' }}>{formatMathNumber(val as number)}</span>;
+    return <span style={{ fontFamily: 'Azeret Mono, monospace', fontSize: '17px', color: '#000' }}>{formatMathNumber(val as number)}</span>;
   };
 
   const renderAnswer = (val: number | Fraction | undefined) => {
@@ -668,14 +670,14 @@ export default function App() {
                   {headerData?.datum && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 140px' }}><span style={styles.sheetHeaderLabel}>Datum:</span><div style={styles.sheetHeaderLine}></div></div>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
-                  {headerData?.titel && <h1 style={{ margin: '0 0 8px 0', fontSize: '22px', fontFamily: 'sans-serif', fontWeight: 'bold', textAlign: 'right' }}>{headerData.titel}</h1>}
+                  {headerData?.titel && <h1 style={{ margin: '0 0 8px 0', fontSize: '22px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', textAlign: 'right' }}>{headerData.titel}</h1>}
                   {docSettings.showScores && totalScore > 0 && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
                 </div>
               </div>
             ) : docSettings.titlePosition === 'left' ? (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0, marginRight: `${docSettings.titleFieldsGap ?? 16}px` }}>
-                  {headerData?.titel && <h1 style={{ margin: '0 0 8px 0', fontSize: '22px', fontFamily: 'sans-serif', fontWeight: 'bold', textAlign: 'left' }}>{headerData.titel}</h1>}
+                  {headerData?.titel && <h1 style={{ margin: '0 0 8px 0', fontSize: '22px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', textAlign: 'left' }}>{headerData.titel}</h1>}
                   {docSettings.showScores && totalScore > 0 && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
                 </div>
                 <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', flex: 1 }}>
@@ -698,7 +700,7 @@ export default function App() {
                 </div>
                 {headerData?.titel && (
                   <div style={{ textAlign: 'center', marginBottom: '20px', width: '100%' }}>
-                    <h1 style={{ margin: 0, fontSize: '24px', fontFamily: 'sans-serif', fontWeight: 'bold' }}>{headerData.titel}</h1>
+                    <h1 style={{ margin: 0, fontSize: '24px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold' }}>{headerData.titel}</h1>
                   </div>
                 )}
               </>
@@ -743,6 +745,10 @@ export default function App() {
                         block.clockExercises.map((ex) => renderClockExerciseItem(ex, block, showSolutions))
                       )}
                     </div>
+                  ) : block.typeId === 'splitsen' ? (
+                    <SplitsenViewer block={block} showSolutions={showSolutions} />
+                  ) : block.typeId.startsWith('cijferen-') ? (
+                    <CijferViewer block={block} showSolutions={showSolutions} />
                   ) : block.typeId === 'breuken' ? (() => {
                     const subType = block.constraints.subType || 'kleuren';
                     const answerFmt = block.constraints.answerFormat as string | undefined;
@@ -778,7 +784,7 @@ export default function App() {
                               ? <span style={{ color: '#e11d48', fontWeight: 'bold' }}>{String(ex.remainder)}</span>
                               : <div style={{ borderBottom: '1.5px solid #000', width: '30px', height: '18px', display: 'inline-block' }} />;
                             return (
-                              <div key={ex.id} style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '17px', fontFamily: 'monospace', height: '24px' }}>
+                              <div key={ex.id} style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '17px', fontFamily: 'Azeret Mono, monospace', height: '24px' }}>
                                 <span>(</span>{helpBlank}<span>)</span>
                                 <span style={{ margin: '0 4px' }}>{formatMathNumber(ex.operands[0] as number)}</span>
                                 <span>:</span>
@@ -834,18 +840,18 @@ export default function App() {
           </div>
 
           <div className="no-print" style={{ position: 'absolute', top: '1044px', left: 0, right: 0, borderTop: '2px dashed rgba(220,38,38,0.55)', zIndex: 5, pointerEvents: 'none' }}>
-            <span style={{ position: 'absolute', right: '12px', top: '-16px', fontSize: '10px', color: 'rgba(220,38,38,0.6)', fontFamily: 'sans-serif', letterSpacing: '0.5px', userSelect: 'none' }}>— paginaeinde —</span>
+            <span style={{ position: 'absolute', right: '12px', top: '-16px', fontSize: '10px', color: 'rgba(220,38,38,0.6)', fontFamily: 'Azeret Mono, monospace', letterSpacing: '0.5px', userSelect: 'none' }}>— paginaeinde —</span>
           </div>
 
           <div onClick={(e) => { e.stopPropagation(); setActiveSelection('document'); }} style={styles.clickableZone(activeSelectionId === 'document', '100%', true)}>
-            <div style={{ fontFamily: 'sans-serif' }}>
+            <div style={{ fontFamily: 'Azeret Mono, monospace' }}>
               {[
                 footerData?.showSchool ? (footerData?.school || 'School') : null,
                 footerData?.showKlas ? (footerData?.klas || 'Klas') : null,
                 footerData?.showLeerkracht ? (footerData?.leerkracht || 'Leerkracht') : null,
               ].filter(Boolean).join(' | ')}
             </div>
-            {footerData?.showPagina && <div style={{ fontFamily: 'sans-serif' }}>Pagina 1</div>}
+            {footerData?.showPagina && <div style={{ fontFamily: 'Azeret Mono, monospace' }}>Pagina 1</div>}
           </div>
         </div>
       </main>
@@ -869,9 +875,9 @@ const styles = {
   panelRadioBtn: (active: boolean): React.CSSProperties => ({ padding: '6px 12px', fontSize: '12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: active ? 'var(--accent-purple)' : 'transparent', color: active ? 'white' : 'var(--text-muted)', fontWeight: active ? 'bold' : 'normal', flex: 1 }),
   panelEmptyState: { width: '100%', padding: '8px 0', fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center' } as React.CSSProperties,
   a4Sheet: { backgroundColor: '#ffffff', color: '#000000', width: '100%', maxWidth: '800px', minHeight: '1130px', height: 'max-content', flex: '0 0 auto', padding: '40px 50px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)', borderRadius: '4px', display: 'flex', flexDirection: 'column', position: 'relative', boxSizing: 'border-box' } as React.CSSProperties,
-  sheetHeaderLabel: { fontSize: '13px', fontWeight: 'bold' as const, marginRight: '6px', color: '#000', fontFamily: 'sans-serif' } as React.CSSProperties,
+  sheetHeaderLabel: { fontSize: '13px', fontWeight: 'bold' as const, marginRight: '6px', color: '#000', fontFamily: 'Azeret Mono, monospace' } as React.CSSProperties,
   sheetHeaderLine: { flex: 1, borderBottom: '1.5px solid #000', height: '16px' } as React.CSSProperties,
-  scoreBox: { border: '2px solid #000', padding: '8px 14px', fontSize: '15px', fontWeight: 'bold', borderRadius: '4px', fontFamily: 'sans-serif' } as React.CSSProperties,
+  scoreBox: { border: '2px solid #000', padding: '8px 14px', fontSize: '15px', fontWeight: 'bold', borderRadius: '4px', fontFamily: 'Azeret Mono, monospace' } as React.CSSProperties,
   clickableZone: (isActive: boolean, width: string, isFooter: boolean = false, hasKader: boolean = false): React.CSSProperties => ({
     display: 'flex', flexDirection: isFooter ? 'row' : 'column', justifyContent: isFooter ? 'space-between' : 'flex-start', width: width, cursor: 'pointer', padding: '12px', borderRadius: '6px', transition: 'all 0.2s', boxSizing: 'border-box',
     backgroundColor: isActive ? 'rgba(155, 48, 255, 0.04)' : 'transparent',
@@ -888,10 +894,10 @@ const styles = {
   iconBtn: { background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-main)', borderRadius: '4px', cursor: 'pointer', padding: '4px 10px', fontSize: '14px', fontWeight: 'bold' } as React.CSSProperties,
   deleteBtn: { background: '#ff4d4d', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', padding: '4px 10px', fontSize: '12px', fontWeight: 'bold' } as React.CSSProperties,
   badge: (_type: 'mag' | 'moet' | 'plus' | 'aangepast'): React.CSSProperties => ({ backgroundColor: 'white', color: '#000', padding: '2px 6px', borderRadius: '3px', fontSize: '11px', fontWeight: 'bold', border: '1.5px solid #000' }),
-  instructionDisplay: { fontSize: '16px', fontWeight: 'bold', color: '#000', fontFamily: 'sans-serif' } as React.CSSProperties,
-  pointsText: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'sans-serif', marginRight: '24px', color: '#000' } as React.CSSProperties,
-  exerciseRow: { display: 'flex', alignItems: 'flex-end', fontSize: '17px', fontFamily: 'monospace' } as React.CSSProperties,
-  mathInput: { width: '70px', textAlign: 'center', fontSize: '17px', fontFamily: 'Roboto Mono, monospace', border: '1px solid transparent', background: 'transparent', outline: 'none', color: '#000', padding: 0 } as React.CSSProperties,
+  instructionDisplay: { fontSize: '16px', fontWeight: 'bold', color: '#000', fontFamily: 'Azeret Mono, monospace' } as React.CSSProperties,
+  pointsText: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'Azeret Mono, monospace', marginRight: '24px', color: '#000' } as React.CSSProperties,
+  exerciseRow: { display: 'flex', alignItems: 'flex-end', fontSize: '17px', fontFamily: 'Azeret Mono, monospace' } as React.CSSProperties,
+  mathInput: { width: '70px', textAlign: 'center', fontSize: '17px', fontFamily: 'Azeret Mono, monospace', border: '1px solid transparent', background: 'transparent', outline: 'none', color: '#000', padding: 0 } as React.CSSProperties,
   mathDottedLine: { borderBottom: '1.5px solid #000', width: '40px', margin: '0 6px', display: 'inline-block', height: '16px' } as React.CSSProperties,
   workLine: (layout: string | undefined): React.CSSProperties => ({ borderBottom: '1.5px solid #000', minWidth: '55px', width: layout === 'inline-long' ? '100%' : (layout === 'stepped' ? '100%' : '75px') }),
   solutionText: { color: '#e11d48', fontWeight: 'bold', padding: '0 4px', fontSize: '18px' } as React.CSSProperties,

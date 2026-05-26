@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/azeret-mono": "^5.2.11",
     "@react-pdf/renderer": "^4.5.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
