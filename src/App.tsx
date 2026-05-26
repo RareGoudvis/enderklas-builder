@@ -638,7 +638,7 @@ export default function App() {
 
   return (
     <div className="print-root" style={styles.appContainer}>
-      {/* font inladen voor preview/}
+      {/* font inladen voor preview */}
       <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
             `}</style>
