@@ -231,9 +231,9 @@ export const APP_STRUCTURE: Domain[] = [
             {
                 id: 'geld',
                 label: 'Geld',
-                placeholder: true,
                 types: [
-                    ph('geld-herkennen', 'Herkennen / tekenen'),
+                    { id: 'geld-herkennen', label: 'Herkennen', typeId: 'geld-herkennen' },
+                    { id: 'geld-tekenen',   label: 'Tekenen',   typeId: 'geld-tekenen'   },
                     ph('geld-wisselen', 'Wisselen'),
                     ph('geld-gepast-betalen', 'Gepast betalen'),
                     ph('geld-teruggeven', 'Teruggeven'),

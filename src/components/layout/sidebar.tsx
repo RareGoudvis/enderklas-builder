@@ -54,7 +54,7 @@ export default function Sidebar() {
                                             <div key={subdomain.id}>
                                                 {/* Subdomain header */}
                                                 <button
-                                                    style={S.subdomainBtn(subOpen, accent)}
+                                                    style={S.subdomainBtn(subOpen, accent, subdomain.placeholder)}
                                                     onClick={() => toggleSubdomain(subdomain.id)}
                                                 >
                                                     <span>{subdomain.label}</span>
@@ -174,13 +174,14 @@ const S = {
         borderLeft: `3px solid ${accent}`,
     }),
 
-    subdomainBtn: (open: boolean, accent: string): React.CSSProperties => ({
+    subdomainBtn: (open: boolean, accent: string, placeholder?: boolean): React.CSSProperties => ({
         width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '10px 14px 10px 18px', cursor: 'pointer', border: 'none', background: 'none',
-        color: open ? 'var(--text-main)' : 'var(--text-muted)',
+        color: open && !placeholder ? 'var(--text-main)' : 'var(--text-muted)',
         fontSize: '13px', fontWeight: 600, textAlign: 'left',
-        borderLeft: open ? `2px solid ${accent}60` : '2px solid transparent',
+        borderLeft: open && !placeholder ? `2px solid ${accent}60` : '2px solid transparent',
         transition: 'color 0.15s, border-color 0.15s',
+        opacity: placeholder ? 0.45 : 1,
     }),
     subdomainContent: { paddingLeft: '8px' } as React.CSSProperties,
 

@@ -8,11 +8,13 @@ import ClockConfig from './plugins/ClockConfig';
 import FractionConfig from './plugins/FractionConfig';
 import SplitsenConfig from './plugins/SplitsenConfig';
 import CijferConfig from './plugins/CijferConfig';
+import GeldConfig from './plugins/GeldConfig';
 import { generateAdditionExercises, generateSubtractionExercises, generateMultiplicationExercises, generateDivisionExercises } from '../../services/math/mathEngine';
 import { generateClockExercises } from '../../services/clock/clockGenerator';
 import { generateFractionExercises } from '../../services/fractions/fractionGenerator';
 import { generateSplitsenExercises } from '../../services/splitsen/splitsenGenerator';
 import { generateCijferExercises } from '../../services/cijferen/cijferGenerator';
+import { generateGeldExercises, DENOMINATION_CATALOGUE, denominationLabel } from '../../services/geld/geldGenerator';
 
 const HR_STD_TYPES = ['optellen', 'aftrekken', 'vermenigvuldigen', 'delen'];
 const isHrStd = (typeId: string) => HR_STD_TYPES.some(t => typeId.includes(t));
@@ -38,6 +40,7 @@ export default function Inspector() {
     const setFractionExercises = useWorksheetStore((state) => state.setFractionExercises);
     const setSplitsenExercises = useWorksheetStore((state) => state.setSplitsenExercises);
     const setCijferExercises = useWorksheetStore((state) => state.setCijferExercises);
+    const setGeldExercises = useWorksheetStore((state) => state.setGeldExercises);
 
     const handleGenerate = () => {
         if (!activeBlock) return;
@@ -49,6 +52,8 @@ export default function Inspector() {
             setSplitsenExercises(activeBlock.id, generateSplitsenExercises(activeBlock));
         } else if (activeBlock.typeId.startsWith('cijferen-')) {
             setCijferExercises(activeBlock.id, generateCijferExercises(activeBlock));
+        } else if (activeBlock.typeId.startsWith('geld-')) {
+            setGeldExercises(activeBlock.id, generateGeldExercises(activeBlock));
         } else if (activeBlock.typeId.includes('optellen')) {
             setBlockExercises(activeBlock.id, generateAdditionExercises(activeBlock));
         } else if (activeBlock.typeId.includes('aftrekken')) {
@@ -235,6 +240,7 @@ export default function Inspector() {
                     {activeBlock.typeId === 'breuken' && <FractionConfig block={activeBlock} />}
                     {activeBlock.typeId === 'splitsen' && <SplitsenConfig block={activeBlock} />}
                     {activeBlock.typeId.startsWith('cijferen-') && <CijferConfig block={activeBlock} />}
+                    {activeBlock.typeId.startsWith('geld-') && <GeldConfig block={activeBlock} />}
                 </div>
             </div>
 
@@ -449,11 +455,85 @@ export default function Inspector() {
                             )}
                         </>
                     )}
+
+                    {/* ── Geld-specific differentiatie ── */}
+                    {activeBlock.typeId.startsWith('geld-') && (() => {
+                        const isGeldHerkennen = activeBlock.typeId === 'geld-herkennen';
+                        const gFormat: string = c.format ?? 'euros';
+                        const gScaffolding: string = c.scaffolding ?? (isGeldHerkennen ? 'invullen' : 'eenvoudig');
+                        const gShowVoorbeelden: boolean = c.showVoorbeelden ?? false;
+                        const gVoorbeeldTypes: number[] = c.voorbeeldTypes ?? [];
+                        const gAllowedDenominations: number[] = c.allowedDenominations ?? [];
+
+                        const toggleVoorbeeld = (valueCents: number) => {
+                            const next = gVoorbeeldTypes.includes(valueCents)
+                                ? gVoorbeeldTypes.filter(v => v !== valueCents)
+                                : [...gVoorbeeldTypes, valueCents];
+                            updateConstraint('voorbeeldTypes', next);
+                        };
+
+                        return (
+                            <>
+                                <label style={{ ...S.label, marginTop: '12px' }}>Opmaak</label>
+                                <div style={S.btnGroup}>
+                                    <button style={S.radioBtn(gFormat === 'euros')} onClick={() => updateConstraint('format', 'euros')}>Euro's (xx)</button>
+                                    <button style={S.radioBtn(gFormat === 'decimaal')} onClick={() => updateConstraint('format', 'decimaal')}>Decimaal (xx,xx)</button>
+                                </div>
+
+                                {isGeldHerkennen && (
+                                    <>
+                                        <label style={{ ...S.label, marginTop: '12px' }}>Antwoord</label>
+                                        <div style={S.btnGroup}>
+                                            <button style={S.radioBtn(gScaffolding === 'invullen')} onClick={() => updateConstraint('scaffolding', 'invullen')}>
+                                                {gFormat === 'decimaal' ? 'Invullen (€__,__)' : 'Invullen (€___)'}
+                                            </button>
+                                            <button style={S.radioBtn(gScaffolding === 'zelf-schrijven')} onClick={() => updateConstraint('scaffolding', 'zelf-schrijven')}>Zelf schrijven</button>
+                                        </div>
+                                    </>
+                                )}
+
+                                {!isGeldHerkennen && (
+                                    <>
+                                        <label style={{ ...S.label, marginTop: '12px' }}>Tekenvak</label>
+                                        <div style={S.btnGroup}>
+                                            <button style={S.radioBtn(gScaffolding === 'eenvoudig')} onClick={() => updateConstraint('scaffolding', 'eenvoudig')}>Eenvoudig</button>
+                                            <button style={S.radioBtn(gScaffolding === 'verdeeld')} onClick={() => updateConstraint('scaffolding', 'verdeeld')}>Verdeeld (€ / cent)</button>
+                                        </div>
+                                    </>
+                                )}
+
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
+                                    <label style={{ ...S.label, marginBottom: 0 }}>Voorbeelden tonen</label>
+                                    <input type="checkbox" checked={gShowVoorbeelden} onChange={e => updateConstraint('showVoorbeelden', e.target.checked)} style={S.checkbox} />
+                                </div>
+                                {gShowVoorbeelden && (
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                                        {DENOMINATION_CATALOGUE.filter(d => gAllowedDenominations.includes(d.valueCents)).map(d => {
+                                            const active = gVoorbeeldTypes.includes(d.valueCents);
+                                            return (
+                                                <span key={d.valueCents} onClick={() => toggleVoorbeeld(d.valueCents)}
+                                                    style={{
+                                                        padding: '4px 8px', fontSize: '11px', borderRadius: '12px', cursor: 'pointer',
+                                                        border: '1px solid var(--border-color)',
+                                                        backgroundColor: active ? 'var(--accent-purple)' : 'var(--bg-input)',
+                                                        color: active ? 'white' : 'var(--text-muted)',
+                                                        fontWeight: active ? 'bold' : 'normal',
+                                                        userSelect: 'none',
+                                                    }}>
+                                                    {denominationLabel(d.valueCents)}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
             </div>
 
             {/* ── 4. Geavanceerd (accordion) ── */}
-            {activeBlock.typeId.startsWith('cijferen-') && (
+            {(activeBlock.typeId.startsWith('cijferen-') || activeBlock.typeId.startsWith('geld-')) && (
                 <div style={S.advancedWrap}>
                     <button style={S.advancedToggle} onClick={() => setAdvancedOpen(!advancedOpen)}>
                         <span>Geavanceerd</span>
@@ -462,27 +542,58 @@ export default function Inspector() {
                     {advancedOpen && (
                         <div style={{ ...S.card, marginTop: '8px' }}>
                             <div style={S.col}>
-                                <label style={S.label}>Ruitjesgrootte: {c.gridCellSize || 25}pt (~{Math.round((c.gridCellSize || 25) / 2.835)}mm)</label>
-                                <input
-                                    type="range" min="16" max="32" step="2"
-                                    value={c.gridCellSize || 25}
-                                    onChange={(e) => updateConstraint('gridCellSize', Number(e.target.value))}
-                                    style={{ width: '100%', accentColor: 'var(--accent-bewerkingen)', cursor: 'pointer' }}
-                                />
-                                <label style={{ ...S.label, marginTop: '10px' }}>Extra kolommen: {c.extraCols || 0}</label>
-                                <input
-                                    type="range" min="0" max="6" step="1"
-                                    value={c.extraCols || 0}
-                                    onChange={(e) => updateConstraint('extraCols', Number(e.target.value))}
-                                    style={{ width: '100%', accentColor: 'var(--accent-bewerkingen)', cursor: 'pointer' }}
-                                />
-                                <label style={{ ...S.label, marginTop: '10px' }}>Extra rijen: {c.extraRows || 0}</label>
-                                <input
-                                    type="range" min="0" max="10" step="1"
-                                    value={c.extraRows || 0}
-                                    onChange={(e) => updateConstraint('extraRows', Number(e.target.value))}
-                                    style={{ width: '100%', accentColor: 'var(--accent-bewerkingen)', cursor: 'pointer' }}
-                                />
+                                {activeBlock.typeId.startsWith('cijferen-') && (
+                                    <>
+                                        <label style={S.label}>Ruitjesgrootte: {c.gridCellSize || 25}pt (~{Math.round((c.gridCellSize || 25) / 2.835)}mm)</label>
+                                        <input
+                                            type="range" min="16" max="32" step="2"
+                                            value={c.gridCellSize || 25}
+                                            onChange={(e) => updateConstraint('gridCellSize', Number(e.target.value))}
+                                            style={{ width: '100%', accentColor: 'var(--accent-bewerkingen)', cursor: 'pointer' }}
+                                        />
+                                        <label style={{ ...S.label, marginTop: '10px' }}>Extra kolommen: {c.extraCols || 0}</label>
+                                        <input
+                                            type="range" min="0" max="6" step="1"
+                                            value={c.extraCols || 0}
+                                            onChange={(e) => updateConstraint('extraCols', Number(e.target.value))}
+                                            style={{ width: '100%', accentColor: 'var(--accent-bewerkingen)', cursor: 'pointer' }}
+                                        />
+                                        <label style={{ ...S.label, marginTop: '10px' }}>Extra rijen: {c.extraRows || 0}</label>
+                                        <input
+                                            type="range" min="0" max="10" step="1"
+                                            value={c.extraRows || 0}
+                                            onChange={(e) => updateConstraint('extraRows', Number(e.target.value))}
+                                            style={{ width: '100%', accentColor: 'var(--accent-bewerkingen)', cursor: 'pointer' }}
+                                        />
+                                    </>
+                                )}
+                                {activeBlock.typeId.startsWith('geld-') && (() => {
+                                    const isGeldHerkennen = activeBlock.typeId === 'geld-herkennen';
+                                    const currentPerRow = (c.exercisesPerRow ?? 4) as number;
+                                    const boxHeight = (c.boxHeight ?? 80) as number;
+                                    return (
+                                        <>
+                                            <label style={S.label}>Oefeningen per rij ({currentPerRow})</label>
+                                            <input
+                                                type="range" min={1} max={4}
+                                                value={currentPerRow}
+                                                onChange={e => updateConstraint('exercisesPerRow', Number(e.target.value))}
+                                                style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }}
+                                            />
+                                            {!isGeldHerkennen && (
+                                                <>
+                                                    <label style={{ ...S.label, marginTop: '10px' }}>Hoogte tekenvak ({boxHeight}px)</label>
+                                                    <input
+                                                        type="range" min={40} max={160}
+                                                        value={boxHeight}
+                                                        onChange={e => updateConstraint('boxHeight', Number(e.target.value))}
+                                                        style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }}
+                                                    />
+                                                </>
+                                            )}
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
                     )}

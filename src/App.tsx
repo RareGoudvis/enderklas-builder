@@ -8,6 +8,8 @@ import FractionExerciseItem from './components/viewer/FractionExerciseItem';
 import MathBlockRenderer from './components/viewer/MathBlockRenderer';
 import SplitsenViewer from './components/viewer/SplitsenViewer';
 import CijferViewer from './components/viewer/CijferViewer';
+import GeldViewer from './components/viewer/GeldViewer';
+import GeldTekenenViewer from './components/viewer/GeldTekenenViewer';
 import { usePrint } from './hooks/usePrint';
 import { styles } from './styles/appStyles';
 
@@ -143,6 +145,10 @@ export default function App() {
                     <SplitsenViewer block={block} showSolutions={showSolutions} />
                   ) : block.typeId.startsWith('cijferen-') ? (
                     <CijferViewer block={block} showSolutions={showSolutions} />
+                  ) : block.typeId === 'geld-herkennen' ? (
+                    <GeldViewer block={block} showSolutions={showSolutions} />
+                  ) : block.typeId === 'geld-tekenen' ? (
+                    <GeldTekenenViewer block={block} showSolutions={showSolutions} />
                   ) : block.typeId === 'breuken' ? (() => {
                     const subType = block.constraints.subType || 'kleuren';
                     const answerFmt = block.constraints.answerFormat as string | undefined;

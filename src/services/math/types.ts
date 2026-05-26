@@ -83,6 +83,7 @@ export interface MathBlock {
     fractionExercises?: FractionExercise[];
     splitsenExercises?: SplitsenExercise[];
     cijferExercises?: CijferExercise[];
+    geldExercises?: GeldExercise[];
     verticalSpacing: number;
 }
 
@@ -128,6 +129,21 @@ export interface CijferConstraints {
     extraCols: number;
     extraRows: number;
     showQR?: boolean;
+}
+
+export type GeldDenominationType = 'bill' | 'euro-coin' | 'cent-coin';
+
+export interface GeldDenomination {
+    valueCents: number;
+    type: GeldDenominationType;
+    count: number;
+}
+
+export interface GeldExercise {
+    id: string;
+    amountCents: number;
+    denominations: GeldDenomination[];
+    isManuallyEdited: boolean;
 }
 
 export interface CijferExercise {
