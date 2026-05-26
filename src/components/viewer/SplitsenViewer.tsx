@@ -166,7 +166,7 @@ function HeartItem({ pairId, total, given, answer, showSolutions }: {
                 </svg>
                 {/* Left half number — positioned at heart visual centroid (~43% from top) */}
                 <div style={{
-                    position: 'absolute', top: '43%', left: '3px',
+                    position: 'absolute', top: '43%', left: '8px',
                     width: '50%',
                     transform: 'translateY(-50%)',
                     display: 'flex', justifyContent: 'center',

@@ -206,6 +206,7 @@ export default function Inspector() {
                         </div>
                     </div>
 
+                    {!activeBlock.typeId.startsWith('cijferen-') && (
                     <div style={{ marginTop: '12px' }}>
                         <label style={S.label}>Spatiëring ({activeBlock.verticalSpacing || 14}px)</label>
                         <input
@@ -215,6 +216,7 @@ export default function Inspector() {
                             style={{ width: '100%', accentColor: 'var(--accent-purple)' }}
                         />
                     </div>
+                    )}
                 </div>
             </div>
 
