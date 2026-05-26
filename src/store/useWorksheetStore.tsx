@@ -16,6 +16,7 @@ export interface DocSettings {
     headerStyle: 'geen' | 'kader';
     titlePosition: 'left' | 'center' | 'right';
     titleFieldsGap: number;
+    headerContentGap: number;
 }
 
 interface WorksheetState {
@@ -62,7 +63,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     activeBlockId: null,
     header: { naam: true, klas: true, nummer: false, datum: false, titel: '' },
     footer: { school: '', klas: '', leerkracht: '', showSchool: true, showKlas: true, showLeerkracht: true, showPagina: true, centerText: '', showCenterText: false },
-    docSettings: { showScores: true, opdrachtTitelStyle: 'regular', showDividers: true, headerStyle: 'geen', titlePosition: 'center', titleFieldsGap: 16 },
+    docSettings: { showScores: true, opdrachtTitelStyle: 'regular', showDividers: true, headerStyle: 'geen', titlePosition: 'center', titleFieldsGap: 16, headerContentGap: 12 },
     showSolutions: false,
     _history: [[]],
     _historyIndex: 0,

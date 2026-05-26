@@ -43,7 +43,7 @@ export default function TopBar({ onDownloadPDF, isGenerating }: Props) {
                 onClick={() => setShowSolutions(!showSolutions)}
                 title="Oplossingen tonen/verbergen"
             >
-                {showSolutions ? '🔴 Oplossingen aan' : 'Oplossingen'}
+                {showSolutions ? '🔴 Oplossingen aan' : 'Toon oplossingen'}
             </button>
 
             {/* Download buttons */}

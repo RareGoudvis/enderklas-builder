@@ -90,6 +90,12 @@ export default function Inspector() {
                             </>
                         )}
 
+                        <label style={{ ...S.label, marginTop: '12px' }}>Ruimte onder koptekst: {docSettings.headerContentGap ?? 12}px</label>
+                        <input type="range" min="0" max="60" step="2"
+                            value={docSettings.headerContentGap ?? 12}
+                            onChange={(e) => updateDocSettings({ headerContentGap: Number(e.target.value) })}
+                            style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
+
                         <label style={{ ...S.label, marginTop: '12px' }}>Koptekst velden</label>
                         <div style={S.checkboxGrid}>
                             <label style={S.checkboxLabel}><input type="checkbox" checked={headerData.naam} onChange={(e) => updateHeader({ naam: e.target.checked })} style={S.checkbox} /> Naam</label>
@@ -410,12 +416,12 @@ const S = {
     row: { display: 'flex', gap: '12px', alignItems: 'flex-end' } as React.CSSProperties,
     label: { display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 } as React.CSSProperties,
     footerGroupLabel: { display: 'block', fontSize: '11px', color: 'var(--text-main)', marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' } as React.CSSProperties,
-    input: { width: '100%', padding: '9px 10px', backgroundColor: '#1a1a1f', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'white', outline: 'none', boxSizing: 'border-box', fontSize: '13px' } as React.CSSProperties,
-    select: { width: '100%', padding: '9px 10px', backgroundColor: '#1a1a1f', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-muted)', outline: 'none', fontSize: '13px', cursor: 'pointer' } as React.CSSProperties,
+    input: { width: '100%', padding: '9px 10px', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-main)', outline: 'none', boxSizing: 'border-box', fontSize: '13px' } as React.CSSProperties,
+    select: { width: '100%', padding: '9px 10px', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-muted)', outline: 'none', fontSize: '13px', cursor: 'pointer' } as React.CSSProperties,
     checkboxLabel: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--text-main)' } as React.CSSProperties,
     checkboxGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px', marginTop: '4px' } as React.CSSProperties,
     checkbox: { accentColor: 'var(--accent-purple)', width: '15px', height: '15px', cursor: 'pointer', flexShrink: 0 } as React.CSSProperties,
-    btnGroup: { display: 'flex', gap: '3px', backgroundColor: '#1a1a1f', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-color)' } as React.CSSProperties,
+    btnGroup: { display: 'flex', gap: '3px', backgroundColor: 'var(--bg-input)', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-color)' } as React.CSSProperties,
     radioBtn: (active: boolean): React.CSSProperties => ({ padding: '6px 10px', fontSize: '12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: active ? 'var(--accent-purple)' : 'transparent', color: active ? 'white' : 'var(--text-muted)', fontWeight: active ? 'bold' : 'normal', flex: 1, whiteSpace: 'nowrap' }),
 
     engineCard: { backgroundColor: 'var(--bg-panel)', borderRadius: '10px', border: '1px solid rgba(172,41,233,0.35)', overflow: 'hidden' } as React.CSSProperties,

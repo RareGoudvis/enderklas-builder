@@ -754,7 +754,7 @@ export const WorksheetPDF: React.FC<{
 
         return (
             <View style={{ flexDirection: 'row', alignItems: block.layoutPreset === 'stepped' ? 'flex-start' : 'flex-end' }}>
-                <View style={{ height: 36, flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ height: 36, flexDirection: 'row', alignItems: 'flex-end' }}>
                     <View style={S.operandSlot}>{renderTerm(ex.operands[0], m1)}</View>
                     <Text style={S.op}>{ex.operator}</Text>
                     <View style={[S.operandSlot, { alignItems: 'flex-start' }]}>{renderTerm(ex.operands[1], m2)}</View>
@@ -921,7 +921,7 @@ export const WorksheetPDF: React.FC<{
                 </View>
 
                 {/* EXERCISE BLOCKS */}
-                <View style={{ flex: 1 }}>
+                <View style={{ flex: 1, marginTop: docSettings.headerContentGap ?? 12 }}>
                     {blocks.map((block, blockIndex) => {
                         const spacing = block.verticalSpacing || 14;
                         const is2Col = block.layoutPreset === 'inline-short';
@@ -972,20 +972,29 @@ export const WorksheetPDF: React.FC<{
                                             ))}
                                         </View>
                                     </>
-                                ) : is2Col ? (
-                                    // 2-column: header sits above the grid; pairs of exercises
-                                    // flow naturally across pages without splitting mid-exercise.
-                                    <>
-                                        {blockHeader}
-                                        <View style={S.grid2col}>
-                                            {block.exercises?.map((ex) => (
-                                                <View key={ex.id} style={{ width: '50%', marginBottom: spacing, paddingRight: 24 }}>
-                                                    {renderExercise(ex, block)}
+                                ) : is2Col ? (() => {
+                                    const pairs: Equation[][] = [];
+                                    (block.exercises || []).forEach((ex, i) => {
+                                        if (i % 2 === 0) pairs.push([ex]);
+                                        else pairs[pairs.length - 1].push(ex);
+                                    });
+                                    return (
+                                        <>
+                                            {pairs.map((pair, pairIdx) => (
+                                                <View key={pairIdx} wrap={false} style={{ flexDirection: 'column' }}>
+                                                    {pairIdx === 0 && blockHeader}
+                                                    <View style={{ flexDirection: 'row', width: '100%' }}>
+                                                        {pair.map(ex => (
+                                                            <View key={ex.id} style={{ width: '50%', marginBottom: spacing, paddingRight: 24 }}>
+                                                                {renderExercise(ex, block)}
+                                                            </View>
+                                                        ))}
+                                                    </View>
                                                 </View>
                                             ))}
-                                        </View>
-                                    </>
-                                ) : (
+                                        </>
+                                    );
+                                })() : (
                                     // 1-column (inline-long / stepped): each exercise is kept
                                     // whole on one page. The header is bundled with the first
                                     // exercise so it never appears as an orphan at the bottom.

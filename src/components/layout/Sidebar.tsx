@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import logo from '../../assets/enderklas-logo.png';
 import { APP_STRUCTURE } from '../../config/appstructure';
 import { useWorksheetStore } from '../../store/useWorksheetStore';
@@ -6,16 +6,16 @@ import { useWorksheetStore } from '../../store/useWorksheetStore';
 export default function Sidebar() {
     const addBlockFromType = useWorksheetStore((state) => state.addBlockFromType);
 
-    const [openDomain, setOpenDomain] = useState<string | null>(null);
     const [openSubdomain, setOpenSubdomain] = useState<string | null>(null);
     const [openType, setOpenType] = useState<string | null>(null);
+    const [theme, setTheme] = useState<'dark' | 'light'>(
+        () => (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
+    );
 
-    const toggleDomain = (id: string) => {
-        const next = openDomain === id ? null : id;
-        setOpenDomain(next);
-        setOpenSubdomain(null);
-        setOpenType(null);
-    };
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
 
     const toggleSubdomain = (id: string) => {
         const next = openSubdomain === id ? null : id;
@@ -42,24 +42,11 @@ export default function Sidebar() {
             <div style={S.navArea}>
                 {APP_STRUCTURE.map((domain) => {
                     const accent = `var(${domain.accentVar})`;
-                    const domainOpen = openDomain === domain.id;
 
                     return (
                         <div key={domain.id} style={S.domainWrap}>
-                            {/* Domain header */}
-                            <button
-                                style={S.domainBtn(domainOpen, accent)}
-                                onClick={() => toggleDomain(domain.id)}
-                            >
-                                <span style={{ color: accent, fontWeight: 700, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                    {domain.label}
-                                </span>
-                                <span style={S.chevron(domainOpen)}>›</span>
-                            </button>
-
-                            {/* Domain content — accent border runs full height */}
-                            {domainOpen && (
-                                <div style={S.domainContent(accent)}>
+                            {/* Domain content — accent border runs full height, always visible */}
+                            <div style={S.domainContent(accent)}>
                                     {domain.subdomains.map((subdomain) => {
                                         const subOpen = openSubdomain === subdomain.id;
 
@@ -78,7 +65,17 @@ export default function Sidebar() {
                                                 {subOpen && (
                                                     <div style={S.subdomainContent}>
                                                         {subdomain.types.map((type) => {
-                                                            // Leaf type (no children)
+                                                            // Placeholder leaf (no children, placeholder flag)
+                                                            if (!type.children && type.placeholder) {
+                                                                return (
+                                                                    <div key={type.id} style={S.placeholderLeaf}>
+                                                                        <span style={S.placeholderBadge}>·</span>
+                                                                        <span>{type.label}</span>
+                                                                    </div>
+                                                                );
+                                                            }
+
+                                                            // Leaf type (no children, not placeholder)
                                                             if (!type.children) {
                                                                 return (
                                                                     <button
@@ -96,10 +93,11 @@ export default function Sidebar() {
 
                                                             // Accordion type (has children)
                                                             const typeOpen = openType === type.id;
+                                                            const isPhAcc = !!type.placeholder;
                                                             return (
                                                                 <div key={type.id}>
                                                                     <button
-                                                                        style={S.typeBtn(typeOpen, accent)}
+                                                                        style={isPhAcc ? S.placeholderTypeBtn(typeOpen, accent) : S.typeBtn(typeOpen, accent)}
                                                                         onClick={() => toggleType(type.id)}
                                                                     >
                                                                         <span>{type.label}</span>
@@ -109,16 +107,23 @@ export default function Sidebar() {
                                                                     {typeOpen && (
                                                                         <div style={S.typeContent}>
                                                                             {type.children.map((leaf) => (
-                                                                                <button
-                                                                                    key={leaf.id}
-                                                                                    style={S.leafBtn}
-                                                                                    onClick={() => addBlockFromType(leaf.typeId, leaf.label, leaf.defaultConstraints)}
-                                                                                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-main)'; }}
-                                                                                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
-                                                                                >
-                                                                                    <span style={S.addBadge}>+</span>
-                                                                                    <span>{leaf.label}</span>
-                                                                                </button>
+                                                                                leaf.placeholder ? (
+                                                                                    <div key={leaf.id} style={S.placeholderLeaf}>
+                                                                                        <span style={S.placeholderBadge}>·</span>
+                                                                                        <span>{leaf.label}</span>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <button
+                                                                                        key={leaf.id}
+                                                                                        style={S.leafBtn}
+                                                                                        onClick={() => addBlockFromType(leaf.typeId, leaf.label, leaf.defaultConstraints)}
+                                                                                        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-main)'; }}
+                                                                                        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+                                                                                    >
+                                                                                        <span style={S.addBadge}>+</span>
+                                                                                        <span>{leaf.label}</span>
+                                                                                    </button>
+                                                                                )
                                                                             ))}
                                                                         </div>
                                                                     )}
@@ -131,21 +136,28 @@ export default function Sidebar() {
                                         );
                                     })}
                                 </div>
-                            )}
                         </div>
                     );
                 })}
             </div>
 
             <div style={S.footer}>
-                <div style={S.footerText}>Deze website werkt gemaakt door Ruben V.H.
-                    <br/> Deze website wordt gratis ter beschikking gesteld. 
-                    <br /> <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>Licentie: AGPL-3.0</a>
+                <div style={S.footerRow}>
+                    <div style={S.footerText}>Deze website werkt gemaakt door Ruben V.H. en wordt gratis ter beschikking gesteld. 
+                        De code in beschikbaar voor inzage (<a url="https://x.com/ruben_vah" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>DM me op X.</a>) 
+                        <br/> Deze code valt onder de <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>AGPL-3.0 licentie.</a> licentie.</div>
+                    <button style={S.themeBtn} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title={theme === 'dark' ? 'Licht thema' : 'Donker thema'}>
+                        {theme === 'dark' ? '☀' : '☽'}
+                    </button>
                 </div>
             </div>
         </aside>
     );
 }
+
+
+
+
 
 const S = {
     aside: { width: '300px', minWidth: '300px', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '12px', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } as React.CSSProperties,
@@ -156,19 +168,10 @@ const S = {
     divider: { border: 'none', height: '1px', backgroundColor: 'var(--border-color)', margin: '0 16px' } as React.CSSProperties,
     navArea: { flex: 1, overflowY: 'auto', padding: '10px 0' } as React.CSSProperties,
 
-    domainWrap: { marginBottom: '2px' } as React.CSSProperties,
-    domainBtn: (open: boolean, accent: string): React.CSSProperties => ({
-        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '11px 16px', cursor: 'pointer', border: 'none', background: 'none',
-        borderLeft: open ? `3px solid ${accent}` : '3px solid transparent',
-        transition: 'border-color 0.15s ease',
-    }),
+    domainWrap: { marginBottom: '14px' } as React.CSSProperties,
 
-    // Full-height accent line via borderLeft on the content container
     domainContent: (accent: string): React.CSSProperties => ({
         borderLeft: `3px solid ${accent}`,
-        marginLeft: '0px',
-        paddingLeft: '0px',
     }),
 
     subdomainBtn: (open: boolean, accent: string): React.CSSProperties => ({
@@ -209,9 +212,33 @@ const S = {
         transition: 'transform 0.2s ease', display: 'inline-block',
     }),
 
-    footer: { padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--border-color)' } as React.CSSProperties,
-    settingsBtn: { width: '100%', padding: '10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '12px', backgroundColor: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border-color)' } as React.CSSProperties,
-    downloadBtn: { width: '100%', padding: '10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', border: 'none', backgroundColor: 'var(--accent-purple)', color: '#ffffff' } as React.CSSProperties,
-    downloadSolBtn: { width: '100%', padding: '10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '12px', border: 'none', backgroundColor: 'var(--accent-purple-dark)', color: '#ffffff' } as React.CSSProperties,
-    footerText: { fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' } as React.CSSProperties,
+    placeholderLeaf: {
+        width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+        textAlign: 'left', padding: '8px 14px 8px 18px',
+        fontSize: '12px', color: 'var(--text-muted)', opacity: 0.5, cursor: 'default',
+    } as React.CSSProperties,
+    placeholderBadge: {
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: '18px', height: '18px', borderRadius: '4px',
+        backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)',
+        fontSize: '13px', fontWeight: 700, lineHeight: 1, flexShrink: 0, color: 'var(--text-muted)',
+    } as React.CSSProperties,
+    placeholderTypeBtn: (open: boolean, accent: string): React.CSSProperties => ({
+        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '9px 14px 9px 18px', cursor: 'pointer', border: 'none', background: 'none',
+        color: open ? 'var(--text-muted)' : 'var(--text-muted)',
+        fontSize: '12px', fontWeight: 500, textAlign: 'left', opacity: 0.5,
+        borderLeft: open ? `2px solid ${accent}40` : '2px solid transparent',
+        transition: 'color 0.15s, border-color 0.15s',
+    }),
+
+    footer: { padding: '12px 16px', borderTop: '1px solid var(--border-color)' } as React.CSSProperties,
+    footerRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } as React.CSSProperties,
+    footerText: { fontSize: '10px', color: 'var(--text-muted)' } as React.CSSProperties,
+    themeBtn: {
+        width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer',
+        border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)',
+        color: 'var(--text-muted)', fontSize: '14px', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    } as React.CSSProperties,
 };

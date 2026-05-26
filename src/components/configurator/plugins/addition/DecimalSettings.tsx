@@ -23,7 +23,7 @@ export default function DecimalSettings({ block }: Props) {
             <div style={{ marginBottom: '24px' }}>
                 <label style={labelStyle}>Aantal cijfers na de komma:</label>
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    {[1, 2, 3, 4, 5, 6].map(num => (
+                    {[1, 2, 3].map(num => (
                         <button key={num} onClick={() => updateBlockSettings(block.id, { constraints: { ...block.constraints, decimalPlaces: num } })} style={radioBtnStyle(decimalPlaces === num)}>{num}</button>
                     ))}
                 </div>

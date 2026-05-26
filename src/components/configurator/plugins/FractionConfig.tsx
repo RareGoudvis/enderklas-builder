@@ -206,10 +206,10 @@ export default function FractionConfig({ block }: Props) {
 const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '8px',
-    backgroundColor: '#1a1a1f',
+    backgroundColor: 'var(--bg-input)',
     border: '1px solid var(--border-color)',
     borderRadius: '6px',
-    color: 'white',
+    color: 'var(--text-main)',
     outline: 'none',
     fontSize: '13px',
     boxSizing: 'border-box',

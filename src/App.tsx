@@ -1,6 +1,6 @@
 import { useWorksheetStore } from './store/useWorksheetStore';
 import Inspector from './components/configurator/Inspector';
-import Sidebar from './components/layout/Sidebar';
+import Sidebar from './components/layout/sidebar';
 import TopBar from './components/layout/TopBar';
 import type { Fraction, ClockExercise, MathBlock, FractionExercise } from './services/math/types';
 import type { ClockType, ExerciseMode, HandChoice } from './services/clock/clockTypes';
@@ -705,7 +705,7 @@ export default function App() {
             )}
           </div>
 
-          <div style={{ width: '100%', marginTop: '12px' }}>
+          <div style={{ width: '100%', marginTop: `${docSettings.headerContentGap ?? 12}px` }}>
             {blocks.map((block, index) => {
               const isActive = block.id === activeSelectionId;
               const isNotLastBlock = index < blocks.length - 1;
@@ -864,8 +864,8 @@ const styles = {
   opdrachtSettingsContainer: { position: 'sticky', top: '16px', zIndex: 100, display: 'flex', flexWrap: 'wrap', padding: '16px 24px', width: '100%', maxWidth: '800px', backgroundColor: 'rgba(21, 21, 25, 0.90)', backdropFilter: 'blur(12px)', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '16px', boxSizing: 'border-box', boxShadow: '0 10px 30px rgba(0,0,0,0.6)' } as React.CSSProperties,
   settingsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', width: '100%', alignItems: 'start' } as React.CSSProperties,
   panelLabel: { display: 'block', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 600 } as React.CSSProperties,
-  panelInput: { width: '100%', padding: '8px', backgroundColor: '#1a1a1f', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'white', outline: 'none', fontSize: '13px', boxSizing: 'border-box' } as React.CSSProperties,
-  btnGroup: { display: 'flex', gap: '4px', backgroundColor: '#1a1a1f', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-color)' } as React.CSSProperties,
+  panelInput: { width: '100%', padding: '8px', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-main)', outline: 'none', fontSize: '13px', boxSizing: 'border-box' } as React.CSSProperties,
+  btnGroup: { display: 'flex', gap: '4px', backgroundColor: 'var(--bg-input)', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-color)' } as React.CSSProperties,
   panelRadioBtn: (active: boolean): React.CSSProperties => ({ padding: '6px 12px', fontSize: '12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: active ? 'var(--accent-purple)' : 'transparent', color: active ? 'white' : 'var(--text-muted)', fontWeight: active ? 'bold' : 'normal', flex: 1 }),
   panelEmptyState: { width: '100%', padding: '8px 0', fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center' } as React.CSSProperties,
   a4Sheet: { backgroundColor: '#ffffff', color: '#000000', width: '100%', maxWidth: '800px', minHeight: '1130px', height: 'max-content', flex: '0 0 auto', padding: '40px 50px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)', borderRadius: '4px', display: 'flex', flexDirection: 'column', position: 'relative', boxSizing: 'border-box' } as React.CSSProperties,

@@ -43,17 +43,6 @@ export default function ClockConfig({ block }: Props) {
 
     return (
         <div style={styles.container}>
-            {/* TYPE KLOK */}
-            <div style={styles.section}>
-                <label style={styles.label}>Type klok:</label>
-                <div style={styles.buttonGroup}>
-                    <button onClick={() => updateConstraint('clockType', 'analoog')} style={styles.radioBtn(clockType === 'analoog')}>Analoge klok</button>
-                    <button onClick={() => {
-                        updateBlockSettings(block.id, { constraints: { ...block.constraints, clockType: 'digitaal', exerciseMode: exerciseMode === 'omzetten' ? 'lezen' : exerciseMode } });
-                    }} style={styles.radioBtn(clockType === 'digitaal')}>Digitale klok</button>
-                </div>
-            </div>
-
             {/* ACTIVITEIT */}
             <div style={styles.section}>
                 <label style={styles.label}>Activiteit:</label>

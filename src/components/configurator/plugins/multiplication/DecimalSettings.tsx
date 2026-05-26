@@ -29,8 +29,7 @@ export default function DecimalSettings({ block, isDivision = false }: Props) {
             <div style={styles.section}>
                 <label style={styles.label}>Aantal cijfers na de komma (precisie):</label>
                 <div style={styles.buttonGroup}>
-                    {/* 🔥 Uitgebreid tot 4 decimalen */}
-                    {[1, 2, 3, 4].map(val => (
+                    {[1, 2, 3].map(val => (
                         <button key={val} onClick={() => updateConstraint('decimalPlaces', val)} style={styles.radioBtn(decimalPlaces === val)}>
                             {val} {val === 1 ? 'cijfer' : 'cijfers'}
                         </button>

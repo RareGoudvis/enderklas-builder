@@ -26,7 +26,7 @@
 :root {
     --bg-dark: #0f0f12;
     --bg-panel: #16161a;
-    --bg-input: #222227;
+    --bg-input: #2a2a33;
     --accent-purple: #ac29e9;
     --accent-purple-dark: #3f0c5d;
     --accent-getallenkennis: #f05252;
@@ -34,8 +34,23 @@
     --accent-metendrekenen: #3db870;
     --accent-meetkunde: #b06eff;
     --text-main: #ffffff;
-    --text-muted: #c8c8c8;
-    --border-color: #2c2c35;
+    --text-muted: #b8b8c8;
+    --border-color: #3a3a48;
+}
+
+[data-theme="light"] {
+    --bg-dark: #eeede6;
+    --bg-panel: #fafaf7;
+    --bg-input: #f0efe8;
+    --accent-purple: #c48b00;
+    --accent-purple-dark: #3d2a00;
+    --accent-getallenkennis: #d93b3b;
+    --accent-bewerkingen: #2d63e0;
+    --accent-metendrekenen: #1f9950;
+    --accent-meetkunde: #8040d0;
+    --text-main: #1a1a14;
+    --text-muted: #6b6a5e;
+    --border-color: #d4d2c8;
 }
 
 *,
