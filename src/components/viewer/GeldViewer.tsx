@@ -6,7 +6,7 @@ import { DENOMINATION_CATALOGUE, formatAmount, denominationLabel } from '../../s
 function billText(valueCents: number): string { return `${valueCents / 100}`; }
 function coinText(valueCents: number): string { return valueCents >= 100 ? `${valueCents / 100}` : `${valueCents}`; }
 
-function Bill({ valueCents }: { valueCents: number }) {
+export function Bill({ valueCents }: { valueCents: number }) {
     return (
         <svg width="70" height="40" viewBox="0 0 70 40">
             <rect x="1.5" y="1.5" width="67" height="37" rx="4" ry="4" fill="white" stroke="#000" strokeWidth="2" />

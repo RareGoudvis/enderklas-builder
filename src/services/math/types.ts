@@ -84,6 +84,8 @@ export interface MathBlock {
     splitsenExercises?: SplitsenExercise[];
     cijferExercises?: CijferExercise[];
     geldExercises?: GeldExercise[];
+    geldWisselExercises?: GeldWisselExercise[];
+    geldTeruggevenExercises?: GeldTeruggevenExercise[];
     verticalSpacing: number;
 }
 
@@ -143,6 +145,23 @@ export interface GeldExercise {
     id: string;
     amountCents: number;
     denominations: GeldDenomination[];
+    isManuallyEdited: boolean;
+}
+
+export interface GeldWisselExercise {
+    id: string;
+    billValueCents: number;
+    isManuallyEdited: boolean;
+}
+
+export interface GeldTeruggevenExercise {
+    id: string;
+    priceCents: number;      // "Je moet X betalen"
+    payWithCents: number;    // "Je betaalt met Y" — always a clean denomination
+    changeCents: number;     // = payWith - price
+    waypointCents: number;   // next whole euro above price (e.g. 2375 → 2400)
+    step1Cents: number;      // price → waypoint (always < 100, i.e. cents part)
+    step2Cents: number;      // waypoint → payWith (always whole euros)
     isManuallyEdited: boolean;
 }
 

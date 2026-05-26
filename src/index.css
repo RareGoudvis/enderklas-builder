@@ -33,16 +33,67 @@
 /* Footer bar — screen: hidden; print: fixed at bottom (see @media print below) */
 .print-footer-bar { display: none; }
 
+/* Mobile/tablet block — hidden on large screens, covers everything on small screens */
+.mobile-block { display: none; }
+.mobile-block-hint { display: none; }
+
+@media (max-width: 768px) {
+  .mobile-block {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    color: #fff;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px;
+    font-family: 'Azeret Mono', system-ui, sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+/* Tablet portrait: same block but with landscape hint */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: portrait) {
+  .mobile-block {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    color: #fff;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px;
+    font-family: 'Azeret Mono', system-ui, sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .mobile-block-hint {
+    display: block;
+    font-size: 14px;
+    color: #aaa;
+  }
+}
+
 /* === PRINT === */
 @page {
   size: A4;
-  /* 0 all sides → Chrome has no space for its date/title/URL headers.
-     HTML fixed footer handles the footer zone. */
-  margin: 0;
+  /* left/right/bottom: 0 — HTML footer handles bottom zone.
+     top: 15mm — ensures content on continuation pages starts ~1.5cm from top. */
+  margin: 15mm 0 0 0;
 }
 
 @media print {
-  body { background: white !important; }
+  html, body { height: auto !important; overflow: visible !important; background: white !important; }
+  #root { height: auto !important; overflow: visible !important; }
 
   .no-print { display: none !important; }
 
@@ -66,18 +117,31 @@
   }
 
   /* A4 card: remove chrome; own padding for top/side/content margins.
-     Bottom padding is 0 — the @page 14mm bottom margin is the footer zone. */
+     Bottom padding is 0 — the @page 14mm bottom margin is the footer zone.
+     position: static removes relative context that blocks Chrome's break-inside: avoid. */
   .print-area {
     box-shadow: none !important;
     border-radius: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
     min-height: auto !important;
-    padding: 8mm 18mm 14mm !important;
+    height: auto !important;
+    display: block !important;
+    /* top: 0 — @page margin-top: 15mm handles the gap on all pages.
+       bottom: 14mm — reserve space for the fixed footer bar. */
+    padding: 0 18mm 14mm !important;
+    overflow: visible !important;
+    position: static !important;
   }
 
-  /* Keep exercises together across page breaks */
-  .print-block { page-break-inside: avoid; }
+  /* Blocks may split across pages; position:static is still required so Chrome
+     respects break-inside:avoid on child .print-exercise elements. */
+  .print-block {
+    position: static !important;
+    transition: none !important;
+  }
+  /* Individual exercises must never be split mid-exercise. */
+  .print-exercise { page-break-inside: avoid !important; break-inside: avoid !important; }
 
   /* Footer: hidden in viewer, fixed at page bottom in print */
   .print-footer-bar {

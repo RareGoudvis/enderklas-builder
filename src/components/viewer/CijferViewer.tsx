@@ -185,7 +185,7 @@ function AddSubGrid({ ex, CELL, dp, scaffolding, showSolutions, extraCols, extra
     const firstOperandRow = 1 + freeRows;
     const lastOperandRow = firstOperandRow + numTerms - 1;
     const lineRow = lastOperandRow + 1;
-    const answerRow = lineRow + 1;
+    const answerRow = lineRow;        // answer sits right below the thick line (no gap row)
     const totalRows = answerRow + 1 + extraRows;
 
     const gridW = gridCols * CELL;
@@ -282,9 +282,9 @@ function MultiplicationGrid({ ex, CELL, dp, scaffolding, showSolutions, extraCol
     const multiplicandRow = 2;
     const multiplierRow = 3;
     const lineRow1 = 4;
-    const ppStartRow = 5;
+    const ppStartRow = lineRow1;      // partial products start immediately below first thick line
     const lineRow2 = ppStartRow + n;
-    const answerRow = lineRow2 + 1;
+    const answerRow = lineRow2;       // answer sits right below the second thick line (no gap row)
     const totalRows = answerRow + 1 + extraRows;
 
     const gridCols = 1 + maxInt + decCols + extraCols;
@@ -349,11 +349,11 @@ function MultiplicationGrid({ ex, CELL, dp, scaffolding, showSolutions, extraCol
                     .map((d, i) => <DC key={`ml${i}`} col={toGridCol(d.col)} row={multiplierRow} char={d.char} CELL={CELL} />)
             }
 
-            {/* Level 1: partial products */}
-            {scaffolding <= 1 && partialProducts.map((pp, ppIdx) => {
+            {/* Partial products — student fills these in; shown as solutions only */}
+            {scaffolding <= 1 && showSolutions && partialProducts.map((pp, ppIdx) => {
                 const row = ppStartRow + (n - 1 - ppIdx);
                 return ppDigitCols(pp, maxInt).map((d, i) => (
-                    <DC key={`pp${ppIdx}_${i}`} col={toGridCol(d.col)} row={row} char={d.char} CELL={CELL} />
+                    <DC key={`pp${ppIdx}_${i}`} col={toGridCol(d.col)} row={row} char={d.char} CELL={CELL} color={SOL_COLOR} />
                 ));
             })}
 
@@ -379,14 +379,15 @@ function DivisionGrid({ ex, CELL, dp, scaffolding, showSolutions, extraCols, ext
 
     const dividendIntCols = intLen(dividend);
     const divisorCols = intLen(divisor);
-    const quotientIntCols = intLen(quotient);
+    // always same width as dividend — student must determine how many digits the quotient needs
+    const quotientIntCols = dividendIntCols;
 
     // Working area always has at least 3 decimal cols so students can work past dp if needed
     const workingDecCols = dp > 0 ? Math.max(dp, 3) : 0;
     const dividendDecStr = dp > 0 ? (dividend.toFixed(dp).split('.')[1] || '') : '';
     const leftCols = dividendIntCols + workingDecCols;
     const rightContentCols = Math.max(divisorCols, quotientIntCols + dp);
-    const rightCols = rightContentCols + 1; // +1 right-side padding
+    const rightCols = rightContentCols;
     const totalCols = leftCols + rightCols + extraCols;
 
     const workingRows = leftCols * 2 + 1;
@@ -464,7 +465,13 @@ function CijferExercisePreview({ ex, c, showSolutions, blockId }: ExProps) {
     const extraRows = c.extraRows || 0;
 
     const opStr = ex.operator === 'x' ? '×' : ex.operator;
-    const headerText = ex.operands.map((o, i) => fmtDisplay(o, (isDivision && i === 1) ? 0 : (isMultiplication && i > 0) ? 0 : dp)).join(` ${opStr} `) + ' =';
+    const headerText = ex.operands.map((o, i) => {
+        // divisor and multiplier are normally integers; use dp only when they are decimal
+        if ((isDivision && i === 1) || (isMultiplication && i > 0)) {
+            return fmtDisplay(o, Number.isInteger(o) ? 0 : dp);
+        }
+        return fmtDisplay(o, dp);
+    }).join(` ${opStr} `) + ' =';
 
     const confirmEdit = () => {
         const operands = editValues.map(v => parseFloat(v.replace(',', '.')));
@@ -480,7 +487,7 @@ function CijferExercisePreview({ ex, c, showSolutions, blockId }: ExProps) {
     };
 
     return (
-        <div style={{ marginBottom: 6, display: 'inline-flex', flexDirection: 'column' }}>
+        <div className="print-exercise" style={{ marginBottom: 6, display: 'inline-flex', flexDirection: 'column' }}>
             {editing ? (
                 <div style={{ border: '0.5px solid #4a90d9', padding: '4px 8px', backgroundColor: '#f0f8ff', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                     {ex.operands.map((_, i) => (
@@ -509,8 +516,12 @@ function CijferExercisePreview({ ex, c, showSolutions, blockId }: ExProps) {
                 </div>
             )}
             {c.withEstimation && (
-                <div style={{ backgroundColor: '#e8e8e8', border: '0.5px solid #aaa', borderTop: 'none', padding: '3px 8px', fontSize: 9, color: '#555', fontFamily: 'Azeret Mono, monospace' }}>
-                    {showSolutions ? `≈  ${computeEstimation(ex)}` : '≈  ....................................................................'}
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', padding: '2px 8px 4px', borderBottom: '0.5px solid #aaa', fontFamily: 'Azeret Mono, monospace', fontSize: '11px' }}>
+                    <span>≈</span>
+                    {showSolutions
+                        ? <span style={{ color: '#e11d48', fontWeight: 'bold', marginLeft: '4px' }}>{computeEstimation(ex)}</span>
+                        : <div style={{ flex: 1, borderBottom: '1px solid #aaa', height: '13px', marginLeft: '2px' }} />
+                    }
                 </div>
             )}
             {isDivision
@@ -575,7 +586,7 @@ export default function CijferViewer({ block, showSolutions }: Props) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {groups.map((group, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'flex-start' }}>
+                <div key={i} className="print-exercise" style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'flex-start' }}>
                     {group.map(ex => <CijferExercisePreview key={ex.id} ex={ex} c={c} showSolutions={showSolutions} blockId={block.id} />)}
                 </div>
             ))}

@@ -184,16 +184,23 @@ function tryGenerate(c: CijferConstraints): CijferExercise | null {
         const maxMultiplier = maxVal <= 100 ? 9 : maxVal <= 10000 ? 99 : maxVal <= 1_000_000 ? 999 : 9999;
         const minMultiplier = maxVal <= 100 ? 2 : 10;
 
-        const maskedMultiplier = applyMask(getMask(c, 1), maxMultiplier, 0);
-        const multiplier = maskedMultiplier !== null
-            ? Math.max(minMultiplier, Math.round(maskedMultiplier))
-            : randInt(minMultiplier, maxMultiplier);
-        if (multiplier < minMultiplier || multiplier > maxMultiplier) return null;
+        // pass dp so decimal place keys (t, h) generate proper fractional multipliers
+        const mask1 = getMask(c, 1);
+        const hasMask1 = Object.values(mask1).some(v => v);
+        const maskedMultiplier = applyMask(mask1, maxMultiplier, dp);
+        const hasMaskedMultiplier = maskedMultiplier !== null;
+        if (hasMask1 && !hasMaskedMultiplier) return null;
+        const multiplier = hasMaskedMultiplier ? maskedMultiplier : randInt(minMultiplier, maxMultiplier);
+        if (multiplier <= 0 || multiplier > maxMultiplier) return null;
 
         const maxMultiplicandScaled = Math.floor((maxVal * s) / multiplier);
         if (maxMultiplicandScaled < s) return null;
 
-        const masked = applyMask(getMask(c, 0), maxMultiplicandScaled / s, dp);
+        const mask0 = getMask(c, 0);
+        const hasMask0 = Object.values(mask0).some(v => v);
+        const masked = applyMask(mask0, maxMultiplicandScaled / s, dp);
+        // if mask was set but generated value is out of range, retry instead of falling back to random
+        if (hasMask0 && masked === null) return null;
         const multiplicand = masked !== null
             ? masked
             : parseFloat((randInt(s, maxMultiplicandScaled) / s).toFixed(dp));
@@ -210,12 +217,16 @@ function tryGenerate(c: CijferConstraints): CijferExercise | null {
     // Division ':'
     const maxDivisor = maxVal <= 100 ? 9 : maxVal <= 10_000 ? 99 : 999;
 
-    // Resolve divisor (operand1 mask or random)
-    const maskedDivisor = applyMask(getMask(c, 1), maxDivisor, 0);
-    const divisor = maskedDivisor !== null
-        ? Math.max(2, Math.min(maxDivisor, Math.round(maskedDivisor)))
-        : randInt(2, maxDivisor);
-    if (divisor < 2) return null;
+    // pass dp so decimal mask keys (t, h) produce fractional divisors
+    const mask1d = getMask(c, 1);
+    const hasMask1d = Object.values(mask1d).some(v => v);
+    const maskedDivisor = applyMask(mask1d, maxDivisor, dp);
+    const hasMaskedDivisor = maskedDivisor !== null;
+    if (hasMask1d && !hasMaskedDivisor) return null;
+    const divisor = hasMaskedDivisor ? maskedDivisor : randInt(2, maxDivisor);
+    if (divisor <= 0) return null;
+    // for unmasked integer divisors enforce minimum of 2
+    if (!hasMaskedDivisor && divisor < 2) return null;
 
     if (isDecimal) {
         const maskDiv = getMask(c, 0);

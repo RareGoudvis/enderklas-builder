@@ -232,11 +232,10 @@ export const APP_STRUCTURE: Domain[] = [
                 id: 'geld',
                 label: 'Geld',
                 types: [
-                    { id: 'geld-herkennen', label: 'Herkennen', typeId: 'geld-herkennen' },
-                    { id: 'geld-tekenen',   label: 'Tekenen',   typeId: 'geld-tekenen'   },
-                    ph('geld-wisselen', 'Wisselen'),
-                    ph('geld-gepast-betalen', 'Gepast betalen'),
-                    ph('geld-teruggeven', 'Teruggeven'),
+                    { id: 'geld-herkennen',   label: 'Herkennen',      typeId: 'geld-herkennen'   },
+                    { id: 'geld-tekenen',     label: 'Bedrag tekenen', typeId: 'geld-tekenen'     },
+                    { id: 'geld-wissel',      label: 'Wissel',         typeId: 'geld-wissel'      },
+                    { id: 'geld-teruggeven',  label: 'Teruggeven',     typeId: 'geld-teruggeven'  },
                     phAcc('geld-rekenen', 'Rekenen met geld', [
                         phLeaf('geld-rekenen-korting', 'Korting'),
                         phLeaf('geld-rekenen-intrest', 'Intrest'),

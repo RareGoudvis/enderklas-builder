@@ -10,6 +10,9 @@ import SplitsenViewer from './components/viewer/SplitsenViewer';
 import CijferViewer from './components/viewer/CijferViewer';
 import GeldViewer from './components/viewer/GeldViewer';
 import GeldTekenenViewer from './components/viewer/GeldTekenenViewer';
+import GeldWisselViewer from './components/viewer/GeldWisselViewer';
+import GeldTeruggevenViewer from './components/viewer/GeldTeruggevenViewer';
+import AlphaPopup from './components/layout/AlphaPopup';
 import { usePrint } from './hooks/usePrint';
 import { styles } from './styles/appStyles';
 
@@ -43,6 +46,12 @@ export default function App() {
   }, [blocks, docSettings]);
 
   return (
+    <>
+    <div className="mobile-block">
+      <span>Deze tool werkt enkel op een groot scherm. Kom later nog eens terug.</span>
+      <span className="mobile-block-hint">Tip: probeer landscape modus.</span>
+    </div>
+    <AlphaPopup />
     <div className="print-root" style={styles.appContainer}>
       {/* LEFT SIDEBAR */}
       <div className="no-print"><Sidebar /></div>
@@ -57,50 +66,61 @@ export default function App() {
         <div ref={a4Ref} className="print-area" style={styles.a4Sheet}>
           {/* ── HEADER ── */}
           <div style={{ display: 'flex', flexDirection: 'column', width: '100%', padding: '12px', borderRadius: '6px', boxSizing: 'border-box', border: docSettings.headerStyle === 'kader' ? '1.5px solid #000' : '1px solid transparent' }}>
-            {docSettings.titlePosition === 'right' ? (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', flex: 1, marginRight: `${docSettings.titleFieldsGap ?? 16}px` }}>
+            {(() => {
+              const showScore = docSettings.showScores && totalScore > 0;
+              const gap = docSettings.titleFieldsGap ?? 16;
+              const topFields = (
+                <div style={{ display: 'flex', gap: '16px', width: '100%' }}>
                   {headerData?.naam && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 200px' }}><span style={styles.sheetHeaderLabel}>Naam:</span><div style={styles.sheetHeaderLine}></div></div>}
                   {headerData?.klas && <div style={{ display: 'flex', alignItems: 'flex-end', width: '90px' }}><span style={styles.sheetHeaderLabel}>Klas:</span><div style={styles.sheetHeaderLine}></div></div>}
                   {headerData?.nummer && <div style={{ display: 'flex', alignItems: 'flex-end', width: '80px' }}><span style={styles.sheetHeaderLabel}>Nr:</span><div style={styles.sheetHeaderLine}></div></div>}
-                  {headerData?.datum && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 140px' }}><span style={styles.sheetHeaderLabel}>Datum:</span><div style={styles.sheetHeaderLine}></div></div>}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
-                  {headerData?.titel && <h1 style={{ margin: '0 0 8px 0', fontSize: '22px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', textAlign: 'right' }}>{headerData.titel}</h1>}
-                  {docSettings.showScores && totalScore > 0 && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
+              );
+              const datumField = headerData?.datum ? (
+                <div style={{ display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+                  <span style={styles.sheetHeaderLabel}>Datum:</span><div style={styles.sheetHeaderLine}></div>
                 </div>
-              </div>
-            ) : docSettings.titlePosition === 'left' ? (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0, marginRight: `${docSettings.titleFieldsGap ?? 16}px` }}>
-                  {headerData?.titel && <h1 style={{ margin: '0 0 8px 0', fontSize: '22px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', textAlign: 'left' }}>{headerData.titel}</h1>}
-                  {docSettings.showScores && totalScore > 0 && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
+              ) : null;
+              const titleScore = (align: 'left' | 'right') => (headerData?.titel || showScore) ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: align === 'right' ? 'flex-end' : 'flex-start', justifyContent: (headerData?.titel && showScore) ? 'space-between' : (!showScore) ? 'center' : 'flex-end', flexShrink: 0, gridColumn: align === 'right' ? '2' : '1', gridRow: '1 / 3' }}>
+                  {headerData?.titel && <h1 style={{ margin: 0, fontSize: '22px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', textAlign: align }}>{headerData.titel}</h1>}
+                  {showScore && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
                 </div>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', flex: 1 }}>
-                  {headerData?.naam && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 200px' }}><span style={styles.sheetHeaderLabel}>Naam:</span><div style={styles.sheetHeaderLine}></div></div>}
-                  {headerData?.klas && <div style={{ display: 'flex', alignItems: 'flex-end', width: '90px' }}><span style={styles.sheetHeaderLabel}>Klas:</span><div style={styles.sheetHeaderLine}></div></div>}
-                  {headerData?.nummer && <div style={{ display: 'flex', alignItems: 'flex-end', width: '80px' }}><span style={styles.sheetHeaderLabel}>Nr:</span><div style={styles.sheetHeaderLine}></div></div>}
-                  {headerData?.datum && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 140px' }}><span style={styles.sheetHeaderLabel}>Datum:</span><div style={styles.sheetHeaderLine}></div></div>}
+              ) : null;
+              if (docSettings.titlePosition === 'right') return (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', columnGap: `${gap}px`, rowGap: '8px' }}>
+                  <div style={{ gridColumn: '1', gridRow: '1', display: 'flex', alignItems: 'flex-end' }}>{topFields}</div>
+                  {titleScore('right')}
+                  {datumField && <div style={{ gridColumn: '1', gridRow: '2', display: 'flex', alignItems: 'flex-end' }}>{datumField}</div>}
                 </div>
-              </div>
-            ) : (
-              <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', width: '380px' }}>
-                    {headerData?.naam && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 200px' }}><span style={styles.sheetHeaderLabel}>Naam:</span><div style={styles.sheetHeaderLine}></div></div>}
-                    {headerData?.klas && <div style={{ display: 'flex', alignItems: 'flex-end', width: '90px' }}><span style={styles.sheetHeaderLabel}>Klas:</span><div style={styles.sheetHeaderLine}></div></div>}
-                    {headerData?.nummer && <div style={{ display: 'flex', alignItems: 'flex-end', width: '80px' }}><span style={styles.sheetHeaderLabel}>Nr:</span><div style={styles.sheetHeaderLine}></div></div>}
-                    {headerData?.datum && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 140px' }}><span style={styles.sheetHeaderLabel}>Datum:</span><div style={styles.sheetHeaderLine}></div></div>}
-                  </div>
-                  {docSettings.showScores && totalScore > 0 && <div style={styles.scoreBox}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
+              );
+              if (docSettings.titlePosition === 'left') return (
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: `${gap}px`, rowGap: '8px' }}>
+                  {titleScore('left')}
+                  <div style={{ gridColumn: '2', gridRow: '1', display: 'flex', alignItems: 'flex-end' }}>{topFields}</div>
+                  {datumField && <div style={{ gridColumn: '2', gridRow: '2', display: 'flex', alignItems: 'flex-end' }}>{datumField}</div>}
                 </div>
-                {headerData?.titel && (
-                  <div style={{ textAlign: 'center', marginBottom: '20px', width: '100%' }}>
-                    <h1 style={{ margin: 0, fontSize: '24px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold' }}>{headerData.titel}</h1>
-                  </div>
-                )}
-              </>
-            )}
+              );
+              // center
+              return (
+                <>
+                  {(headerData?.naam || headerData?.klas || headerData?.nummer) && (
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', marginBottom: '8px' }}>
+                      {headerData?.naam && <div style={{ display: 'flex', alignItems: 'flex-end', flex: '1 1 200px' }}><span style={styles.sheetHeaderLabel}>Naam:</span><div style={styles.sheetHeaderLine}></div></div>}
+                      {headerData?.klas && <div style={{ display: 'flex', alignItems: 'flex-end', width: '90px' }}><span style={styles.sheetHeaderLabel}>Klas:</span><div style={styles.sheetHeaderLine}></div></div>}
+                      {headerData?.nummer && <div style={{ display: 'flex', alignItems: 'flex-end', width: '80px' }}><span style={styles.sheetHeaderLabel}>Nr:</span><div style={styles.sheetHeaderLine}></div></div>}
+                    </div>
+                  )}
+                  {datumField && <div style={{ display: 'flex', alignItems: 'flex-end', marginBottom: '8px' }}>{datumField}</div>}
+                  {(headerData?.titel || showScore) && (
+                    <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '4px' }}>
+                      {headerData?.titel && <h1 style={{ margin: 0, fontSize: '24px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', textAlign: 'center' }}>{headerData.titel}</h1>}
+                      {showScore && <div style={{ ...styles.scoreBox, position: 'absolute', right: 0 }}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           {/* ── BLOCKS ── */}
@@ -149,6 +169,10 @@ export default function App() {
                     <GeldViewer block={block} showSolutions={showSolutions} />
                   ) : block.typeId === 'geld-tekenen' ? (
                     <GeldTekenenViewer block={block} showSolutions={showSolutions} />
+                  ) : block.typeId === 'geld-wissel' ? (
+                    <GeldWisselViewer block={block} showSolutions={showSolutions} />
+                  ) : block.typeId === 'geld-teruggeven' ? (
+                    <GeldTeruggevenViewer block={block} showSolutions={showSolutions} />
                   ) : block.typeId === 'breuken' ? (() => {
                     const subType = block.constraints.subType || 'kleuren';
                     const answerFmt = block.constraints.answerFormat as string | undefined;
@@ -198,5 +222,6 @@ export default function App() {
       {/* RIGHT INSPECTOR */}
       <div className="no-print"><Inspector /></div>
     </div>
+    </>
   );
 }

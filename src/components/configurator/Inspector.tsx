@@ -9,12 +9,14 @@ import FractionConfig from './plugins/FractionConfig';
 import SplitsenConfig from './plugins/SplitsenConfig';
 import CijferConfig from './plugins/CijferConfig';
 import GeldConfig from './plugins/GeldConfig';
+import GeldWisselConfig from './plugins/GeldWisselConfig';
+import GeldTeruggevenConfig from './plugins/GeldTeruggevenConfig';
 import { generateAdditionExercises, generateSubtractionExercises, generateMultiplicationExercises, generateDivisionExercises } from '../../services/math/mathEngine';
 import { generateClockExercises } from '../../services/clock/clockGenerator';
 import { generateFractionExercises } from '../../services/fractions/fractionGenerator';
 import { generateSplitsenExercises } from '../../services/splitsen/splitsenGenerator';
 import { generateCijferExercises } from '../../services/cijferen/cijferGenerator';
-import { generateGeldExercises, DENOMINATION_CATALOGUE, denominationLabel } from '../../services/geld/geldGenerator';
+import { generateGeldExercises, generateGeldWisselExercises, generateGeldTeruggevenExercises, DENOMINATION_CATALOGUE, denominationLabel } from '../../services/geld/geldGenerator';
 
 const HR_STD_TYPES = ['optellen', 'aftrekken', 'vermenigvuldigen', 'delen'];
 const isHrStd = (typeId: string) => HR_STD_TYPES.some(t => typeId.includes(t));
@@ -41,6 +43,8 @@ export default function Inspector() {
     const setSplitsenExercises = useWorksheetStore((state) => state.setSplitsenExercises);
     const setCijferExercises = useWorksheetStore((state) => state.setCijferExercises);
     const setGeldExercises = useWorksheetStore((state) => state.setGeldExercises);
+    const setGeldWisselExercises = useWorksheetStore((state) => state.setGeldWisselExercises);
+    const setGeldTeruggevenExercises = useWorksheetStore((state) => state.setGeldTeruggevenExercises);
 
     const handleGenerate = () => {
         if (!activeBlock) return;
@@ -52,8 +56,12 @@ export default function Inspector() {
             setSplitsenExercises(activeBlock.id, generateSplitsenExercises(activeBlock));
         } else if (activeBlock.typeId.startsWith('cijferen-')) {
             setCijferExercises(activeBlock.id, generateCijferExercises(activeBlock));
-        } else if (activeBlock.typeId.startsWith('geld-')) {
+        } else if (activeBlock.typeId === 'geld-herkennen' || activeBlock.typeId === 'geld-tekenen') {
             setGeldExercises(activeBlock.id, generateGeldExercises(activeBlock));
+        } else if (activeBlock.typeId === 'geld-wissel') {
+            setGeldWisselExercises(activeBlock.id, generateGeldWisselExercises(activeBlock));
+        } else if (activeBlock.typeId === 'geld-teruggeven') {
+            setGeldTeruggevenExercises(activeBlock.id, generateGeldTeruggevenExercises(activeBlock));
         } else if (activeBlock.typeId.includes('optellen')) {
             setBlockExercises(activeBlock.id, generateAdditionExercises(activeBlock));
         } else if (activeBlock.typeId.includes('aftrekken')) {
@@ -240,7 +248,9 @@ export default function Inspector() {
                     {activeBlock.typeId === 'breuken' && <FractionConfig block={activeBlock} />}
                     {activeBlock.typeId === 'splitsen' && <SplitsenConfig block={activeBlock} />}
                     {activeBlock.typeId.startsWith('cijferen-') && <CijferConfig block={activeBlock} />}
-                    {activeBlock.typeId.startsWith('geld-') && <GeldConfig block={activeBlock} />}
+                    {(activeBlock.typeId === 'geld-herkennen' || activeBlock.typeId === 'geld-tekenen') && <GeldConfig block={activeBlock} />}
+                    {activeBlock.typeId === 'geld-wissel' && <GeldWisselConfig block={activeBlock} />}
+                    {activeBlock.typeId === 'geld-teruggeven' && <GeldTeruggevenConfig block={activeBlock} />}
                 </div>
             </div>
 
@@ -456,8 +466,33 @@ export default function Inspector() {
                         </>
                     )}
 
-                    {/* ── Geld-specific differentiatie ── */}
-                    {activeBlock.typeId.startsWith('geld-') && (() => {
+                    {/* ── Scaffolding (geld-teruggeven) ── */}
+                    {activeBlock.typeId === 'geld-teruggeven' && (() => {
+                        const scaffolding: string = c.scaffolding ?? 'ingevuld';
+                        return (
+                            <>
+                                <label style={{ ...S.label, marginTop: '12px' }}>Scaffolding</label>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    {([
+                                        { value: 'ingevuld',            label: 'Ingevuld' },
+                                        { value: 'basis',               label: 'Basis' },
+                                        { value: 'structuur',           label: 'Structuur' },
+                                        { value: 'rechthoek',           label: 'Lege ruimte' },
+                                        { value: 'leeg',                label: 'Geen' },
+                                    ] as const).map(opt => (
+                                        <button key={opt.value}
+                                            onClick={() => updateConstraint('scaffolding', opt.value)}
+                                            style={{ ...S.radioBtn(scaffolding === opt.value), justifyContent: 'flex-start', textAlign: 'left' }}>
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        );
+                    })()}
+
+                    {/* ── Geld-specific differentiatie (herkennen + tekenen only) ── */}
+                    {(activeBlock.typeId === 'geld-herkennen' || activeBlock.typeId === 'geld-tekenen') && (() => {
                         const isGeldHerkennen = activeBlock.typeId === 'geld-herkennen';
                         const gFormat: string = c.format ?? 'euros';
                         const gScaffolding: string = c.scaffolding ?? (isGeldHerkennen ? 'invullen' : 'eenvoudig');
@@ -567,7 +602,7 @@ export default function Inspector() {
                                         />
                                     </>
                                 )}
-                                {activeBlock.typeId.startsWith('geld-') && (() => {
+                                {activeBlock.typeId.startsWith('geld-') && activeBlock.typeId !== 'geld-teruggeven' && (() => {
                                     const isGeldHerkennen = activeBlock.typeId === 'geld-herkennen';
                                     const currentPerRow = (c.exercisesPerRow ?? 4) as number;
                                     const boxHeight = (c.boxHeight ?? 80) as number;

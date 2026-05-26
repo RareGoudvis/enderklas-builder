@@ -1,4 +1,4 @@
-import type { MathBlock, GeldExercise, GeldDenomination, GeldDenominationType } from '../math/types';
+import type { MathBlock, GeldExercise, GeldDenomination, GeldDenominationType, GeldWisselExercise, GeldTeruggevenExercise } from '../math/types';
 
 // All denominations in cents, largest first
 const DENOMINATION_CATALOGUE: { valueCents: number; type: GeldDenominationType }[] = [
@@ -99,6 +99,75 @@ export function generateGeldExercises(block: MathBlock): GeldExercise[] {
         });
     }
 
+    return exercises;
+}
+
+export function generateGeldWisselExercises(block: MathBlock): GeldWisselExercise[] {
+    const exerciseBills: number[] = block.constraints.exerciseBills ?? [500];
+    const n = block.numberOfExercises || 4;
+    return Array.from({ length: n }, (_, i) => ({
+        id: `geld-wissel-${Date.now()}-${i}`,
+        // cycle through exerciseBills; if fewer entries than exercises, repeat last
+        billValueCents: exerciseBills[i] ?? exerciseBills[exerciseBills.length - 1] ?? 500,
+        isManuallyEdited: false,
+    }));
+}
+
+const BILL_DENOMINATIONS = [500, 1000, 2000, 5000, 10000, 20000, 50000];
+
+// Belgian prices are rounded to 5ct, so only multiples of 5 are used
+const CENTEN_POOLS: Record<string, number[]> = {
+    vijfentwintig: [25, 50, 75],
+    tien:          [10, 20, 30, 40, 50, 60, 70, 80, 90],
+    vijf:          [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95],
+};
+
+export function generateGeldTeruggevenExercises(block: MathBlock): GeldTeruggevenExercise[] {
+    const {
+        minPriceEuros = 1,
+        maxPriceEuros = 49,
+        payWithOptions = [1000, 2000, 5000],
+        centenDeel = 'vijf',
+    } = block.constraints;
+    const n = block.numberOfExercises || 4;
+    const rng = seededRng(Date.now() & 0xffff);
+    const exercises: GeldTeruggevenExercise[] = [];
+    const used = new Set<string>();
+    const cenPool = CENTEN_POOLS[centenDeel as string] ?? CENTEN_POOLS.vijf;
+
+    let attempts = 0;
+    while (exercises.length < n && attempts < 20000) {
+        attempts++;
+        const options = (payWithOptions as number[]).filter(v => BILL_DENOMINATIONS.includes(v));
+        if (options.length === 0) break;
+        const payWithCents = options[Math.floor(rng() * options.length)];
+        const maxPriceForPayWith = Math.floor(payWithCents / 100) - 1;
+        const effectiveMax = Math.min(maxPriceEuros, maxPriceForPayWith);
+        if (effectiveMax < minPriceEuros) continue;
+
+        const priceEuros = Math.floor(rng() * (effectiveMax - minPriceEuros + 1)) + minPriceEuros;
+        const centsPart = cenPool[Math.floor(rng() * cenPool.length)];
+        const priceCents = priceEuros * 100 + centsPart;
+        const key = `${priceCents}-${payWithCents}`;
+        if (used.has(key)) continue;
+        used.add(key);
+
+        const waypointCents = Math.ceil(priceCents / 100) * 100;
+        const step1Cents = waypointCents - priceCents;
+        const step2Cents = payWithCents - waypointCents;
+        const changeCents = payWithCents - priceCents;
+
+        exercises.push({
+            id: `geld-tg-${Date.now()}-${exercises.length}`,
+            priceCents,
+            payWithCents,
+            changeCents,
+            waypointCents,
+            step1Cents,
+            step2Cents,
+            isManuallyEdited: false,
+        });
+    }
     return exercises;
 }
 
