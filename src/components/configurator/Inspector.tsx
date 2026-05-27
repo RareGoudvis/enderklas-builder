@@ -31,9 +31,6 @@ export default function Inspector() {
     const updateFooter = useWorksheetStore((state) => state.updateFooter);
     const updateDocSettings = useWorksheetStore((state) => state.updateDocSettings);
 
-    const theme = useWorksheetStore((state) => state.theme);
-    const setTheme = useWorksheetStore((state) => state.setTheme);
-
     const updateBlockInstruction = useWorksheetStore((state) => state.updateBlockInstruction);
     const updateBlockLayout = useWorksheetStore((state) => state.updateBlockLayout);
     const updateBlockSettings = useWorksheetStore((state) => state.updateBlockSettings);
@@ -128,16 +125,6 @@ export default function Inspector() {
                                 </button>
                             ))}
                         </div>
-                    </div>
-                </div>
-
-                {/* ── Thema ── */}
-                <div style={S.card}>
-                    <h4 style={S.cardTitle}>Thema</h4>
-                    <div style={S.btnGroup}>
-                        <button onClick={() => setTheme('light')} style={S.radioBtn(theme === 'light')} title="Licht thema">☀ Licht</button>
-                        <button onClick={() => setTheme('dark')} style={S.radioBtn(theme === 'dark')} title="Donker thema">☽ Donker</button>
-                        <button onClick={() => setTheme('colorblind')} style={S.radioBtn(theme === 'colorblind')} title="Hoog contrast / kleurenblind-veilig">◐ Hoog contrast</button>
                     </div>
                 </div>
 

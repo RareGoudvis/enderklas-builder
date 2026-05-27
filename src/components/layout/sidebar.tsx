@@ -6,6 +6,8 @@ import HelpModal from './HelpModal';
 
 export default function Sidebar() {
     const addBlockFromType = useWorksheetStore((state) => state.addBlockFromType);
+    const theme = useWorksheetStore((state) => state.theme);
+    const setTheme = useWorksheetStore((state) => state.setTheme);
 
     const [openSubdomain, setOpenSubdomain] = useState<string | null>(null);
     const [openType, setOpenType] = useState<string | null>(null);
@@ -135,6 +137,15 @@ export default function Sidebar() {
                 })}
             </div>
 
+            <div style={S.themeRow}>
+                <span style={S.themeLabel}>Thema</span>
+                <div style={S.themeBtnGroup}>
+                    <button style={S.themeBtn(theme === 'light')} onClick={() => setTheme('light')} title="Licht thema">☀</button>
+                    <button style={S.themeBtn(theme === 'dark')} onClick={() => setTheme('dark')} title="Donker thema">☽</button>
+                    <button style={S.themeBtn(theme === 'colorblind')} onClick={() => setTheme('colorblind')} title="Hoog contrast / kleurenblind-veilig">◐</button>
+                </div>
+            </div>
+
             <div style={S.footer}>
                 <div style={S.footerActions}>
                     <a href="https://x.com/ruben_vah" target="_blank" rel="noopener noreferrer" style={S.footerIconBtn} title="Contact via X">
@@ -230,6 +241,17 @@ const S = {
         fontSize: '12px', fontWeight: 500, textAlign: 'left', opacity: 0.5,
         borderLeft: open ? `2px solid ${accent}40` : '2px solid transparent',
         transition: 'color 0.15s, border-color 0.15s',
+    }),
+
+    themeRow: { padding: '10px 16px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' } as React.CSSProperties,
+    themeLabel: { fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, color: 'var(--text-muted)' } as React.CSSProperties,
+    themeBtnGroup: { display: 'flex', gap: '4px', backgroundColor: 'var(--bg-input)', padding: '2px', borderRadius: '6px', border: '1px solid var(--border-color)' } as React.CSSProperties,
+    themeBtn: (active: boolean): React.CSSProperties => ({
+        width: '32px', height: '28px', borderRadius: '4px', cursor: 'pointer', border: 'none',
+        backgroundColor: active ? 'var(--accent-purple)' : 'transparent',
+        color: active ? 'white' : 'var(--text-muted)',
+        fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontWeight: active ? 'bold' : 'normal',
     }),
 
     footer: { padding: '12px 16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' } as React.CSSProperties,
