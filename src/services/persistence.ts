@@ -19,9 +19,14 @@ interface HeaderData {
     titel: string;
 }
 
+// 'template' = settings-only payload (exercise arrays stripped). Receiver clicks
+// Genereer alles to populate. 'full' (or absent for back-compat) = complete snapshot.
+export type WorksheetFileMode = 'full' | 'template';
+
 export interface WorksheetFile {
     version: number;
     exportedAt: string;
+    mode?: WorksheetFileMode;
     blocks: MathBlock[];
     header: HeaderData;
     footer: FooterData;
@@ -60,11 +65,31 @@ function todayStamp(): string {
     return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function buildPayload(state: SerialisableState): WorksheetFile {
+// Strip all generated exercise content from a block, keeping every setting that
+// the Inspector controls. Used for template export/share — the receiver gets a
+// pre-configured but empty worksheet.
+function stripBlock(b: MathBlock): MathBlock {
+    return {
+        ...b,
+        exercises: [],
+        clockExercises: b.clockExercises ? [] : undefined,
+        fractionExercises: b.fractionExercises ? [] : undefined,
+        splitsenExercises: b.splitsenExercises ? [] : undefined,
+        cijferExercises: b.cijferExercises ? [] : undefined,
+        geldExercises: b.geldExercises ? [] : undefined,
+        geldWisselExercises: b.geldWisselExercises ? [] : undefined,
+        geldTeruggevenExercises: b.geldTeruggevenExercises ? [] : undefined,
+        mabExercises: b.mabExercises ? [] : undefined,
+    };
+}
+
+function buildPayload(state: SerialisableState, mode: WorksheetFileMode = 'full'): WorksheetFile {
+    const blocks = mode === 'template' ? state.blocks.map(stripBlock) : state.blocks;
     return {
         version: WORKSHEET_FORMAT_VERSION,
         exportedAt: new Date().toISOString(),
-        blocks: state.blocks,
+        mode,
+        blocks,
         header: state.header,
         footer: state.footer,
         docSettings: state.docSettings,
@@ -173,9 +198,9 @@ export function renamePreset(id: string, name: string): void {
 
 // ── Share via URL hash (base64 in fragment, not query — never leaves browser) ─
 
-export function encodeShareLink(state: SerialisableState): string | null {
+export function encodeShareLink(state: SerialisableState, opts: { template?: boolean } = {}): string | null {
     try {
-        const json = JSON.stringify(buildPayload(state));
+        const json = JSON.stringify(buildPayload(state, opts.template ? 'template' : 'full'));
         // encodeURIComponent first so non-ASCII titles survive btoa's latin-1 restriction.
         const b64 = btoa(encodeURIComponent(json));
         if (b64.length > MAX_SHARE_BYTES) return null;

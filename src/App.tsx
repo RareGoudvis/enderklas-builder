@@ -50,7 +50,11 @@ export default function App() {
     // 1. Shared link in URL hash.
     const shared = decodeShareHash(window.location.hash);
     if (shared) {
-      if (window.confirm('Werkbundel gedeeld via link laden? Huidige werkbundel wordt vervangen.')) {
+      const isTemplate = shared.mode === 'template';
+      const msg = isTemplate
+        ? 'Sjabloon gedeeld via link laden? Bevat enkel instellingen — klik daarna op "Genereer alles" om oefeningen te maken. Huidige werkbundel wordt vervangen.'
+        : 'Werkbundel gedeeld via link laden? Huidige werkbundel wordt vervangen.';
+      if (window.confirm(msg)) {
         loadWorksheet(shared);
       }
       window.history.replaceState(null, '', window.location.pathname);

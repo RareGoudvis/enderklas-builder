@@ -21,7 +21,7 @@ export default function TopBar({ onPrint }: Props) {
 
     const importInputRef = useRef<HTMLInputElement>(null);
     const [presetOpen, setPresetOpen] = useState(false);
-    const [shareFlash, setShareFlash] = useState(false);
+    const [shareFlash, setShareFlash] = useState<'full' | 'template' | null>(null);
 
     const handleExport = () => {
         const st = useWorksheetStore.getState();
@@ -48,17 +48,17 @@ export default function TopBar({ onPrint }: Props) {
         reader.readAsText(file);
     };
 
-    const handleShare = async () => {
+    const handleShare = async (mode: 'full' | 'template') => {
         const st = useWorksheetStore.getState();
-        const link = encodeShareLink({ blocks: st.blocks, header: st.header, footer: st.footer, docSettings: st.docSettings });
+        const link = encodeShareLink({ blocks: st.blocks, header: st.header, footer: st.footer, docSettings: st.docSettings }, { template: mode === 'template' });
         if (!link) {
             window.alert('Werkbundel te groot voor een deelbare link. Gebruik Exporteer i.p.v.');
             return;
         }
         try {
             await navigator.clipboard.writeText(link);
-            setShareFlash(true);
-            setTimeout(() => setShareFlash(false), 2000);
+            setShareFlash(mode);
+            setTimeout(() => setShareFlash(null), 2000);
         } catch {
             window.prompt('Kopieer deze link:', link);
         }
@@ -83,8 +83,11 @@ export default function TopBar({ onPrint }: Props) {
                 <button style={S.secondaryBtn} onClick={handleExport} title="Bewaar werkbundel als JSON-bestand">💾 Exporteer</button>
                 <button style={S.secondaryBtn} onClick={handleImportClick} title="Open opgeslagen werkbundel">📂 Importeer</button>
                 <button style={S.secondaryBtn} onClick={() => setPresetOpen(true)} title="Presets beheren">📑 Presets</button>
-                <button style={S.secondaryBtn} onClick={handleShare} title="Deelbare link kopiëren">
-                    {shareFlash ? '✓ Link gekopieerd' : '🔗 Deel'}
+                <button style={S.secondaryBtn} onClick={() => handleShare('full')} title="Deel link met alle huidige oefeningen + instellingen">
+                    {shareFlash === 'full' ? '✓ Link gekopieerd' : '🔗 Deel'}
+                </button>
+                <button style={S.secondaryBtn} onClick={() => handleShare('template')} title="Deel link met enkel de instellingen (geen oefeningen)">
+                    {shareFlash === 'template' ? '✓ Sjabloon-link gekopieerd' : '📋 Sjabloon'}
                 </button>
                 <input
                     ref={importInputRef}
