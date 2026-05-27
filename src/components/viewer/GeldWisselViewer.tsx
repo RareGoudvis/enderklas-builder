@@ -3,7 +3,7 @@ import { Bill } from './GeldViewer';
 
 function WisselCell({ ex, boxHeight }: { ex: GeldWisselExercise; boxHeight: number }) {
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', boxSizing: 'border-box' }}>
+        <div className="print-exercise" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', boxSizing: 'border-box' }}>
             <div style={{ flexShrink: 0 }}>
                 <Bill valueCents={ex.billValueCents} />
             </div>

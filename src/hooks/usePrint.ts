@@ -10,7 +10,9 @@ export function usePrint() {
 
         const style = document.createElement('style');
         style.id = 'print-dynamic';
-        style.textContent = `@page { @bottom-left { content: ""; } @bottom-center { content: ""; } @bottom-right { content: ""; } }`;
+        // Suppress browser-injected header (top) + footer (bottom). Chrome/Edge honour
+        // these margin-box rules; Firefox ignores them (user must uncheck in dialog).
+        style.textContent = `@page { @top-left { content: ""; } @top-center { content: ""; } @top-right { content: ""; } @bottom-left { content: ""; } @bottom-center { content: ""; } @bottom-right { content: ""; } }`;
         document.head.appendChild(style);
 
         window.addEventListener('afterprint', () => {

@@ -87,7 +87,7 @@ function MabItem({ ex, style, cols, scaffolding, boxHeight, answerHeight, showSo
     const showNumberOnLine = mode === 'tekenen' || showSolutions;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: "'Azeret Mono', monospace" }}>
+        <div className="print-exercise" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: "'Azeret Mono', monospace" }}>
             {/* BOX = optional outer border + optional H/T/E header row + drawing area */}
             <div style={{
                 width: '100%',

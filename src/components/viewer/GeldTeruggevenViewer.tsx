@@ -159,7 +159,7 @@ function TeruggevenCell({ ex, block, showSolutions }: { ex: GeldTeruggevenExerci
     const boxHeight: number          = block.constraints.boxHeight        ?? 120;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '6px 4px', boxSizing: 'border-box' }}>
+        <div className="print-exercise" style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '6px 4px', boxSizing: 'border-box' }}>
             {/* Question */}
             <div style={{ fontSize: FS, fontFamily: 'inherit', lineHeight: 1.5 }}>
                 <div>Je moet {fmtCents(ex.priceCents)} betalen.</div>

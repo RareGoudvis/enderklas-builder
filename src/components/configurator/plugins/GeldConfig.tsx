@@ -3,8 +3,6 @@ import { sharedPluginStyles as S } from './sharedPluginStyles';
 import type { MathBlock } from '../../../services/math/types';
 import { DENOMINATION_CATALOGUE, denominationLabel } from '../../../services/geld/geldGenerator';
 
-const ALL_PLACE_VALUES = ['D', 'H', 'T', 'E', 't', 'h'];
-
 const pill = (active: boolean): React.CSSProperties => ({
     padding: '4px 8px', fontSize: '11px', borderRadius: '12px', cursor: 'pointer',
     border: '1px solid var(--border-color)',
@@ -12,12 +10,6 @@ const pill = (active: boolean): React.CSSProperties => ({
     color: active ? 'white' : 'var(--text-muted)',
     fontWeight: active ? 'bold' : 'normal',
     transition: 'all 0.15s', userSelect: 'none',
-});
-
-const toggle = (active: boolean): React.CSSProperties => ({
-    width: '36px', height: '20px', borderRadius: '10px', cursor: 'pointer', border: 'none',
-    backgroundColor: active ? 'var(--accent-purple)' : 'var(--bg-input)',
-    position: 'relative', flexShrink: 0, transition: 'background 0.15s',
 });
 
 export default function GeldConfig({ block }: { block: MathBlock }) {
@@ -29,8 +21,7 @@ export default function GeldConfig({ block }: { block: MathBlock }) {
         updateBlockSettings(block.id, { constraints: { ...c, [key]: val } });
 
     const maxGetal: number = c.maxGetal ?? 10;
-    const showPlaceValues: boolean = c.showPlaceValues ?? false;
-    const placeValues: string[] = c.placeValues ?? ['T', 'E'];
+    const geldLayout: string = c.geldLayout ?? 'samen';
     const allowedDenominations: number[] = c.allowedDenominations ?? DENOMINATION_CATALOGUE.map(d => d.valueCents);
 
     const toggleDenom = (valueCents: number) => {
@@ -42,13 +33,6 @@ export default function GeldConfig({ block }: { block: MathBlock }) {
         if (!next.includes(valueCents) && voorbeeldTypes.includes(valueCents)) {
             set('voorbeeldTypes', voorbeeldTypes.filter(v => v !== valueCents));
         }
-    };
-
-    const togglePV = (pv: string) => {
-        const next = placeValues.includes(pv)
-            ? placeValues.filter(p => p !== pv)
-            : [...placeValues, pv];
-        set('placeValues', next);
     };
 
     return (
@@ -95,20 +79,14 @@ export default function GeldConfig({ block }: { block: MathBlock }) {
                 </div>
             </div>
 
-            {/* ── Hoeveelheid (herkennen only) ── */}
+            {/* ── Geldlayout (herkennen only) ── */}
             {isHerkennen && (
                 <div style={S.section}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <label style={{ ...S.label, marginBottom: 0 }}>Hoeveelheid (D H T E t h)</label>
-                        <button style={toggle(showPlaceValues)} onClick={() => set('showPlaceValues', !showPlaceValues)} />
+                    <label style={S.label}>Geldlayout</label>
+                    <div style={S.buttonGroup}>
+                        <button style={S.radioBtn(geldLayout !== 'gescheiden')} onClick={() => set('geldLayout', 'samen')}>Samen</button>
+                        <button style={S.radioBtn(geldLayout === 'gescheiden')} onClick={() => set('geldLayout', 'gescheiden')}>Gescheiden</button>
                     </div>
-                    {showPlaceValues && (
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                            {ALL_PLACE_VALUES.map(pv => (
-                                <span key={pv} style={pill(placeValues.includes(pv))} onClick={() => togglePV(pv)}>{pv}</span>
-                            ))}
-                        </div>
-                    )}
                 </div>
             )}
         </div>

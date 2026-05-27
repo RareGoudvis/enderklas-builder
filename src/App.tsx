@@ -284,7 +284,7 @@ export default function App() {
                         {exList.length === 0
                           ? <div className="no-print" style={styles.emptyStateText}>(Genereer oefeningen via het rechterpaneel)</div>
                           : exList.map((ex) => (
-                              <div key={ex.id} style={{ display: 'flex', justifyContent: 'center', padding: '8px', boxSizing: 'border-box' }}>
+                              <div key={ex.id} className="print-exercise" style={{ display: 'flex', justifyContent: 'center', padding: '8px', boxSizing: 'border-box' }}>
                                 <FractionExerciseItem ex={ex} block={block} showSolutions={showSolutions} />
                               </div>
                             ))

@@ -89,6 +89,14 @@
   /* left/right/bottom: 0 — HTML footer handles bottom zone.
      top: 15mm — ensures content on continuation pages starts ~1.5cm from top. */
   margin: 15mm 0 0 0;
+  /* Suppress browser-injected headers/footers (Chrome/Edge honour this;
+     Firefox ignores margin-box content rules — user must uncheck in print dialog). */
+  @top-left      { content: ""; }
+  @top-center    { content: ""; }
+  @top-right     { content: ""; }
+  @bottom-left   { content: ""; }
+  @bottom-center { content: ""; }
+  @bottom-right  { content: ""; }
 }
 
 @media print {
@@ -139,10 +147,12 @@
   }
 
   /* Blocks may split across pages; position:static is still required so Chrome
-     respects break-inside:avoid on child .print-exercise elements. */
+     respects break-inside:avoid on child .print-exercise elements. Soft hint
+     to keep whole blocks on one page when they fit. */
   .print-block {
     position: static !important;
     transition: none !important;
+    break-inside: avoid-page;
   }
   /* Individual exercises must never be split mid-exercise. */
   .print-exercise { page-break-inside: avoid !important; break-inside: avoid !important; }

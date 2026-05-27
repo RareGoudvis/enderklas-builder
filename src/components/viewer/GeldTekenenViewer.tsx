@@ -25,7 +25,7 @@ function TekenenCell({ ex, block, showSolutions }: { ex: GeldExercise; block: Ma
     );
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '8px', boxSizing: 'border-box' }}>
+        <div className="print-exercise" style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '8px', boxSizing: 'border-box' }}>
             <div style={{ fontSize: '17px', fontWeight: 'bold', fontFamily: "'Azeret Mono', monospace", textAlign: 'center', color: '#000' }}>
                 {amountText}
             </div>

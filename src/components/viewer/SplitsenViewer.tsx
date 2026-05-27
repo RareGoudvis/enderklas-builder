@@ -91,7 +91,7 @@ function BasicBox({ ex, showSolutions, rowHeight }: { ex: SplitsenExercise; show
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid #000', width: '100%' }}>
+        <div className="print-exercise" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #000', width: '100%' }}>
             {/* Total — spans full width */}
             <div style={{ ...cellBase, fontWeight: 'bold', fontSize: '15px', borderBottom: '1px solid #000', width: '100%' }}>
                 {fmt(ex.total)}
@@ -115,7 +115,7 @@ function MathematicRow({ total, given, answer, showSolutions }: {
     total: number; given: number; answer: number; showSolutions: boolean;
 }) {
     return (
-        <div style={{ display: 'flex', alignItems: 'flex-end', fontSize: '17px', fontFamily: "'Azeret Mono', monospace" }}>
+        <div className="print-exercise" style={{ display: 'flex', alignItems: 'flex-end', fontSize: '17px', fontFamily: "'Azeret Mono', monospace" }}>
             <div style={{ width: '64px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                 <span style={{ fontWeight: 'bold' }}>{fmt(total)}</span>
             </div>
@@ -146,7 +146,7 @@ function HeartItem({ pairId, total, given, answer, showSolutions }: {
     const W = 120, H = 114;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px' }}>
+        <div className="print-exercise" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px' }}>
             <span style={{ fontSize: '14px', fontFamily: "'Azeret Mono', monospace", fontWeight: 'bold', marginBottom: '-16px', zIndex: 1, position: 'relative' }}>{fmt(total)}</span>
             {/* position:relative wrapper so number divs stack on top of SVG */}
             <div style={{ position: 'relative', width: W, height: H }}>
