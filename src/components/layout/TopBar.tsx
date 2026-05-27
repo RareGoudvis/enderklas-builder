@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { useWorksheetStore } from '../../store/useWorksheetStore';
+import { exportWorksheet, parseWorksheetFile } from '../../services/persistence';
 
 interface Props {
     onPrint: (withSolutions: boolean) => void;
@@ -11,6 +13,36 @@ export default function TopBar({ onPrint }: Props) {
     const canRedo = useWorksheetStore((s) => s.canRedo());
     const showSolutions = useWorksheetStore((s) => s.showSolutions);
     const setShowSolutions = useWorksheetStore((s) => s.setShowSolutions);
+    const generateAllBlocks = useWorksheetStore((s) => s.generateAllBlocks);
+    const loadWorksheet = useWorksheetStore((s) => s.loadWorksheet);
+    const hasBlocks = useWorksheetStore((s) => s.blocks.length > 0);
+
+    const importInputRef = useRef<HTMLInputElement>(null);
+
+    const handleExport = () => {
+        const st = useWorksheetStore.getState();
+        exportWorksheet({ blocks: st.blocks, header: st.header, footer: st.footer, docSettings: st.docSettings });
+    };
+
+    const handleImportClick = () => importInputRef.current?.click();
+
+    const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';  // reset so picking the same file again still fires onchange
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const parsed = parseWorksheetFile(String(reader.result));
+                if (!window.confirm('Huidige werkbundel wordt vervangen. Doorgaan?')) return;
+                loadWorksheet(parsed);
+            } catch (err) {
+                window.alert(`Importeren mislukt: ${(err as Error).message}`);
+            }
+        };
+        reader.onerror = () => window.alert('Bestand kon niet gelezen worden.');
+        reader.readAsText(file);
+    };
 
     return (
         <div style={S.bar}>
@@ -32,6 +64,33 @@ export default function TopBar({ onPrint }: Props) {
                 >
                     ↪
                 </button>
+            </div>
+
+            {/* Generate all */}
+            <button
+                style={S.actionBtn(hasBlocks)}
+                onClick={() => hasBlocks && generateAllBlocks()}
+                disabled={!hasBlocks}
+                title="Alle niet-vergrendelde blokken opnieuw genereren"
+            >
+                ✨ Genereer alles
+            </button>
+
+            {/* Export / Import */}
+            <div style={S.group}>
+                <button style={S.secondaryBtn} onClick={handleExport} title="Bewaar werkbundel als JSON">
+                    💾 Exporteer
+                </button>
+                <button style={S.secondaryBtn} onClick={handleImportClick} title="Open opgeslagen werkbundel">
+                    📂 Importeer
+                </button>
+                <input
+                    ref={importInputRef}
+                    type="file"
+                    accept="application/json,.json"
+                    onChange={handleImportFile}
+                    style={{ display: 'none' }}
+                />
             </div>
 
             <div style={S.spacer} />
@@ -67,6 +126,7 @@ const S = {
         borderRadius: '10px',
         marginBottom: '12px',
         flexShrink: 0,
+        flexWrap: 'wrap',
     } as React.CSSProperties,
     group: { display: 'flex', gap: '4px' } as React.CSSProperties,
     spacer: { flex: 1 } as React.CSSProperties,
@@ -78,6 +138,20 @@ const S = {
         fontSize: '16px', color: enabled ? 'var(--text-main)' : 'var(--border-color)',
         transition: 'all 0.15s',
     }),
+    actionBtn: (enabled: boolean): React.CSSProperties => ({
+        padding: '6px 14px', borderRadius: '6px', fontWeight: 700, fontSize: '12px',
+        border: '1px solid var(--border-color)',
+        backgroundColor: enabled ? 'var(--accent-purple)' : 'transparent',
+        color: enabled ? '#fff' : 'var(--text-muted)',
+        cursor: enabled ? 'pointer' : 'not-allowed',
+    }),
+    secondaryBtn: {
+        padding: '6px 12px', borderRadius: '6px', fontWeight: 600, fontSize: '12px',
+        border: '1px solid var(--border-color)',
+        backgroundColor: 'var(--bg-input)',
+        color: 'var(--text-main)',
+        cursor: 'pointer',
+    } as React.CSSProperties,
     solToggle: (on: boolean): React.CSSProperties => ({
         padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
         border: '1px solid var(--border-color)',

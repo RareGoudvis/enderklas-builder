@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { MathBlock, Equation, ClockExercise, FractionExercise, SplitsenExercise, CijferExercise, GeldExercise, GeldWisselExercise, GeldTeruggevenExercise, MabExercise, FooterData, LayoutPreset } from '../services/math/types';
+import { regenerateBlock } from '../services/generateDispatch';
 
 interface HeaderData {
     naam: boolean;
@@ -17,7 +18,10 @@ export interface DocSettings {
     titlePosition: 'left' | 'center' | 'right';
     titleFieldsGap: number;
     headerContentGap: number;
+    numberBlocks: boolean;
 }
+
+export type ThemeName = 'dark' | 'light' | 'colorblind';
 
 interface WorksheetState {
     blocks: MathBlock[];
@@ -26,6 +30,7 @@ interface WorksheetState {
     footer: FooterData;
     docSettings: DocSettings;
     showSolutions: boolean;
+    theme: ThemeName;
     _history: MathBlock[][];
     _historyIndex: number;
     addBlockFromType: (typeId: string, label: string, overrideConstraints?: Record<string, unknown>) => void;
@@ -47,10 +52,14 @@ interface WorksheetState {
     updateExercise: (blockId: string, exerciseId: string, updates: Partial<Equation>) => void;
     updateCijferExercise: (blockId: string, exerciseId: string, updates: Partial<CijferExercise>) => void;
     setActiveSelection: (id: string | 'document' | null) => void;
+    toggleBlockLock: (id: string) => void;
+    generateAllBlocks: () => void;
+    loadWorksheet: (file: { blocks: MathBlock[]; header: HeaderData; footer: FooterData; docSettings: DocSettings }) => void;
     updateHeader: (updates: Partial<HeaderData>) => void;
     updateFooter: (updates: Partial<FooterData>) => void;
     updateDocSettings: (updates: Partial<DocSettings>) => void;
     setShowSolutions: (show: boolean) => void;
+    setTheme: (theme: ThemeName) => void;
     undo: () => void;
     redo: () => void;
     canUndo: () => boolean;
@@ -59,19 +68,39 @@ interface WorksheetState {
 
 const MAX_HISTORY = 50;
 
+// Read persisted theme once at module load. Default 'dark' for first-time users
+// or when localStorage is unavailable (SSR / privacy modes).
+function loadInitialTheme(): ThemeName {
+    try {
+        const v = localStorage.getItem('theme');
+        if (v === 'light' || v === 'dark' || v === 'colorblind') return v;
+    } catch { /* ignore */ }
+    return 'dark';
+}
+
+// Apply theme attribute to <html> so CSS variables switch immediately. Called
+// at store init and from setTheme.
+function applyTheme(theme: ThemeName): void {
+    if (typeof document !== 'undefined') document.documentElement.setAttribute('data-theme', theme);
+}
+
 function pushHistory(history: MathBlock[][], index: number, blocks: MathBlock[]): { _history: MathBlock[][], _historyIndex: number } {
     const sliced = history.slice(0, index + 1);
     const next = [...sliced, blocks].slice(-MAX_HISTORY);
     return { _history: next, _historyIndex: next.length - 1 };
 }
 
+const INITIAL_THEME = loadInitialTheme();
+applyTheme(INITIAL_THEME);
+
 export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     blocks: [],
     activeBlockId: null,
     header: { naam: true, klas: true, nummer: false, datum: false, titel: '' },
     footer: { school: '', klas: '', leerkracht: '', showSchool: true, showKlas: true, showLeerkracht: true, showPagina: true, centerText: '', showCenterText: false },
-    docSettings: { showScores: true, opdrachtTitelStyle: 'regular', showDividers: true, headerStyle: 'geen', titlePosition: 'center', titleFieldsGap: 16, headerContentGap: 12 },
+    docSettings: { showScores: true, opdrachtTitelStyle: 'regular', showDividers: true, headerStyle: 'geen', titlePosition: 'center', titleFieldsGap: 16, headerContentGap: 12, numberBlocks: false },
     showSolutions: false,
+    theme: INITIAL_THEME,
     _history: [[]],
     _historyIndex: 0,
 
@@ -251,8 +280,43 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     updateExercise: (blockId, exerciseId, updates) => set((state) => { const nb = state.blocks.map(b => b.id !== blockId ? b : { ...b, exercises: b.exercises.map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex) }); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
     updateCijferExercise: (blockId, exerciseId, updates) => set((state) => { const nb = state.blocks.map(b => b.id !== blockId ? b : { ...b, cijferExercises: (b.cijferExercises || []).map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex) }); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
     setActiveSelection: (id) => set({ activeBlockId: id }),
+    toggleBlockLock: (id) => set((state) => ({ blocks: state.blocks.map(b => b.id === id ? { ...b, locked: !b.locked } : b) })),
+    loadWorksheet: (file) => set(() => ({
+        blocks: file.blocks,
+        header: file.header,
+        footer: file.footer,
+        docSettings: file.docSettings,
+        activeBlockId: null,
+        _history: [file.blocks],
+        _historyIndex: 0,
+    })),
+    generateAllBlocks: () => {
+        // Loop over the current snapshot. Each setter call inside regenerateBlock
+        // schedules a set() that pushes history individually, so iteration over the
+        // pre-call snapshot is safe — we don't read state during the loop.
+        const state = get();
+        for (const block of state.blocks) {
+            if (block.locked) continue;
+            regenerateBlock(block, {
+                setBlockExercises: state.setBlockExercises,
+                setClockExercises: state.setClockExercises,
+                setFractionExercises: state.setFractionExercises,
+                setSplitsenExercises: state.setSplitsenExercises,
+                setCijferExercises: state.setCijferExercises,
+                setGeldExercises: state.setGeldExercises,
+                setGeldWisselExercises: state.setGeldWisselExercises,
+                setGeldTeruggevenExercises: state.setGeldTeruggevenExercises,
+                setMabExercises: state.setMabExercises,
+            });
+        }
+    },
     updateHeader: (updates) => set((state) => ({ header: { ...state.header, ...updates } })),
     updateFooter: (updates) => set((state) => ({ footer: { ...state.footer, ...updates } })),
     updateDocSettings: (updates) => set((state) => ({ docSettings: { ...state.docSettings, ...updates } })),
-    setShowSolutions: (show) => set({ showSolutions: show })
+    setShowSolutions: (show) => set({ showSolutions: show }),
+    setTheme: (theme) => {
+        applyTheme(theme);
+        try { localStorage.setItem('theme', theme); } catch { /* ignore */ }
+        set({ theme });
+    }
 }));

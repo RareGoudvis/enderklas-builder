@@ -12,13 +12,8 @@ import GeldConfig from './plugins/GeldConfig';
 import GeldWisselConfig from './plugins/GeldWisselConfig';
 import GeldTeruggevenConfig from './plugins/GeldTeruggevenConfig';
 import MabConfig from './plugins/MabConfig';
-import { generateAdditionExercises, generateSubtractionExercises, generateMultiplicationExercises, generateDivisionExercises } from '../../services/math/mathEngine';
-import { generateClockExercises } from '../../services/clock/clockGenerator';
-import { generateFractionExercises } from '../../services/fractions/fractionGenerator';
-import { generateSplitsenExercises } from '../../services/splitsen/splitsenGenerator';
-import { generateCijferExercises } from '../../services/cijferen/cijferGenerator';
-import { generateGeldExercises, generateGeldWisselExercises, generateGeldTeruggevenExercises, DENOMINATION_CATALOGUE, denominationLabel } from '../../services/geld/geldGenerator';
-import { generateMabExercises } from '../../services/mab/mabGenerator';
+import { DENOMINATION_CATALOGUE, denominationLabel } from '../../services/geld/geldGenerator';
+import { regenerateBlock } from '../../services/generateDispatch';
 
 const HR_STD_TYPES = ['optellen', 'aftrekken', 'vermenigvuldigen', 'delen'];
 const isHrStd = (typeId: string) => HR_STD_TYPES.some(t => typeId.includes(t));
@@ -36,6 +31,9 @@ export default function Inspector() {
     const updateFooter = useWorksheetStore((state) => state.updateFooter);
     const updateDocSettings = useWorksheetStore((state) => state.updateDocSettings);
 
+    const theme = useWorksheetStore((state) => state.theme);
+    const setTheme = useWorksheetStore((state) => state.setTheme);
+
     const updateBlockInstruction = useWorksheetStore((state) => state.updateBlockInstruction);
     const updateBlockLayout = useWorksheetStore((state) => state.updateBlockLayout);
     const updateBlockSettings = useWorksheetStore((state) => state.updateBlockSettings);
@@ -51,31 +49,11 @@ export default function Inspector() {
 
     const handleGenerate = () => {
         if (!activeBlock) return;
-        if (activeBlock.typeId.startsWith('klok-')) {
-            setClockExercises(activeBlock.id, generateClockExercises(activeBlock));
-        } else if (activeBlock.typeId === 'breuken') {
-            setFractionExercises(activeBlock.id, generateFractionExercises(activeBlock));
-        } else if (activeBlock.typeId === 'splitsen') {
-            setSplitsenExercises(activeBlock.id, generateSplitsenExercises(activeBlock));
-        } else if (activeBlock.typeId.startsWith('cijferen-')) {
-            setCijferExercises(activeBlock.id, generateCijferExercises(activeBlock));
-        } else if (activeBlock.typeId === 'geld-herkennen' || activeBlock.typeId === 'geld-tekenen') {
-            setGeldExercises(activeBlock.id, generateGeldExercises(activeBlock));
-        } else if (activeBlock.typeId === 'geld-wissel') {
-            setGeldWisselExercises(activeBlock.id, generateGeldWisselExercises(activeBlock));
-        } else if (activeBlock.typeId === 'geld-teruggeven') {
-            setGeldTeruggevenExercises(activeBlock.id, generateGeldTeruggevenExercises(activeBlock));
-        } else if (activeBlock.typeId === 'mab-herkennen') {
-            setMabExercises(activeBlock.id, generateMabExercises(activeBlock));
-        } else if (activeBlock.typeId.includes('optellen')) {
-            setBlockExercises(activeBlock.id, generateAdditionExercises(activeBlock));
-        } else if (activeBlock.typeId.includes('aftrekken')) {
-            setBlockExercises(activeBlock.id, generateSubtractionExercises(activeBlock));
-        } else if (activeBlock.typeId.includes('vermenigvuldigen')) {
-            setBlockExercises(activeBlock.id, generateMultiplicationExercises(activeBlock));
-        } else if (activeBlock.typeId.includes('delen')) {
-            setBlockExercises(activeBlock.id, generateDivisionExercises(activeBlock));
-        }
+        regenerateBlock(activeBlock, {
+            setBlockExercises, setClockExercises, setFractionExercises, setSplitsenExercises,
+            setCijferExercises, setGeldExercises, setGeldWisselExercises, setGeldTeruggevenExercises,
+            setMabExercises,
+        });
     };
 
     // No block selected or document → document settings
@@ -140,6 +118,7 @@ export default function Inspector() {
                     <div style={S.col}>
                         <label style={S.checkboxLabel}><input type="checkbox" checked={docSettings.showScores} onChange={(e) => updateDocSettings({ showScores: e.target.checked })} style={S.checkbox} /> Scores tonen</label>
                         <label style={S.checkboxLabel}><input type="checkbox" checked={docSettings.showDividers} onChange={(e) => updateDocSettings({ showDividers: e.target.checked })} style={S.checkbox} /> Scheidingslijn tussen oefeningen</label>
+                        <label style={S.checkboxLabel}><input type="checkbox" checked={docSettings.numberBlocks} onChange={(e) => updateDocSettings({ numberBlocks: e.target.checked })} style={S.checkbox} /> Opdrachten nummeren</label>
 
                         <label style={{ ...S.label, marginTop: '10px' }}>Opdracht stijl</label>
                         <div style={S.btnGroup}>
@@ -149,6 +128,16 @@ export default function Inspector() {
                                 </button>
                             ))}
                         </div>
+                    </div>
+                </div>
+
+                {/* ── Thema ── */}
+                <div style={S.card}>
+                    <h4 style={S.cardTitle}>Thema</h4>
+                    <div style={S.btnGroup}>
+                        <button onClick={() => setTheme('light')} style={S.radioBtn(theme === 'light')} title="Licht thema">☀ Licht</button>
+                        <button onClick={() => setTheme('dark')} style={S.radioBtn(theme === 'dark')} title="Donker thema">☽ Donker</button>
+                        <button onClick={() => setTheme('colorblind')} style={S.radioBtn(theme === 'colorblind')} title="Hoog contrast / kleurenblind-veilig">◐ Hoog contrast</button>
                     </div>
                 </div>
 

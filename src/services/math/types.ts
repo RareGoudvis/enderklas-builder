@@ -70,6 +70,7 @@ export interface SplitsenExercise {
 export interface MathBlock {
     id: string;
     typeId: string;
+    locked?: boolean;
     instructionText: string;
     layoutPreset: LayoutPreset;
     instructionMode: 'geen' | 'mag' | 'moet' | 'plus' | 'aangepast';

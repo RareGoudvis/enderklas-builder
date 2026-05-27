@@ -1,21 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import logo from '../../assets/enderklas-logo.png';
 import { APP_STRUCTURE } from '../../config/appstructure';
 import { useWorksheetStore } from '../../store/useWorksheetStore';
+import HelpModal from './HelpModal';
 
 export default function Sidebar() {
     const addBlockFromType = useWorksheetStore((state) => state.addBlockFromType);
 
     const [openSubdomain, setOpenSubdomain] = useState<string | null>(null);
     const [openType, setOpenType] = useState<string | null>(null);
-    const [theme, setTheme] = useState<'dark' | 'light'>(
-        () => (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
-    );
-
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }, [theme]);
+    const [helpOpen, setHelpOpen] = useState(false);
 
     const toggleSubdomain = (id: string) => {
         const next = openSubdomain === id ? null : id;
@@ -142,15 +136,20 @@ export default function Sidebar() {
             </div>
 
             <div style={S.footer}>
-                <div style={S.footerRow}>
-                    <div style={S.footerText}>Deze website werd gemaakt door Ruben V.H. en wordt gratis ter beschikking gesteld. 
-                        De code in beschikbaar voor inzage (<a href="https://x.com/ruben_vah" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>DM me op X.</a>) 
-                        <br/> Deze code valt onder de <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>AGPL-3.0 licentie.</a> licentie.</div>
-                    <button style={S.themeBtn} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title={theme === 'dark' ? 'Licht thema' : 'Donker thema'}>
-                        {theme === 'dark' ? '☀' : '☽'}
+                <div style={S.footerActions}>
+                    <a href="https://x.com/ruben_vah" target="_blank" rel="noopener noreferrer" style={S.footerIconBtn} title="Contact via X">
+                        <span style={{ fontFamily: 'serif', fontWeight: 700 }}>𝕏</span>
+                    </a>
+                    <button style={S.footerIconBtn} onClick={() => setHelpOpen(true)} title="Help / uitleg">
+                        <span>?</span>
                     </button>
                 </div>
+                <div style={S.footerText}>
+                    Gemaakt door Ruben V.H. — gratis beschikbaar.<br/>
+                    Code onder <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>AGPL-3.0</a>.
+                </div>
             </div>
+            {helpOpen && <HelpModal onClose={() => setHelpOpen(false)} />}
         </aside>
     );
 }
@@ -233,13 +232,14 @@ const S = {
         transition: 'color 0.15s, border-color 0.15s',
     }),
 
-    footer: { padding: '12px 16px', borderTop: '1px solid var(--border-color)' } as React.CSSProperties,
-    footerRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } as React.CSSProperties,
-    footerText: { fontSize: '10px', color: 'var(--text-muted)' } as React.CSSProperties,
-    themeBtn: {
-        width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer',
+    footer: { padding: '12px 16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' } as React.CSSProperties,
+    footerActions: { display: 'flex', gap: '8px', alignItems: 'center' } as React.CSSProperties,
+    footerText: { fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.4 } as React.CSSProperties,
+    footerIconBtn: {
+        width: '32px', height: '32px', borderRadius: '6px', cursor: 'pointer',
         border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)',
         color: 'var(--text-muted)', fontSize: '14px', display: 'flex',
         alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        textDecoration: 'none', fontWeight: 700,
     } as React.CSSProperties,
 };

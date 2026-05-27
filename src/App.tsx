@@ -33,6 +33,7 @@ export default function App() {
   const moveBlockUp = useWorksheetStore((state) => state.moveBlockUp);
   const moveBlockDown = useWorksheetStore((state) => state.moveBlockDown);
   const setActiveSelection = useWorksheetStore((state) => state.setActiveSelection);
+  const toggleBlockLock = useWorksheetStore((state) => state.toggleBlockLock);
 
   const totalScore = blocks.reduce((sum, block) => sum + (block.totalPoints || 0), 0);
 
@@ -136,6 +137,13 @@ export default function App() {
                     <div className="no-print" style={styles.blockControls}>
                       {index > 0 && <button onClick={(e) => { e.stopPropagation(); moveBlockUp(block.id); }} style={styles.iconBtn}>↑</button>}
                       {index < blocks.length - 1 && <button onClick={(e) => { e.stopPropagation(); moveBlockDown(block.id); }} style={styles.iconBtn}>↓</button>}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleBlockLock(block.id); }}
+                        title={block.locked ? 'Ontgrendel (massa-regeneratie zal dit blok wel vernieuwen)' : 'Vergrendel (massa-regeneratie laat dit blok ongemoeid)'}
+                        style={styles.iconBtn}
+                      >
+                        {block.locked ? '🔒' : '🔓'}
+                      </button>
                       <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} style={styles.deleteBtn}>🗑</button>
                     </div>
                   )}
@@ -150,7 +158,10 @@ export default function App() {
                       {block.instructionMode === 'moet' && <span style={styles.badge('moet')}>MOET</span>}
                       {block.instructionMode === 'plus' && <span style={styles.badge('plus')}>★</span>}
                       {block.instructionMode === 'aangepast' && block.customInstructionText && <span style={styles.badge('aangepast')}>{block.customInstructionText}</span>}
-                      <span style={styles.instructionDisplay}>{block.instructionText || ''}</span>
+                      {block.locked && <span className="no-print" title="Vergrendeld" style={{ fontSize: '13px' }}>🔒</span>}
+                      <span style={styles.instructionDisplay}>
+                          {docSettings.numberBlocks ? `${index + 1}. ` : ''}{block.instructionText || ''}
+                      </span>
                     </div>
                     {docSettings.showScores && (block.totalPoints || 0) > 0 && <div style={styles.pointsText}>__ / {block.totalPoints}</div>}
                   </div>

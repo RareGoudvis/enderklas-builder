@@ -53,6 +53,24 @@
     --border-color: #d4d2c8;
 }
 
+/* High-contrast / colorblind-safe theme. Domain accents drawn from the IBM
+   colorblind-safe palette so deuteranopia/protanopia users can still tell
+   Getallenkennis/Bewerkingen/Meten/Meetkunde apart by hue+luminance. */
+[data-theme="colorblind"] {
+    --bg-dark: #ffffff;
+    --bg-panel: #ffffff;
+    --bg-input: #ffffff;
+    --accent-purple: #000000;
+    --accent-purple-dark: #000000;
+    --accent-getallenkennis: #DC267F;
+    --accent-bewerkingen: #648FFF;
+    --accent-metendrekenen: #FE6100;
+    --accent-meetkunde: #785EF0;
+    --text-main: #000000;
+    --text-muted: #000000;
+    --border-color: #000000;
+}
+
 *,
 *::before,
 *::after {
