@@ -177,10 +177,14 @@ function RealisticTens({ stroke, fill }: { stroke: string; fill: string }) {
 function RealisticHundreds({ stroke, fill }: { stroke: string; fill: string }) {
     const C = CELL_HUNDREDS;
     const S = C * 10;
+    // Colored fill: render as a plain solid square — the internal grid lines
+    // muddy the colour and hurt readability. White (mab-bw) keeps the grid so
+    // the flat stays distinguishable from an empty cell.
+    const showGrid = fill === 'white';
     return (
         <svg width={S} height={S}>
             <rect width={S} height={S} fill={fill} stroke={stroke} strokeWidth={STROKE} />
-            {Array.from({ length: 9 }).map((_, j) => (
+            {showGrid && Array.from({ length: 9 }).map((_, j) => (
                 <g key={j}>
                     <line x1={(j + 1) * C} y1={0} x2={(j + 1) * C} y2={S} stroke={stroke} strokeWidth={STROKE} />
                     <line x1={0} y1={(j + 1) * C} x2={S} y2={(j + 1) * C} stroke={stroke} strokeWidth={STROKE} />
