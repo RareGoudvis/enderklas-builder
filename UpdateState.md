@@ -5,6 +5,8 @@ Most recent entry first.
 
 ---
 
+**2026-05-27** — Print hid worksheet behind mobile-block overlay because print preview narrows the viewport and re-triggers the `max-width: 768px` media query; added `.mobile-block { display: none !important; }` inside `@media print`.
+
 **2026-05-27** — Multiple cijferen mask fixes: Getal 1 multiplicand mask fell back to random when applyMask failed range check (hasMask0 guard added); Getal 2 multiplier/divisor masks ignored decimal keys (t/h) because applyMask was called with dp=0 — fixed to pass dp so fractional multipliers/divisors work; header display for fractional operands now uses dp instead of rounding to integer; AlphaPopup wired into App.tsx; mobile/tablet block added; @page margin-top:15mm for consistent top margin on new pages; print-block no longer has break-inside:avoid (blocks can split, individual exercises cannot); partial products in multiplication hidden unless showSolutions; answer rows in add/sub and multiplication moved directly below thick line (removed gap row).
 
 **2026-05-27** — Multiple fixes: header writing lines expand to full width; print produces multiple pages (root cause: `overflow: hidden` + `height: 100vh` on html/body/#root overridden in print CSS); cijferen division quotient columns now always match dividend digit count; multiplication Getal 2 mask was overridden by `minMultiplier` clamp — fixed so masked multiplier only clamps to ≥2; print exercise page-break-inside avoidance added at block and exercise level.

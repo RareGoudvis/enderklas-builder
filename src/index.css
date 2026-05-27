@@ -97,6 +97,10 @@
 
   .no-print { display: none !important; }
 
+  /* Mobile/tablet block uses width-based media queries — print preview
+     narrows the viewport and would otherwise re-trigger it. */
+  .mobile-block { display: none !important; }
+
   /* Collapse the 3-panel flex shell */
   .print-root {
     display: block !important;
