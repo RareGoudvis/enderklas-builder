@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
+import { Undo2, Redo2, Sparkles, Download, Upload, Bookmark, Share2, LayoutTemplate, Eye, EyeOff, Printer, Check } from 'lucide-react';
 import { useWorksheetStore } from '../../store/useWorksheetStore';
 import { exportWorksheet, parseWorksheetFile, encodeShareLink } from '../../services/persistence';
+import IconButton from '../ui/IconButton';
 import PresetModal from './PresetModal';
 
 interface Props {
@@ -66,29 +68,36 @@ export default function TopBar({ onPrint }: Props) {
 
     return (
         <div style={S.bar}>
-            {/* Undo / Redo */}
             <div style={S.group}>
-                <button style={S.iconBtn(canUndo)} onClick={undo} disabled={!canUndo} title="Ongedaan maken (Ctrl+Z)">↩</button>
-                <button style={S.iconBtn(canRedo)} onClick={redo} disabled={!canRedo} title="Opnieuw (Ctrl+Y)">↪</button>
+                <IconButton icon={Undo2} label="Ongedaan maken (Ctrl+Z)" onClick={undo} disabled={!canUndo} />
+                <IconButton icon={Redo2} label="Opnieuw (Ctrl+Y)" onClick={redo} disabled={!canRedo} />
             </div>
 
-            <button
-                style={S.actionBtn(hasBlocks)}
+            <IconButton
+                icon={Sparkles}
+                label="Alle niet-vergrendelde blokken opnieuw genereren"
+                visibleLabel="Genereer alles"
                 onClick={() => hasBlocks && generateAllBlocks()}
                 disabled={!hasBlocks}
-                title="Alle niet-vergrendelde blokken opnieuw genereren"
-            >✨ Genereer alles</button>
+                variant="primary"
+            />
 
             <div style={S.group}>
-                <button style={S.secondaryBtn} onClick={handleExport} title="Bewaar werkbundel als JSON-bestand">💾 Exporteer</button>
-                <button style={S.secondaryBtn} onClick={handleImportClick} title="Open opgeslagen werkbundel">📂 Importeer</button>
-                <button style={S.secondaryBtn} onClick={() => setPresetOpen(true)} title="Presets beheren">📑 Presets</button>
-                <button style={S.secondaryBtn} onClick={() => handleShare('full')} title="Deel link met alle huidige oefeningen + instellingen">
-                    {shareFlash === 'full' ? '✓ Link gekopieerd' : '🔗 Deel'}
-                </button>
-                <button style={S.secondaryBtn} onClick={() => handleShare('template')} title="Deel link met enkel de instellingen (geen oefeningen)">
-                    {shareFlash === 'template' ? '✓ Sjabloon-link gekopieerd' : '📋 Sjabloon'}
-                </button>
+                <IconButton icon={Download} label="Exporteer als JSON-bestand" onClick={handleExport} />
+                <IconButton icon={Upload} label="Importeer JSON-bestand" onClick={handleImportClick} />
+                <IconButton icon={Bookmark} label="Presets beheren" onClick={() => setPresetOpen(true)} />
+                <IconButton
+                    icon={shareFlash === 'full' ? Check : Share2}
+                    label={shareFlash === 'full' ? 'Link gekopieerd' : 'Deel link (volledig)'}
+                    onClick={() => handleShare('full')}
+                    variant={shareFlash === 'full' ? 'active' : 'neutral'}
+                />
+                <IconButton
+                    icon={shareFlash === 'template' ? Check : LayoutTemplate}
+                    label={shareFlash === 'template' ? 'Sjabloon-link gekopieerd' : 'Deel sjabloon (enkel instellingen)'}
+                    onClick={() => handleShare('template')}
+                    variant={shareFlash === 'template' ? 'active' : 'neutral'}
+                />
                 <input
                     ref={importInputRef}
                     type="file"
@@ -100,17 +109,27 @@ export default function TopBar({ onPrint }: Props) {
 
             <div style={S.spacer} />
 
-            <button
-                style={S.solToggle(showSolutions)}
+            <IconButton
+                icon={showSolutions ? EyeOff : Eye}
+                label={showSolutions ? 'Oplossingen verbergen' : 'Oplossingen tonen'}
                 onClick={() => setShowSolutions(!showSolutions)}
-                title="Oplossingen tonen/verbergen"
-            >
-                {showSolutions ? '🔴 Oplossingen aan' : 'Toon oplossingen'}
-            </button>
+                variant={showSolutions ? 'danger' : 'neutral'}
+            />
 
             <div style={S.group}>
-                <button style={S.downloadBtn} onClick={() => onPrint(false)}>🖨 Afdrukken</button>
-                <button style={S.downloadSolBtn} onClick={() => onPrint(true)}>🖨 + Oplossingen</button>
+                <IconButton
+                    icon={Printer}
+                    label="Afdrukken (Ctrl+P)"
+                    visibleLabel="Afdrukken"
+                    onClick={() => onPrint(false)}
+                    variant="primary"
+                />
+                <IconButton
+                    icon={Printer}
+                    label="Afdrukken met oplossingen"
+                    onClick={() => onPrint(true)}
+                    variant="primary"
+                />
             </div>
 
             {presetOpen && <PresetModal onClose={() => setPresetOpen(false)} />}
@@ -131,40 +150,4 @@ const S = {
     } as React.CSSProperties,
     group: { display: 'flex', gap: '4px' } as React.CSSProperties,
     spacer: { flex: 1 } as React.CSSProperties,
-    iconBtn: (enabled: boolean): React.CSSProperties => ({
-        width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backgroundColor: enabled ? 'var(--bg-input)' : 'transparent',
-        border: '1px solid var(--border-color)',
-        borderRadius: '6px', cursor: enabled ? 'pointer' : 'not-allowed',
-        fontSize: '16px', color: enabled ? 'var(--text-main)' : 'var(--border-color)',
-        transition: 'all 0.15s',
-    }),
-    actionBtn: (enabled: boolean): React.CSSProperties => ({
-        padding: '6px 14px', borderRadius: '6px', fontWeight: 700, fontSize: '12px',
-        border: '1px solid var(--border-color)',
-        backgroundColor: enabled ? 'var(--accent-purple)' : 'transparent',
-        color: enabled ? '#fff' : 'var(--text-muted)',
-        cursor: enabled ? 'pointer' : 'not-allowed',
-    }),
-    secondaryBtn: {
-        padding: '6px 12px', borderRadius: '6px', fontWeight: 600, fontSize: '12px',
-        border: '1px solid var(--border-color)',
-        backgroundColor: 'var(--bg-input)',
-        color: 'var(--text-main)',
-        cursor: 'pointer',
-    } as React.CSSProperties,
-    solToggle: (on: boolean): React.CSSProperties => ({
-        padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
-        border: '1px solid var(--border-color)',
-        backgroundColor: on ? 'rgba(225,29,72,0.15)' : 'transparent',
-        color: on ? '#f87171' : 'var(--text-muted)',
-    }),
-    downloadBtn: {
-        padding: '6px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '12px',
-        border: 'none', backgroundColor: 'var(--accent-purple)', color: '#fff',
-    } as React.CSSProperties,
-    downloadSolBtn: {
-        padding: '6px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '12px',
-        border: 'none', backgroundColor: 'var(--accent-purple-dark)', color: '#fff',
-    } as React.CSSProperties,
 };

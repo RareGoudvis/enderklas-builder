@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { HelpCircle, Heart, Sun, Moon, Contrast } from 'lucide-react';
 import logo from '../../assets/enderklas-logo.png';
 import { APP_STRUCTURE, type Domain } from '../../config/appstructure';
 import { useWorksheetStore } from '../../store/useWorksheetStore';
@@ -190,23 +191,23 @@ export default function Sidebar() {
             <div style={S.themeRow}>
                 <span style={S.themeLabel}>Thema</span>
                 <div style={S.themeBtnGroup}>
-                    <button style={S.themeBtn(theme === 'light')} onClick={() => setTheme('light')} title="Licht thema">☀</button>
-                    <button style={S.themeBtn(theme === 'dark')} onClick={() => setTheme('dark')} title="Donker thema">☽</button>
-                    <button style={S.themeBtn(theme === 'colorblind')} onClick={() => setTheme('colorblind')} title="Hoog contrast / kleurenblind-veilig">◐</button>
+                    <button style={S.themeBtn(theme === 'light')} onClick={() => setTheme('light')} title="Licht thema" aria-label="Licht thema"><Sun size={14} /></button>
+                    <button style={S.themeBtn(theme === 'dark')} onClick={() => setTheme('dark')} title="Donker thema" aria-label="Donker thema"><Moon size={14} /></button>
+                    <button style={S.themeBtn(theme === 'colorblind')} onClick={() => setTheme('colorblind')} title="Hoog contrast / kleurenblind-veilig" aria-label="Hoog contrast"><Contrast size={14} /></button>
                 </div>
             </div>
 
             <div style={S.footer}>
                 <div style={S.footerActions}>
-                    <a href="https://x.com/ruben_vah" target="_blank" rel="noopener noreferrer" style={S.footerIconBtn} title="Contact via X">
-                        <span style={{ fontFamily: 'serif', fontWeight: 700 }}>𝕏</span>
+                    <a href="https://x.com/ruben_vah" target="_blank" rel="noopener noreferrer" style={S.footerIconBtn} title="Contact via X" aria-label="Contact via X">
+                        <span style={{ fontFamily: 'serif', fontWeight: 700, fontSize: '16px' }}>𝕏</span>
                     </a>
-                    <button style={S.footerIconBtn} onClick={() => setHelpOpen(true)} title="Help / uitleg">
-                        <span>?</span>
+                    <button style={S.footerIconBtn} onClick={() => setHelpOpen(true)} title="Help / uitleg" aria-label="Help">
+                        <HelpCircle size={16} />
                     </button>
                     {/* TODO: replace REPLACE_ME with the real Buy Me a Coffee handle before merging */}
-                    <a href="https://buymeacoffee.com/REPLACE_ME" target="_blank" rel="noopener noreferrer" style={S.footerIconBtn} title="Steun deze tool met een koffie ☕">
-                        <span style={{ color: '#e11d48' }}>❤</span>
+                    <a href="https://buymeacoffee.com/REPLACE_ME" target="_blank" rel="noopener noreferrer" style={{ ...S.footerIconBtn, color: '#e11d48', borderColor: '#e11d48' }} title="Steun deze tool met een koffie ☕" aria-label="Doneer">
+                        <Heart size={16} fill="#e11d48" />
                     </a>
                 </div>
                 <div style={S.footerText}>

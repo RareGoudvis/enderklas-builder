@@ -15,6 +15,8 @@ import GeldTeruggevenViewer from './components/viewer/GeldTeruggevenViewer';
 import MabViewer from './components/viewer/MabViewer';
 import AlphaPopup from './components/layout/AlphaPopup';
 import HelpModal from './components/layout/HelpModal';
+import IconButton from './components/ui/IconButton';
+import { ArrowUp, ArrowDown, Lock, Unlock, Copy, Trash2 } from 'lucide-react';
 import { usePrint } from './hooks/usePrint';
 import { styles } from './styles/appStyles';
 import { loadAutosave, clearAutosave, decodeShareHash, RELEASE_SEEN_KEY } from './services/persistence';
@@ -208,22 +210,22 @@ export default function App() {
               return (
                 <div key={block.id} className="print-block" onClick={(e) => { e.stopPropagation(); setActiveSelection(block.id); }} style={styles.blockContainer(isActive, isNotLastBlock, docSettings.showDividers)}>
                   {isActive && (
-                    <div className="no-print" style={styles.blockControls}>
-                      {index > 0 && <button onClick={(e) => { e.stopPropagation(); moveBlockUp(block.id); }} style={styles.iconBtn}>↑</button>}
-                      {index < blocks.length - 1 && <button onClick={(e) => { e.stopPropagation(); moveBlockDown(block.id); }} style={styles.iconBtn}>↓</button>}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleBlockLock(block.id); }}
-                        title={block.locked ? 'Ontgrendel (massa-regeneratie zal dit blok wel vernieuwen)' : 'Vergrendel (massa-regeneratie laat dit blok ongemoeid)'}
-                        style={styles.iconBtn}
-                      >
-                        {block.locked ? '🔒' : '🔓'}
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }}
-                        title="Blok dupliceren"
-                        style={styles.iconBtn}
-                      >🗐</button>
-                      <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} style={styles.deleteBtn}>🗑</button>
+                    <div className="no-print" style={styles.blockControls} onClick={(e) => e.stopPropagation()}>
+                      {index > 0 && (
+                        <IconButton icon={ArrowUp} label="Blok omhoog" onClick={() => moveBlockUp(block.id)} size={16} />
+                      )}
+                      {index < blocks.length - 1 && (
+                        <IconButton icon={ArrowDown} label="Blok omlaag" onClick={() => moveBlockDown(block.id)} size={16} />
+                      )}
+                      <IconButton
+                        icon={block.locked ? Lock : Unlock}
+                        label={block.locked ? 'Ontgrendel (massa-regeneratie zal dit blok wel vernieuwen)' : 'Vergrendel (massa-regeneratie laat dit blok ongemoeid)'}
+                        onClick={() => toggleBlockLock(block.id)}
+                        variant={block.locked ? 'active' : 'neutral'}
+                        size={16}
+                      />
+                      <IconButton icon={Copy} label="Blok dupliceren" onClick={() => duplicateBlock(block.id)} size={16} />
+                      <IconButton icon={Trash2} label="Blok verwijderen" onClick={() => removeBlock(block.id)} variant="danger" size={16} />
                     </div>
                   )}
 
@@ -237,7 +239,11 @@ export default function App() {
                       {block.instructionMode === 'moet' && <span style={styles.badge('moet')}>MOET</span>}
                       {block.instructionMode === 'plus' && <span style={styles.badge('plus')}>★</span>}
                       {block.instructionMode === 'aangepast' && block.customInstructionText && <span style={styles.badge('aangepast')}>{block.customInstructionText}</span>}
-                      {block.locked && <span className="no-print" title="Vergrendeld" style={{ fontSize: '13px' }}>🔒</span>}
+                      {block.locked && (
+                        <span className="no-print" title="Vergrendeld" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--accent-purple)' }}>
+                          <Lock size={14} />
+                        </span>
+                      )}
                       <span style={styles.instructionDisplay}>
                           {docSettings.numberBlocks ? `${index + 1}. ` : ''}{block.instructionText || ''}
                       </span>
