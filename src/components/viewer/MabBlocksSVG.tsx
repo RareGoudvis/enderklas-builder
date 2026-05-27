@@ -35,41 +35,17 @@ function resolveFill(style: MabStyle, place: MabPlace, color: string): string {
 export function MabPlaceColumn({ count, place, style, color = '#000' }: ColumnProps) {
     if (count === 0) return null;
 
-    // Units render in a deterministic two-row column-first pattern (1, 2, 3, 4… domino)
-    // so pupils can subitize. Column k gets a top glyph if 2k < count, bottom if 2k+1 < count.
+    // Units: column-first 2-row "domino" pattern (1, 2, 3, 4…) for subitizing.
     if (place === 'units') {
-        const cols = Math.ceil(count / 2);
-        const cells: React.ReactNode[] = [];
-        for (let k = 0; k < cols; k++) {
-            if (2 * k < count) cells.push(
-                <div key={`t${k}`} style={{ gridColumn: k + 1, gridRow: 1, display: 'flex', alignItems: 'flex-end' }}>
-                    <Glyph place="units" style={style} color={color} />
-                </div>
-            );
-            if (2 * k + 1 < count) cells.push(
-                <div key={`b${k}`} style={{ gridColumn: k + 1, gridRow: 2, display: 'flex', alignItems: 'flex-end' }}>
-                    <Glyph place="units" style={style} color={color} />
-                </div>
-            );
-        }
-        return (
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: `repeat(${cols}, auto)`,
-                gridTemplateRows: 'auto auto',
-                columnGap: '3px',
-                rowGap: '2px',
-                justifyContent: 'center',
-                alignContent: 'end',
-                height: '100%',
-            }}>
-                {cells}
-            </div>
-        );
+        return <PatternedGrid count={count} maxRows={2} place="units" style={style} color={color} />;
     }
 
-    // Tens / hundreds / thousands: one glyph per row stacked bottom-up (column-reverse)
-    // so the column width stays fixed regardless of digit count.
+    // Hundreds: 2-column × 5-row grid (column-first top-down) — up to 9 fit in the cell.
+    if (place === 'hundreds') {
+        return <PatternedGrid count={count} maxRows={5} place="hundreds" style={style} color={color} />;
+    }
+
+    // Tens / thousands: one glyph per row stacked bottom-up so column width stays fixed.
     return (
         <div style={{
             display: 'flex',
@@ -84,6 +60,39 @@ export function MabPlaceColumn({ count, place, style, color = '#000' }: ColumnPr
             {Array.from({ length: count }, (_, i) => (
                 <Glyph key={i} place={place} style={style} color={color} />
             ))}
+        </div>
+    );
+}
+
+function PatternedGrid({ count, maxRows, place, style, color }: {
+    count: number; maxRows: number; place: MabPlace; style: MabStyle; color: string;
+}) {
+    const cols = Math.ceil(count / maxRows);
+    const cells: React.ReactNode[] = [];
+    // Fill column by column, top-down within each column.
+    for (let k = 0; k < cols; k++) {
+        for (let r = 0; r < maxRows; r++) {
+            const idx = k * maxRows + r;
+            if (idx >= count) break;
+            cells.push(
+                <div key={`${k}-${r}`} style={{ gridColumn: k + 1, gridRow: r + 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Glyph place={place} style={style} color={color} />
+                </div>
+            );
+        }
+    }
+    return (
+        <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${cols}, auto)`,
+            gridTemplateRows: `repeat(${maxRows}, auto)`,
+            columnGap: '3px',
+            rowGap: '2px',
+            justifyContent: 'center',
+            alignContent: 'end',
+            height: '100%',
+        }}>
+            {cells}
         </div>
     );
 }
@@ -148,8 +157,10 @@ function SymbolicThousands({ color }: { color: string }) {
 // ── Realistic Dienes glyphs (used by both mab-bw and mab-color) ──────────────
 
 const CELL = 6;            // unit cube / tens-rod cell
-const CELL_HUNDREDS = 7;   // each cell of the 10×10 flat → flat 70×70 (visibly biggest)
-const CELL_THOUSANDS = 7;  // matches hundreds for visual continuity
+// Hundreds: 5 squares stack vertically in the H column. Default boxHeight is
+// 60px minus 12px column padding = 48px available. 5 × 8 + 4 × 2 gap = 48 → fits.
+const HUNDREDS_SQ = 8;
+const CELL_THOUSANDS = 7;  // thousands keeps the full 10×10 cube
 const STROKE = 0.5;
 
 function RealisticUnits({ stroke, fill }: { stroke: string; fill: string }) {
@@ -174,22 +185,12 @@ function RealisticTens({ stroke, fill }: { stroke: string; fill: string }) {
     );
 }
 
+// One hundred = a single filled square (larger than the unit cube). Multiple
+// hundreds get tiled by MabPlaceColumn into a 2×5 grid so up to 9 fit.
 function RealisticHundreds({ stroke, fill }: { stroke: string; fill: string }) {
-    const C = CELL_HUNDREDS;
-    const S = C * 10;
-    // Colored fill: render as a plain solid square — the internal grid lines
-    // muddy the colour and hurt readability. White (mab-bw) keeps the grid so
-    // the flat stays distinguishable from an empty cell.
-    const showGrid = fill === 'white';
     return (
-        <svg width={S} height={S}>
-            <rect width={S} height={S} fill={fill} stroke={stroke} strokeWidth={STROKE} />
-            {showGrid && Array.from({ length: 9 }).map((_, j) => (
-                <g key={j}>
-                    <line x1={(j + 1) * C} y1={0} x2={(j + 1) * C} y2={S} stroke={stroke} strokeWidth={STROKE} />
-                    <line x1={0} y1={(j + 1) * C} x2={S} y2={(j + 1) * C} stroke={stroke} strokeWidth={STROKE} />
-                </g>
-            ))}
+        <svg width={HUNDREDS_SQ} height={HUNDREDS_SQ}>
+            <rect width={HUNDREDS_SQ} height={HUNDREDS_SQ} fill={fill} stroke={stroke} strokeWidth={STROKE} />
         </svg>
     );
 }
