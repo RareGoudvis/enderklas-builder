@@ -37,7 +37,7 @@
 .mobile-block { display: none; }
 .mobile-block-hint { display: none; }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
   .mobile-block {
     display: flex;
     position: fixed;
@@ -58,7 +58,7 @@
 }
 
 /* Tablet portrait: same block but with landscape hint */
-@media (min-width: 769px) and (max-width: 1024px) and (orientation: portrait) {
+@media screen and (min-width: 769px) and (max-width: 1024px) and (orientation: portrait) {
   .mobile-block {
     display: flex;
     position: fixed;
