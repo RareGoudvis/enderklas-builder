@@ -86,6 +86,7 @@ export interface MathBlock {
     geldExercises?: GeldExercise[];
     geldWisselExercises?: GeldWisselExercise[];
     geldTeruggevenExercises?: GeldTeruggevenExercise[];
+    mabExercises?: MabExercise[];
     verticalSpacing: number;
 }
 
@@ -171,5 +172,19 @@ export interface CijferExercise {
     operator: CijferOperator;
     answer: number;
     remainder: number;
+    isManuallyEdited: boolean;
+}
+
+export type MabStyle = 'symbolic' | 'realistic';
+export type MabScaffolding = 'lijn' | 'tabel';
+
+export interface MabExercise {
+    id: string;
+    value: number;
+    // Place-value digit breakdown; thousands present only when maxNumber === 1000.
+    thousands: number;
+    hundreds: number;
+    tens: number;
+    units: number;
     isManuallyEdited: boolean;
 }

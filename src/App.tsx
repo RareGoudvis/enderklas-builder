@@ -12,6 +12,7 @@ import GeldViewer from './components/viewer/GeldViewer';
 import GeldTekenenViewer from './components/viewer/GeldTekenenViewer';
 import GeldWisselViewer from './components/viewer/GeldWisselViewer';
 import GeldTeruggevenViewer from './components/viewer/GeldTeruggevenViewer';
+import MabViewer from './components/viewer/MabViewer';
 import AlphaPopup from './components/layout/AlphaPopup';
 import { usePrint } from './hooks/usePrint';
 import { styles } from './styles/appStyles';
@@ -173,6 +174,8 @@ export default function App() {
                     <GeldWisselViewer block={block} showSolutions={showSolutions} />
                   ) : block.typeId === 'geld-teruggeven' ? (
                     <GeldTeruggevenViewer block={block} showSolutions={showSolutions} />
+                  ) : block.typeId === 'mab-herkennen' ? (
+                    <MabViewer block={block} showSolutions={showSolutions} />
                   ) : block.typeId === 'breuken' ? (() => {
                     const subType = block.constraints.subType || 'kleuren';
                     const answerFmt = block.constraints.answerFormat as string | undefined;

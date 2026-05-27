@@ -11,12 +11,14 @@ import CijferConfig from './plugins/CijferConfig';
 import GeldConfig from './plugins/GeldConfig';
 import GeldWisselConfig from './plugins/GeldWisselConfig';
 import GeldTeruggevenConfig from './plugins/GeldTeruggevenConfig';
+import MabConfig from './plugins/MabConfig';
 import { generateAdditionExercises, generateSubtractionExercises, generateMultiplicationExercises, generateDivisionExercises } from '../../services/math/mathEngine';
 import { generateClockExercises } from '../../services/clock/clockGenerator';
 import { generateFractionExercises } from '../../services/fractions/fractionGenerator';
 import { generateSplitsenExercises } from '../../services/splitsen/splitsenGenerator';
 import { generateCijferExercises } from '../../services/cijferen/cijferGenerator';
 import { generateGeldExercises, generateGeldWisselExercises, generateGeldTeruggevenExercises, DENOMINATION_CATALOGUE, denominationLabel } from '../../services/geld/geldGenerator';
+import { generateMabExercises } from '../../services/mab/mabGenerator';
 
 const HR_STD_TYPES = ['optellen', 'aftrekken', 'vermenigvuldigen', 'delen'];
 const isHrStd = (typeId: string) => HR_STD_TYPES.some(t => typeId.includes(t));
@@ -45,6 +47,7 @@ export default function Inspector() {
     const setGeldExercises = useWorksheetStore((state) => state.setGeldExercises);
     const setGeldWisselExercises = useWorksheetStore((state) => state.setGeldWisselExercises);
     const setGeldTeruggevenExercises = useWorksheetStore((state) => state.setGeldTeruggevenExercises);
+    const setMabExercises = useWorksheetStore((state) => state.setMabExercises);
 
     const handleGenerate = () => {
         if (!activeBlock) return;
@@ -62,6 +65,8 @@ export default function Inspector() {
             setGeldWisselExercises(activeBlock.id, generateGeldWisselExercises(activeBlock));
         } else if (activeBlock.typeId === 'geld-teruggeven') {
             setGeldTeruggevenExercises(activeBlock.id, generateGeldTeruggevenExercises(activeBlock));
+        } else if (activeBlock.typeId === 'mab-herkennen') {
+            setMabExercises(activeBlock.id, generateMabExercises(activeBlock));
         } else if (activeBlock.typeId.includes('optellen')) {
             setBlockExercises(activeBlock.id, generateAdditionExercises(activeBlock));
         } else if (activeBlock.typeId.includes('aftrekken')) {
@@ -251,6 +256,7 @@ export default function Inspector() {
                     {(activeBlock.typeId === 'geld-herkennen' || activeBlock.typeId === 'geld-tekenen') && <GeldConfig block={activeBlock} />}
                     {activeBlock.typeId === 'geld-wissel' && <GeldWisselConfig block={activeBlock} />}
                     {activeBlock.typeId === 'geld-teruggeven' && <GeldTeruggevenConfig block={activeBlock} />}
+                    {activeBlock.typeId === 'mab-herkennen' && <MabConfig block={activeBlock} />}
                 </div>
             </div>
 
@@ -463,6 +469,24 @@ export default function Inspector() {
                                     />
                                 </div>
                             )}
+                        </>
+                    )}
+
+                    {/* ── Scaffolding (mab-herkennen): lijn vs tabel ── */}
+                    {activeBlock.typeId === 'mab-herkennen' && (
+                        <>
+                            <label style={{ ...S.label, marginTop: '12px' }}>Scaffolding</label>
+                            <div style={S.btnGroup}>
+                                <button onClick={() => updateConstraint('scaffolding', 'lijn')} style={S.radioBtn((c.scaffolding ?? 'lijn') === 'lijn')}>Lijn</button>
+                                <button onClick={() => updateConstraint('scaffolding', 'tabel')} style={S.radioBtn((c.scaffolding ?? 'lijn') === 'tabel')}>Tabel (H/T/E)</button>
+                            </div>
+                            <label style={{ ...S.label, marginTop: '12px' }}>Oefeningen per rij ({c.exercisesPerRow ?? 3})</label>
+                            <input
+                                type="range" min={1} max={4}
+                                value={c.exercisesPerRow ?? 3}
+                                onChange={(e) => updateConstraint('exercisesPerRow', Number(e.target.value))}
+                                style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }}
+                            />
                         </>
                     )}
 

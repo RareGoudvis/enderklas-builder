@@ -49,7 +49,14 @@ export const APP_STRUCTURE: Domain[] = [
                 label: 'Getalbegrip',
                 placeholder: true,
                 types: [
-                    ph('getalbegrip-tekenen-noteren', 'Tekenen / noteren (MAB)'),
+                    {
+                        id: 'getalbegrip-mab',
+                        label: 'MAB',
+                        children: [
+                            { id: 'mab-herkennen', label: 'Getallen herkennen', typeId: 'mab-herkennen' },
+                            phLeaf('mab-tekenen', 'Getallen tekenen'),
+                        ],
+                    },
                     { id: 'getalbegrip-splitsen', label: 'Splitsen', typeId: 'splitsen', defaultConstraints: { maxGetal: 10, layout: 'basic', rowsPerBox: 4 } },
                     phAcc('getalbegrip-ordenen', 'Ordenen', [
                         phLeaf('getalbegrip-ordenen-nat', 'Natuurlijke getallen'),

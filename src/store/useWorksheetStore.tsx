@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { MathBlock, Equation, ClockExercise, FractionExercise, SplitsenExercise, CijferExercise, GeldExercise, GeldWisselExercise, GeldTeruggevenExercise, FooterData, LayoutPreset } from '../services/math/types';
+import type { MathBlock, Equation, ClockExercise, FractionExercise, SplitsenExercise, CijferExercise, GeldExercise, GeldWisselExercise, GeldTeruggevenExercise, MabExercise, FooterData, LayoutPreset } from '../services/math/types';
 
 interface HeaderData {
     naam: boolean;
@@ -43,6 +43,7 @@ interface WorksheetState {
     setGeldExercises: (id: string, exercises: GeldExercise[]) => void;
     setGeldWisselExercises: (id: string, exercises: GeldWisselExercise[]) => void;
     setGeldTeruggevenExercises: (id: string, exercises: GeldTeruggevenExercise[]) => void;
+    setMabExercises: (id: string, exercises: MabExercise[]) => void;
     updateExercise: (blockId: string, exerciseId: string, updates: Partial<Equation>) => void;
     updateCijferExercise: (blockId: string, exerciseId: string, updates: Partial<CijferExercise>) => void;
     setActiveSelection: (id: string | 'document' | null) => void;
@@ -93,6 +94,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     setGeldExercises: (id: string, exercises: GeldExercise[]) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, geldExercises: exercises } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
     setGeldWisselExercises: (id: string, exercises: GeldWisselExercise[]) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, geldWisselExercises: exercises } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
     setGeldTeruggevenExercises: (id: string, exercises: GeldTeruggevenExercise[]) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, geldTeruggevenExercises: exercises } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
+    setMabExercises: (id: string, exercises: MabExercise[]) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, mabExercises: exercises } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
 
     addBlockFromType: (typeId, label, overrideConstraints) => set((state) => {
         const isClockBlock = typeId.startsWith('klok-');
@@ -102,7 +104,19 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
         const isGeldBlock = typeId === 'geld-herkennen' || typeId === 'geld-tekenen';
         const isGeldWissel = typeId === 'geld-wissel';
         const isGeldTeruggeven = typeId === 'geld-teruggeven';
-        const defaultConstraints = isGeldBlock ? {
+        const isMabBlock = typeId === 'mab-herkennen';
+        const defaultConstraints = isMabBlock ? {
+            mabStyle: 'symbolic' as 'symbolic' | 'realistic',
+            maxNumber: 100 as 10 | 20 | 100 | 1000,
+            operand1Mask: {} as Record<string, boolean>,
+            specifiekeGetallen: [] as number[],
+            useSpecifiek: false,
+            scaffolding: 'lijn' as 'lijn' | 'tabel',
+            exercisesPerRow: 3,
+            boxBorderColor: 'red' as 'red' | 'black',
+            allowInternalZero: true,
+            boxHeight: 100,
+        } : isGeldBlock ? {
             maxGetal: 10,
             format: 'euros',
             scaffolding: typeId === 'geld-tekenen' ? 'eenvoudig' : 'invullen',
@@ -197,7 +211,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
             instructionMode: 'geen',
             layoutPreset: 'inline-short',
             steppedLines: 3,
-            numberOfExercises: isFractionBlock ? 6 : isSplitsenBlock ? 5 : isCijferBlock ? 2 : isGeldBlock ? 6 : (isGeldWissel || isGeldTeruggeven) ? 4 : 10,
+            numberOfExercises: isFractionBlock ? 6 : isSplitsenBlock ? 5 : isCijferBlock ? 2 : isGeldBlock ? 6 : (isGeldWissel || isGeldTeruggeven) ? 4 : isMabBlock ? 6 : 10,
             totalPoints: 5,
             verticalSpacing: 14,
             constraints: { ...defaultConstraints, ...overrideConstraints },
