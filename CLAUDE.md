@@ -22,6 +22,24 @@ At the end of every conversation where changes were made, prepend a new entry to
 
 Most recent entry goes at the top, below the `---` divider. Do this before the final response.
 
+## Doc-sync rule
+
+After any **structural** change, update **[ARCHITECTURE.md](ARCHITECTURE.md) + this
+file** in the *same* change, before the final response. Treat these as triggers:
+
+- a new exercise type / generator / viewer / config plugin, or a new row in
+  `exerciseRegistry.ts` / `exerciseUI.tsx`;
+- a new store **slice or action**, or a changed history / lock / autosave rule
+  ([useWorksheetStore.tsx](src/store/useWorksheetStore.tsx));
+- changed **persistence/share** format or version ([persistence.ts](src/services/persistence.ts));
+- a new file or directory under `src/` (add it to the file maps);
+- changed print/registry wiring.
+
+ARCHITECTURE.md is the deep map (state table §3, registry table §7, file map §11,
+teacher-workflow layer §13); CLAUDE.md is the short rules + directory tree. A
+`Stop` hook ([.claude/hooks/doc-sync-check.ps1](.claude/hooks/doc-sync-check.ps1))
+warns once if structural source files changed without these docs.
+
 ---
 
 ## What this is
