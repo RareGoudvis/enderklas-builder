@@ -19,8 +19,6 @@ const maskBtn = (active: boolean): React.CSSProperties => ({
     borderRadius: '4px', border: '1px solid var(--border-color)',
     backgroundColor: active ? 'var(--accent-purple)' : 'var(--bg-input)', color: active ? '#fff' : 'var(--text-muted)',
 });
-const checkRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-main)', cursor: 'pointer', marginTop: '4px' };
-const checkbox: React.CSSProperties = { accentColor: 'var(--accent-purple)', width: '15px', height: '15px', cursor: 'pointer' };
 const numInput: React.CSSProperties = { width: '70px', padding: '6px 8px', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-main)', fontSize: '13px' };
 
 export default function OrdenenConfig({ block }: Props) {
@@ -134,14 +132,14 @@ export default function OrdenenConfig({ block }: Props) {
                         <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>tot</span>
                         <input type="number" min={2} max={20} value={maxDenominator} onChange={(e) => set('maxDenominator', Math.max(2, Number(e.target.value)))} style={numInput} />
                     </div>
-                    <label style={checkRow}>
-                        <input type="checkbox" checked={unitFractionsOnly} onChange={(e) => set('unitFractionsOnly', e.target.checked)} style={checkbox} />
-                        Enkel stambreuken (teller = 1)
-                    </label>
-                    <label style={checkRow}>
-                        <input type="checkbox" checked={allowMixed} onChange={(e) => set('allowMixed', e.target.checked)} style={checkbox} />
-                        Gemengde getallen (bv. 1 1/4)
-                    </label>
+                    <div style={{ ...styles.onOffRow, marginTop: '8px' }}>
+                        <span style={styles.onOffLabel}>Enkel stambreuken (teller = 1)</span>
+                        <button onClick={() => set('unitFractionsOnly', !unitFractionsOnly)} style={styles.onOffBtn(unitFractionsOnly)}>{unitFractionsOnly ? 'Aan' : 'Uit'}</button>
+                    </div>
+                    <div style={styles.onOffRow}>
+                        <span style={styles.onOffLabel}>Gemengde getallen (bv. 1 1/4)</span>
+                        <button onClick={() => set('allowMixed', !allowMixed)} style={styles.onOffBtn(allowMixed)}>{allowMixed ? 'Aan' : 'Uit'}</button>
+                    </div>
                 </div>
             )}
         </div>

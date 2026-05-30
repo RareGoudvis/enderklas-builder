@@ -36,9 +36,9 @@ export default function DeelbaarheidViewer({ block, showSolutions }: Props) {
                                     <span key={i} style={{ display: 'inline-flex', alignItems: 'flex-end', gap: '6px' }}>
                                         {i > 0 && <span>–</span>}
                                         {i < given
-                                            ? <span style={{ fontWeight: 'bold' }}>{v}</span>
+                                            ? <span>{v}</span>
                                             : (showSolutions
-                                                ? <span style={{ color: '#e11d48', fontWeight: 'bold' }}>{v}</span>
+                                                ? <span style={{ color: '#e11d48' }}>{v}</span>
                                                 : <span style={{ borderBottom: '1.5px solid #000', minWidth: '40px', height: '18px', display: 'inline-block' }} />)}
                                     </span>
                                 ))}
@@ -72,7 +72,7 @@ export default function DeelbaarheidViewer({ block, showSolutions }: Props) {
                 <div key={ex.id} className="print-row print-exercise" style={{ display: 'grid', gridTemplateColumns: cols }}>
                     <div style={{ ...cell, backgroundColor: SALMON, fontWeight: 'bold' }}>{ex.number}</div>
                     {divisors.map(d => (
-                        <div key={d} style={{ ...cell, color: '#e11d48', fontWeight: 'bold' }}>
+                        <div key={d} style={{ ...cell, color: '#e11d48' }}>
                             {showSolutions ? ((ex.number ?? 0) % d === 0 ? '✓' : '✗') : ''}
                         </div>
                     ))}

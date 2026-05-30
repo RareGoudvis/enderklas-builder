@@ -14,9 +14,9 @@ export default function VerticalFraction({ value, color, fontSize = 15, mono = f
     const cellMin = `${fontSize + 9}px`;
     const fontFamily = mono ? 'Azeret Mono, monospace' : undefined;
     return (
-        <div style={{ display: 'inline-flex', alignItems: 'center', fontFamily, ...(color ? { color, fontWeight: 'bold' } : {}) }}>
-            {hasWhole && <span style={{ fontSize: `${Math.round(fontSize * 1.2)}px`, marginRight: '4px', fontWeight: 'bold', ...(color ? { color } : {}) }}>{value.whole}</span>}
-            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: `${fontSize}px`, lineHeight: 1.1, fontWeight: 'bold' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', fontFamily, ...(color ? { color } : {}) }}>
+            {hasWhole && <span style={{ fontSize: `${Math.round(fontSize * 1.2)}px`, marginRight: '4px', ...(color ? { color } : {}) }}>{value.whole}</span>}
+            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: `${fontSize}px`, lineHeight: 1.1 }}>
                 <span style={{ borderBottom: `1.5px solid ${color || '#000'}`, minWidth: cellMin, textAlign: 'center', padding: '0 4px' }}>{value.n}</span>
                 <span style={{ minWidth: cellMin, textAlign: 'center', padding: '0 4px' }}>{value.d}</span>
             </div>

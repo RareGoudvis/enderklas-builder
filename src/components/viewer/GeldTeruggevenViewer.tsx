@@ -31,7 +31,7 @@ const SOL = '#e11d48';
 // ── Answer line renderers ─────────────────────────────────────────────────────
 
 function EuroCentLine({ changeCents, showSolutions }: { changeCents: number; showSolutions: boolean }) {
-    if (showSolutions) return <span style={{ color: SOL, fontWeight: 'bold' }}>{fmtChange(changeCents)}</span>;
+    if (showSolutions) return <span style={{ color: SOL, fontWeight: 'normal' }}>{fmtChange(changeCents)}</span>;
     return (
         <>
             <span style={blank(28)} /><span> euro en </span>
@@ -41,7 +41,7 @@ function EuroCentLine({ changeCents, showSolutions }: { changeCents: number; sho
 }
 
 function DecimaalLine({ changeCents, showSolutions }: { changeCents: number; showSolutions: boolean }) {
-    if (showSolutions) return <span style={{ color: SOL, fontWeight: 'bold' }}>{fmtCents(changeCents)}</span>;
+    if (showSolutions) return <span style={{ color: SOL, fontWeight: 'normal' }}>{fmtCents(changeCents)}</span>;
     return (
         <>
             <span>€ </span>

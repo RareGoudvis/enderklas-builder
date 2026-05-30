@@ -11,13 +11,13 @@ interface Props {
 }
 
 const styles = {
-    solutionText: { color: '#e11d48', fontWeight: 'bold', padding: '0 4px', fontSize: '18px' } as React.CSSProperties,
+    solutionText: { color: '#e11d48', padding: '0 4px', fontSize: '18px' } as React.CSSProperties,
     mathDottedLine: { borderBottom: '1.5px solid #000', width: '40px', margin: '0 6px', display: 'inline-block', height: '16px' } as React.CSSProperties,
     mathInput: { width: '70px', textAlign: 'center', fontSize: '17px', fontFamily: 'Azeret Mono, monospace', border: '1px solid transparent', background: 'transparent', outline: 'none', color: '#000', padding: 0 } as React.CSSProperties,
     fractionWrapper: { display: 'inline-flex', flexDirection: 'column', alignItems: 'center', margin: '0 4px', fontSize: '15px' } as React.CSSProperties,
     fractionTop: { borderBottom: '1.5px solid #000', padding: '0 4px', minWidth: '24px', textAlign: 'center' } as React.CSSProperties,
     fractionBottom: { padding: '0 4px', minWidth: '24px', textAlign: 'center' } as React.CSSProperties,
-    wholeNumberStyle: { fontSize: '18px', marginRight: '4px', fontWeight: 'bold', color: '#000' } as React.CSSProperties,
+    wholeNumberStyle: { fontSize: '18px', marginRight: '4px', color: '#000' } as React.CSSProperties,
     exerciseRow: { display: 'flex', alignItems: 'flex-end', fontSize: '17px', fontFamily: 'Azeret Mono, monospace' } as React.CSSProperties,
     workLine: (layout: string | undefined): React.CSSProperties => ({ borderBottom: '1.5px solid #000', minWidth: '55px', width: layout === 'inline-long' ? '100%' : (layout === 'stepped' ? '100%' : '75px') }),
     emptyStateText: { padding: '8px 0', fontStyle: 'italic', color: '#999', fontSize: '14px' } as React.CSSProperties,
@@ -95,10 +95,10 @@ export default function MathBlockRenderer({ block, showSolutions }: Props) {
                 if (ex.remainder !== undefined) {
                     const helpBlank = <div style={{ borderBottom: '1.5px dotted #000', width: '40px', height: '18px', display: 'inline-block', margin: '0 2px' }} />;
                     const qPart = showSolutions
-                        ? <span style={{ color: '#e11d48', fontWeight: 'bold' }}>{formatMathNumber(ex.answer as number)}</span>
+                        ? <span style={{ color: '#e11d48', fontWeight: 'normal' }}>{formatMathNumber(ex.answer as number)}</span>
                         : <div style={{ borderBottom: '1.5px solid #000', width: '40px', height: '18px', display: 'inline-block' }} />;
                     const rPart = showSolutions
-                        ? <span style={{ color: '#e11d48', fontWeight: 'bold' }}>{String(ex.remainder)}</span>
+                        ? <span style={{ color: '#e11d48', fontWeight: 'normal' }}>{String(ex.remainder)}</span>
                         : <div style={{ borderBottom: '1.5px solid #000', width: '30px', height: '18px', display: 'inline-block' }} />;
                     return (
                         <div key={ex.id} style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '17px', fontFamily: 'Azeret Mono, monospace', height: '24px' }}>

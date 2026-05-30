@@ -35,5 +35,32 @@ export const sharedPluginStyles = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
-    })
+    }),
+
+    // Independently-toggleable pill (multi-select), themed like radioBtn but auto-width.
+    pill: (active: boolean): React.CSSProperties => ({
+        padding: '6px 12px',
+        fontSize: '11px',
+        borderRadius: '14px',
+        cursor: 'pointer',
+        border: `1px solid ${active ? 'var(--accent-purple)' : 'var(--border-color)'}`,
+        backgroundColor: active ? 'var(--accent-purple)' : 'var(--bg-input)',
+        color: active ? 'white' : 'var(--text-muted)',
+        fontWeight: active ? 'bold' : 'normal',
+        transition: 'all 0.15s',
+    }),
+
+    // Label + single Aan/Uit toggle button on one row.
+    onOffRow: {
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: '12px', marginBottom: '8px',
+    } as React.CSSProperties,
+    onOffLabel: { fontSize: '12px', color: 'var(--text-main)' } as React.CSSProperties,
+    onOffBtn: (on: boolean): React.CSSProperties => ({
+        flexShrink: 0, minWidth: '52px', padding: '6px 12px', fontSize: '11px', fontWeight: 'bold',
+        borderRadius: '4px', cursor: 'pointer',
+        border: `1px solid ${on ? 'var(--accent-purple)' : 'var(--border-color)'}`,
+        backgroundColor: on ? 'var(--accent-purple)' : 'var(--bg-input)',
+        color: on ? 'white' : 'var(--text-muted)',
+    }),
 };

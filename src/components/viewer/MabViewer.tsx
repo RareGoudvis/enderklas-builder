@@ -160,7 +160,7 @@ function MabItem({ ex, style, cols, scaffolding, boxHeight, answerHeight, showSo
                 boxSizing: 'border-box',
             }}>
                 {showNumberOnLine
-                    ? <span style={{ color: showSolutions && mode === 'herkennen' ? '#e11d48' : '#000', fontWeight: 'bold', fontSize: '16px' }}>{fmt(ex.value)}</span>
+                    ? <span style={{ color: showSolutions && mode === 'herkennen' ? '#e11d48' : '#000', fontSize: '16px' }}>{fmt(ex.value)}</span>
                     : <div style={{ width: '70%', borderBottom: '1.5px solid #000' }} />
                 }
             </div>

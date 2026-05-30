@@ -60,7 +60,7 @@ export const APP_STRUCTURE: Domain[] = [
                         id: 'getalbegrip-splitsen',
                         label: 'Splitsen',
                         children: [
-                            { id: 'splitsen-basis', label: 'Splitsen (basis)', typeId: 'splitsen', defaultConstraints: { maxGetal: 10, layout: 'basic', rowsPerBox: 4 } },
+                            { id: 'splitsen-basis', label: 'Rooster', typeId: 'splitsen', defaultConstraints: { maxGetal: 10, layout: 'basic', rowsPerBox: 4 } },
                             { id: 'splitsen-harten', label: 'Verliefde harten', typeId: 'splitsen', defaultConstraints: { maxGetal: 10, layout: 'verliefde-harten' } },
                             { id: 'splitsen-positietabel', label: 'Positietabel', typeId: 'splitsen', defaultConstraints: { maxGetal: 1000, layout: 'positie-tabel' } },
                             { id: 'splitsen-benen', label: 'Splitsbenen (H/T/E)', typeId: 'splitsen', defaultConstraints: { maxGetal: 1000, layout: 'positie-benen', benenVariants: ['legs-letters'] } },
@@ -288,6 +288,7 @@ export const APP_STRUCTURE: Domain[] = [
                 types: [
                     { id: 'temperatuur-kleuren', label: 'Meter kleuren', typeId: 'temperatuur', defaultConstraints: { variant: 'kleuren' } },
                     { id: 'temperatuur-aflezen', label: 'Meter aflezen', typeId: 'temperatuur', defaultConstraints: { variant: 'aflezen' } },
+                    { id: 'temperatuur-verschil', label: 'Verschil', typeId: 'temperatuur', defaultConstraints: { variant: 'verschil', mode1: 'gekleurd', mode2: 'getal' } },
                 ],
             },
         ],

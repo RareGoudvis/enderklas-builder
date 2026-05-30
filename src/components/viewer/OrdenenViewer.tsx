@@ -35,7 +35,7 @@ function parseValue(text: string): number | Fraction | null {
 
 function renderVal(v: number | Fraction, color?: string) {
     if (isFrac(v)) return <VerticalFraction value={v} color={color} fontSize={15} mono />;
-    return <span style={{ color, fontWeight: 'bold' }}>{v.toLocaleString('nl-BE')}</span>;
+    return <span style={{ color, fontWeight: 'normal' }}>{v.toLocaleString('nl-BE')}</span>;
 }
 
 // Click a prompt number to edit it; commit re-sorts the answer.
@@ -50,7 +50,7 @@ function EditableValue({ value, onCommit }: { value: number | Fraction; onCommit
                 onChange={(e) => setText(e.target.value)}
                 onBlur={() => { const p = parseValue(text); if (p !== null) onCommit(p); setEditing(false); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); if (e.key === 'Escape') setEditing(false); }}
-                style={{ width: '70px', fontFamily: mono, fontSize: '17px', fontWeight: 'bold', border: '1px solid var(--accent-purple, #ac29e9)', borderRadius: '4px', padding: '1px 4px' }}
+                style={{ width: '70px', fontFamily: mono, fontSize: '17px', fontWeight: 'normal', border: '1px solid var(--accent-purple, #ac29e9)', borderRadius: '4px', padding: '1px 4px' }}
             />
         );
     }
@@ -83,7 +83,7 @@ export default function OrdenenViewer({ block, showSolutions }: Props) {
             items={exercises.map((ex) => (
                 <div key={ex.id} className="print-exercise" style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontFamily: mono, fontSize: '17px' }}>
                     {/* shuffled prompt numbers (click to edit) */}
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', flexWrap: 'wrap', fontWeight: 'bold' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', flexWrap: 'wrap', fontWeight: 'normal' }}>
                         {ex.display.map((v, i) => (
                             <span key={i} style={{ display: 'inline-flex', alignItems: 'flex-end', gap: '4px' }}>
                                 {i > 0 && <span>,</span>}
@@ -95,7 +95,7 @@ export default function OrdenenViewer({ block, showSolutions }: Props) {
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', flexWrap: 'wrap' }}>
                         {ex.values.map((v, i) => (
                             <span key={i} style={{ display: 'inline-flex', alignItems: 'flex-end', gap: '10px' }}>
-                                {i > 0 && <span style={{ fontWeight: 'bold' }}>{ex.operator}</span>}
+                                {i > 0 && <span style={{ fontWeight: 'normal' }}>{ex.operator}</span>}
                                 {showSolutions
                                     ? renderVal(v, '#e11d48')
                                     : <span style={{ borderBottom: '1.5px solid #000', minWidth: '64px', height: '18px', display: 'inline-block' }} />}

@@ -13,7 +13,7 @@ const isFrac = (v: number | Fraction): v is Fraction => typeof v !== 'number';
 
 function label(v: number | Fraction, color?: string) {
     if (isFrac(v)) return <VerticalFraction value={v} color={color} fontSize={13} mono />;
-    return <span style={{ fontSize: '15px', fontWeight: 'bold', color: color || '#000', fontFamily: mono }}>{formatMathNumber(v)}</span>;
+    return <span style={{ fontSize: '15px', fontWeight: 'normal', color: color || '#000', fontFamily: mono }}>{formatMathNumber(v)}</span>;
 }
 
 function NumberLine({ ex, showSolutions }: { ex: GetallenasExercise; showSolutions: boolean }) {

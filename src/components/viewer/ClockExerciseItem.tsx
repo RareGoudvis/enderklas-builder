@@ -19,19 +19,19 @@ export default function ClockExerciseItem({ ex, block, showSolutions }: Props) {
     );
 
     const digitalBox = (
-        <div style={{ border: '2px solid #000', padding: '5px 10px', fontFamily: 'Azeret Mono, monospace', fontSize: '18px', fontWeight: 'bold', letterSpacing: '3px' }}>
+        <div style={{ border: '2px solid #000', padding: '5px 10px', fontFamily: 'Azeret Mono, monospace', fontSize: '18px', fontWeight: 'normal', letterSpacing: '3px' }}>
             {ex.digitalText}
         </div>
     );
 
     const timeLabel = (
-        <span style={{ fontSize: '13px', fontWeight: 'bold', fontFamily: 'Azeret Mono, monospace', textAlign: 'center' }}>
+        <span style={{ fontSize: '13px', fontWeight: 'normal', fontFamily: 'Azeret Mono, monospace', textAlign: 'center' }}>
             {ex.timeText}
         </span>
     );
 
     const blankLine = <div style={{ borderBottom: '1.5px solid #000', width: '90%', height: '18px' }} />;
-    const sol = (text: string) => <span style={{ color: '#e11d48', fontWeight: 'bold', fontSize: '12px' }}>{text}</span>;
+    const sol = (text: string) => <span style={{ color: '#e11d48', fontWeight: 'normal', fontSize: '12px' }}>{text}</span>;
 
     let inner: React.ReactNode;
 

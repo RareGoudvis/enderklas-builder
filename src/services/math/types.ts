@@ -107,11 +107,16 @@ export interface GetallenasExercise {
     isManuallyEdited: boolean;
 }
 
-// #8 Temperatuur — thermometer: colour to a temp, or read a coloured one
+// #8 Temperatuur — thermometer: colour to a temp, read a coloured one, or the
+// difference between two thermometers.
+export type TemperatuurMode = 'gekleurd' | 'getal' | 'beide';
 export interface TemperatuurExercise {
     id: string;
     celsius: number;
-    variant: 'kleuren' | 'aflezen';
+    variant: 'kleuren' | 'aflezen' | 'verschil';
+    celsius2?: number;            // verschil: second thermometer
+    mode1?: TemperatuurMode;      // verschil: what's given on each thermometer
+    mode2?: TemperatuurMode;
     isManuallyEdited: boolean;
 }
 

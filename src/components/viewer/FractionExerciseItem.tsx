@@ -11,7 +11,7 @@ interface Props {
 export default function FractionExerciseItem({ ex, block, showSolutions }: Props) {
     const subType = ex.subType;
     const answerFormat: string = block.constraints.answerFormat || 'fraction-questions';
-    const sol = (text: string) => <span style={{ color: '#e11d48', fontWeight: 'bold', fontSize: '14px' }}>{text}</span>;
+    const sol = (text: string) => <span style={{ color: '#e11d48', fontWeight: 'normal', fontSize: '14px' }}>{text}</span>;
     const blank = (w = 40) => <div style={{ borderBottom: '1.5px solid #000', width: `${w}px`, height: '18px', display: 'inline-block', margin: '0 2px' }} />;
 
     const vertFrac = (n: number, d: number, color?: string) => (
@@ -33,7 +33,7 @@ export default function FractionExerciseItem({ ex, block, showSolutions }: Props
         if (subType === 'kleuren') {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'normal' }}>
                         <span>Kleur</span>
                         {vertFrac(ex.numerator, ex.denominator)}
                         <span>in:</span>
@@ -82,7 +82,7 @@ export default function FractionExerciseItem({ ex, block, showSolutions }: Props
             );
         } else if (answerFormat === 'blank-fraction') {
             answerArea = (
-                <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', marginTop: '8px', fontSize: '20px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold' }}>
+                <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', marginTop: '8px', fontSize: '20px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'normal' }}>
                     <div style={{ borderBottom: '2px solid #000', minWidth: '32px', textAlign: 'center', paddingBottom: '2px', color: showSolutions ? '#e11d48' : 'transparent' }}>{ex.numerator}</div>
                     <div style={{ minWidth: '32px', textAlign: 'center', paddingTop: '2px', color: showSolutions ? '#e11d48' : 'transparent' }}>{ex.denominator}</div>
                 </div>
@@ -166,7 +166,7 @@ export default function FractionExerciseItem({ ex, block, showSolutions }: Props
         if (answerFormat === 'met-breukvragen') {
             const qRow = (question: string, answer: React.ReactNode) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'Azeret Mono, monospace', width: '195px', flexShrink: 0 }}>{question}</div>
+                    <div style={{ fontWeight: 'normal', fontSize: '11px', fontFamily: 'Azeret Mono, monospace', width: '195px', flexShrink: 0 }}>{question}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '13px', fontFamily: 'Azeret Mono, monospace' }}>{answer}</div>
                 </div>
             );

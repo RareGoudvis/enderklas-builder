@@ -12,9 +12,6 @@ const STEP_PRESETS = [1, 2, 5, 10, 25, 50, 100];
 const DECIMAL_STEPS = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.5, 1];
 const FRACTION_STEPS = [2, 3, 4, 5, 8, 10];   // denominator d → step 1/d
 
-const checkRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-main)', cursor: 'pointer', marginTop: '6px' };
-const checkbox: React.CSSProperties = { accentColor: 'var(--accent-purple)', width: '15px', height: '15px', cursor: 'pointer' };
-
 export default function GetallenasConfig({ block }: Props) {
     const updateBlockSettings = useWorksheetStore((state) => state.updateBlockSettings);
 
@@ -122,14 +119,14 @@ export default function GetallenasConfig({ block }: Props) {
             {isRational && (
                 <div style={styles.section}>
                     <label style={styles.label}>Breuken:</label>
-                    <label style={checkRow}>
-                        <input type="checkbox" checked={allowMixed} onChange={(e) => set('allowMixed', e.target.checked)} style={checkbox} />
-                        Gemengde getallen (1 1/4 i.p.v. 5/4)
-                    </label>
-                    <label style={checkRow}>
-                        <input type="checkbox" checked={gelijknamig} onChange={(e) => set('gelijknamig', e.target.checked)} style={checkbox} />
-                        Gelijknamige breuken (niet vereenvoudigen)
-                    </label>
+                    <div style={styles.onOffRow}>
+                        <span style={styles.onOffLabel}>Gemengde getallen (1 1/4 i.p.v. 5/4)</span>
+                        <button onClick={() => set('allowMixed', !allowMixed)} style={styles.onOffBtn(allowMixed)}>{allowMixed ? 'Aan' : 'Uit'}</button>
+                    </div>
+                    <div style={styles.onOffRow}>
+                        <span style={styles.onOffLabel}>Gelijknamige breuken (niet vereenvoudigen)</span>
+                        <button onClick={() => set('gelijknamig', !gelijknamig)} style={styles.onOffBtn(gelijknamig)}>{gelijknamig ? 'Aan' : 'Uit'}</button>
+                    </div>
                 </div>
             )}
 

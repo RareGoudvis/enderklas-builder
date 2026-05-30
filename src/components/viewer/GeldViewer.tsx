@@ -90,7 +90,7 @@ function HerkennenCell({ ex, block, showSolutions }: { ex: GeldExercise; block: 
     const geldLayout: string = block.constraints.geldLayout ?? 'samen';
 
     const answerArea = showSolutions ? (
-        <div style={{ color: '#e11d48', fontWeight: 'bold', fontSize: '16px', fontFamily: "'Azeret Mono', monospace", marginTop: '6px' }}>
+        <div style={{ color: '#e11d48', fontSize: '16px', fontFamily: "'Azeret Mono', monospace", marginTop: '6px' }}>
             {formatAmount(ex.amountCents, format)}
         </div>
     ) : scaffolding === 'invullen' ? (

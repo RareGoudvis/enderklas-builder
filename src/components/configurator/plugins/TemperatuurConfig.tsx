@@ -13,21 +13,37 @@ export default function TemperatuurConfig({ block }: Props) {
         variant = 'kleuren',
         includeNegatives = false,
         perRow = 4,
+        mode1 = 'gekleurd',
+        mode2 = 'getal',
     } = block.constraints;
 
     const set = (key: string, value: unknown) =>
         updateBlockSettings(block.id, { constraints: { ...block.constraints, [key]: value } });
 
+    const MODES = [
+        { val: 'gekleurd', label: 'Gekleurd' },
+        { val: 'getal', label: 'Getal' },
+        { val: 'beide', label: 'Beide' },
+    ];
+
     return (
         <div style={styles.container}>
-            {/* VARIANT */}
-            <div style={styles.section}>
-                <label style={styles.label}>Variant:</label>
-                <div style={styles.buttonGroup}>
-                    <button onClick={() => set('variant', 'kleuren')} style={styles.radioBtn(variant === 'kleuren')}>Meter kleuren</button>
-                    <button onClick={() => set('variant', 'aflezen')} style={styles.radioBtn(variant === 'aflezen')}>Meter aflezen</button>
+            {/* Variant comes from the sidebar leaf (Meter kleuren / aflezen / verschil). */}
+
+            {/* VERSCHIL — what's given on each thermometer */}
+            {variant === 'verschil' && ([
+                { key: 'mode1', label: 'Thermometer 1', value: mode1 },
+                { key: 'mode2', label: 'Thermometer 2', value: mode2 },
+            ]).map(t => (
+                <div key={t.key} style={styles.section}>
+                    <label style={styles.label}>{t.label}:</label>
+                    <div style={styles.buttonGroup}>
+                        {MODES.map(m => (
+                            <button key={m.val} onClick={() => set(t.key, m.val)} style={styles.radioBtn(t.value === m.val)}>{m.label}</button>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            ))}
 
             {/* NEGATIVES */}
             <div style={styles.section}>

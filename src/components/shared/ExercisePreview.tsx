@@ -65,7 +65,7 @@ function useInView<T extends HTMLElement>() {
 export default function ExercisePreview({ typeId, constraints, nonce = 0, height = 150 }: Props) {
     const { ref: boxRef, inView } = useInView<HTMLDivElement>();
     const innerRef = useRef<HTMLDivElement>(null);
-    const [fitT, setFitT] = useState({ scale: 1, tx: 0, ty: 0 });
+    const [scale, setScale] = useState(1);
     const constraintsKey = JSON.stringify(constraints);
 
     const block = useMemo(() => {
@@ -88,17 +88,12 @@ export default function ExercisePreview({ typeId, constraints, nonce = 0, height
         const inner = innerRef.current;
         if (!box || !inner || !block) return;
         const fit = () => {
-            const boxW = box.clientWidth - PAD * 2;    // available width inside padding
-            const boxH = box.clientHeight - PAD * 2;
-            const contentW = inner.scrollWidth;        // natural content size (unscaled)
-            const contentH = inner.scrollHeight;
-            if (!contentW || !contentH || boxW <= 0 || boxH <= 0) { setFitT({ scale: 1, tx: 0, ty: 0 }); return; }
-            const raw = Math.min(1, boxW / contentW, boxH / contentH);
-            const scale = raw > 0 && Number.isFinite(raw) ? raw : 1;
-            // Center the scaled content within the available box.
-            const tx = Math.max(0, (boxW - contentW * scale) / 2);
-            const ty = Math.max(0, (boxH - contentH * scale) / 2);
-            setFitT({ scale, tx, ty });
+            // Fit by WIDTH only (don't distort by squashing height); tall content clips.
+            const boxW = box.clientWidth - PAD * 2;
+            const contentW = inner.scrollWidth;
+            if (!contentW || boxW <= 0) { setScale(1); return; }
+            const raw = Math.min(1, boxW / contentW);
+            setScale(raw > 0 && Number.isFinite(raw) ? raw : 1);
         };
         fit();
         const ro = new ResizeObserver(fit);
@@ -115,7 +110,7 @@ export default function ExercisePreview({ typeId, constraints, nonce = 0, height
             {inView && (!block || !Viewer
                 ? <div style={fallbackStyle}>Voorbeeld niet beschikbaar</div>
                 : (
-                    <div ref={innerRef} style={{ ...scaleWrap, transform: `translate(${fitT.tx}px, ${fitT.ty}px) scale(${fitT.scale})` }}>
+                    <div ref={innerRef} style={{ ...scaleWrap, transform: `scale(${scale})` }}>
                         <PreviewBoundary key={`${constraintsKey}:${nonce}`}>
                             <Viewer block={block} showSolutions />
                         </PreviewBoundary>
@@ -131,10 +126,9 @@ const wrapStyle: React.CSSProperties = {
     fontSize: '13px', color: '#000', background: '#fff',
     borderRadius: '6px', padding: `${PAD}px`, boxSizing: 'border-box',
 };
-// Inner shrinks to content width (max-content) so the fit math sees the true size and
-// can center on both axes. Measured unscaled; transform applied inline.
+// Inner fills the box width so viewers lay out as on the sheet; scaled by width to fit.
 const scaleWrap: React.CSSProperties = {
-    transformOrigin: 'top left', width: 'max-content', maxWidth: 'none',
+    transformOrigin: 'top left', width: '100%',
 };
 const fallbackStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'center', justifyContent: 'center',

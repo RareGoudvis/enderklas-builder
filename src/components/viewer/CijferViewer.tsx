@@ -522,7 +522,7 @@ function CijferExercisePreview({ ex, c, showSolutions, blockId }: ExProps) {
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', padding: '2px 8px 4px', borderBottom: '0.5px solid #aaa', fontFamily: 'Azeret Mono, monospace', fontSize: '11px' }}>
                     <span>≈</span>
                     {showSolutions
-                        ? <span style={{ color: '#e11d48', fontWeight: 'bold', marginLeft: '4px' }}>{computeEstimation(ex)}</span>
+                        ? <span style={{ color: '#e11d48', marginLeft: '4px' }}>{computeEstimation(ex)}</span>
                         : <div style={{ flex: 1, borderBottom: '1px solid #aaa', height: '13px', marginLeft: '2px' }} />
                     }
                 </div>
