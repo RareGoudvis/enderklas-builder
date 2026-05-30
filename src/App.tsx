@@ -136,7 +136,7 @@ export default function App() {
       {/* CENTRAL WORK AREA */}
       <main className="print-main" style={styles.mainContent} onClick={() => setActiveSelection('document')}>
 
-        <div className="no-print" onClick={(e) => e.stopPropagation()}>
+        <div className="no-print" onClick={(e) => e.stopPropagation()} style={{ position: 'sticky', top: 0, zIndex: 20, width: '100%', background: 'var(--bg-dark)' }}>
           <TopBar onPrint={handlePrint} onOpenHelp={() => setHelpOpen(true)} />
         </div>
 
