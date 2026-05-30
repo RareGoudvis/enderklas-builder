@@ -8,7 +8,10 @@ Live (alpha): [app.enderklas.be](https://app.enderklas.be)
 
 - **Visueel samenstellen** — drie panelen: domeinboom links, A4-voorbeeld in het midden, instellingen rechts.
 - **Oefeningen genereren per blok** of in één klik voor het hele werkblad (`Genereer alles`). Vergrendelde blokken (🔒) worden overgeslagen.
-- **Werkbundels opslaan en openen** als JSON-bestand — bewaar je layout en deel met collega's.
+- **Snel toevoegen** — een overzichtsvenster met een live voorbeeld per oefeningtype; kies er meerdere en voeg ze in één keer toe.
+- **Basisinstellingen** — stel één keer een standaard moeilijkheidsgraad in (max getal, getalsoort, getalopbouw, bruggetjes, decimalen); elk nieuw blok neemt die over.
+- **Curriculum samenstellen** — kies welke oefeningen ouders mogen toevoegen en bevries de moeilijkheidsgraad, en deel een vergrendelde link (ideaal per handboek).
+- **Werkbundels opslaan en openen** als JSON-bestand of als deelbare link (volledig of enkel sjabloon) — bewaar je layout en deel met collega's.
 - **Differentiatie** — instructieprefixen (MAG / MOET / ★ / aangepast), drie scaffoldingniveaus per oefeningtype, schaalbare scoring.
 - **Afdrukken** met optionele oplossingen (rood overlay) en nette paginabreuken: kop- en voettekst (school / klas / leerkracht + vrije tekst) herhalen op elke pagina, oefeningen worden nooit middenin afgekapt, en je kan de naamvelden optioneel bovenaan elke pagina herhalen.
 - **Toegankelijkheid** — drie thema's (licht / donker / hoog contrast voor kleurenblinden).
@@ -17,12 +20,14 @@ Live (alpha): [app.enderklas.be](https://app.enderklas.be)
 
 | Domein | Onderdeel | Type |
 |---|---|---|
-| Getallenkennis | Getalbegrip | Splitsen, MAB (Multibase Arithmetic Blocks) |
+| Getallenkennis | Getalbegrip | Splitsen (rooster, positietabel, splitsbenen, plaatswaarden, verliefde harten — met decimalen), MAB, Ordenen, Getallenassen |
 | Getallenkennis | Breuken | Kleuren, herkennen, breuk van hoeveelheid, lijnstuk, veelhoek |
+| Getallenkennis | Deelbaarheid | Deelbaarheidstabel, veelvouden aanvullen |
 | Bewerkingen | Hoofdrekenen (standaardprocedure) | Optellen, aftrekken, vermenigvuldigen, delen — natuurlijk / decimaal / rationaal |
 | Bewerkingen | Cijferen | Kolomrekenen optellen / aftrekken / vermenigvuldigen / delen — met ruitjesgrid |
-| Meten en metend rekenen | Kloklezen | Analoge en digitale klok |
+| Meten en metend rekenen | Kloklezen | Analoge en digitale klok (lezen / tekenen / omzetten) |
 | Meten en metend rekenen | Geld | Herkennen, bedrag tekenen, wissel, teruggeven |
+| Meten en metend rekenen | Temperatuur | Meter kleuren, meter aflezen, verschil tussen twee meters |
 
 Meer oefeningtypes worden gefaseerd toegevoegd. Niet-ingevulde plekken in de zijbalk zijn placeholders.
 

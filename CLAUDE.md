@@ -76,25 +76,37 @@ src/
 │   │   └── cijferGenerator.ts     # Column arithmetic generator
 │   ├── geld/
 │   │   └── geldGenerator.ts       # Money: herkennen/tekenen + wissel + teruggeven (3 exports)
-│   └── mab/
-│       └── mabGenerator.ts        # MAB (Dienes place-value blocks) generator
+│   ├── mab/
+│   │   └── mabGenerator.ts        # MAB (Dienes place-value blocks) generator
+│   ├── ordenen/                   # Ordering numbers (+ recomputeSplitsenExercise lives in splitsen)
+│   │   └── ordenenGenerator.ts
+│   ├── deelbaarheid/deelbaarheidGenerator.ts
+│   ├── getallenas/getallenasGenerator.ts
+│   └── temperatuur/temperatuurGenerator.ts   # kleuren / aflezen / verschil
 ├── config/
 │   ├── appstructure.ts            # APP_STRUCTURE tree (above)
 │   ├── exerciseRegistry.ts        # REGISTRY: typeId → generator/field/defaults (pure data)
 │   ├── exerciseUI.tsx             # EXERCISE_UI: typeId → Viewer/Config (React)
+│   ├── baseSettings.ts            # BaseSettings + baseApply (global snapshot-on-add)
+│   ├── exerciseCatalog.ts         # flat addable catalog for mass-add / curriculum
 │   └── version.ts                 # RELEASE_VERSION / RELEASE_SUMMARY for the "Nieuw" banner
 └── components/
     ├── layout/
-    │   ├── sidebar.tsx            # Left panel: APP_STRUCTURE tree nav
-    │   ├── TopBar.tsx             # Print / generate-all / presets / share / theme / solutions
+    │   ├── sidebar.tsx            # Left panel: tree nav + Geavanceerd group + locked palette
+    │   ├── TopBar.tsx             # Toevoegen / Genereer alles / Delen dropdown / ⋯ Meer / print
+    │   ├── BaseSettingsPanel.tsx  # Sidebar "Geavanceerd": Basisinstellingen + Curriculum buttons
+    │   ├── BaseSettingsModal.tsx  # Global base-difficulty modal
     │   ├── AlphaPopup.tsx         # One-time alpha warning
-    │   ├── HelpModal.tsx          # Sectioned usage guide
+    │   ├── HelpModal.tsx          # Ouders / Leerkrachten tabs
     │   └── PresetModal.tsx        # Save/load/delete named presets
+    ├── massadd/MassAddModal.tsx   # "Toevoegen" mass-add modal
+    ├── curriculum/CurriculumBuilderModal.tsx   # Curriculum builder (draftBlocks + real configs)
+    ├── shared/ExercisePreview.tsx # Fit-to-card live example (mass-add + curriculum)
     ├── ui/
     │   └── IconButton.tsx         # Shared icon button (block controls)
     ├── configurator/
-    │   ├── Inspector.tsx          # Right panel: routes to doc or block config
-    │   ├── sharedPluginStyles.ts  # Shared button/input styles for config plugins
+    │   ├── Inspector.tsx          # Right panel: routes to doc or block config; locked gating
+    │   ├── sharedPluginStyles.ts  # Shared button/pill/on-off styles for config plugins
     │   └── plugins/               # One *Config.tsx per exercise family
     │       ├── AdditionConfig.tsx
     │       ├── SubtractionConfig.tsx
@@ -108,6 +120,10 @@ src/
     │       ├── GeldWisselConfig.tsx
     │       ├── GeldTeruggevenConfig.tsx
     │       ├── MabConfig.tsx
+    │       ├── OrdenenConfig.tsx
+    │       ├── DeelbaarheidConfig.tsx
+    │       ├── GetallenasConfig.tsx
+    │       ├── TemperatuurConfig.tsx
     │       ├── addition/          # Sub-configs per number type
     │       │   ├── NaturalSettings.tsx
     │       │   ├── DecimalSettings.tsx
@@ -132,6 +148,11 @@ src/
         ├── FractionViewer.tsx     # Fraction grid wrapper (maps to FractionExerciseItem)
         ├── MabViewer.tsx          # MAB blocks (mode derived from typeId)
         ├── MabBlocksSVG.tsx       # SVG Dienes blocks (symbolic / bw / color)
+        ├── OrdenenViewer.tsx      # Ordering (click a number to edit)
+        ├── DeelbaarheidViewer.tsx
+        ├── GetallenasViewer.tsx   # Number line (decimal/rational/geheel ticks)
+        ├── TemperatuurViewer.tsx  # Thermometer(s): kleuren / aflezen / verschil
+        ├── VerticalFraction.tsx   # Shared stacked-fraction component
         └── FragmentableGrid.tsx   # row-chunked grid so items flow across print page breaks
 ```
 
@@ -190,11 +211,16 @@ Single Zustand store. Everything is in memory (no persistence). Key slices:
 | `docSettings` | `DocSettings` | titlePosition, headerStyle, opdrachtTitelStyle, showScores, showDividers |
 | `showSolutions` | `boolean` | Toggles red solution overlay in preview and print |
 | `theme` | `'dark' \| 'light' \| 'colorblind'` | Persisted to localStorage, applied as `data-theme` on `<html>` |
+| `baseSettings` | `BaseSettings` | Global default difficulty snapshotted into each new block (`baseApply`) — see ARCHITECTURE §13 |
+| `curriculum` | `CurriculumLock \| null` | Non-null + `locked` = restricted parent mode (whitelist sidebar, frozen difficulty) |
+| `draftBlocks` | `MathBlock[]` | Off-sheet scratch blocks the curriculum builder edits via the real config plugins |
 | `_history` / `_historyIndex` | `MathBlock[][]` / `number` | Undo/redo stack, max 50 snapshots |
 
-Every mutation that changes `blocks` calls `pushHistory` to snapshot the new state. `updateHeader`, `updateFooter`, `updateDocSettings`, `setShowSolutions`, `setTheme`, `toggleBlockLock` do **not** push history. Generated exercises are written by one generic action `setExercises(id, field, data)` (field = the registry's `exerciseField`), not a setter per type.
+Every mutation that changes `blocks` calls `pushHistory` to snapshot the new state. `updateHeader`, `updateFooter`, `updateDocSettings`, `setShowSolutions`, `setTheme`, `toggleBlockLock`, `updateBaseSettings`, `setDraftBlocks` do **not** push history. Generated exercises are written by one generic action `setExercises(id, field, data)` (field = the registry's `exerciseField`); `patchExercise(id, field, exerciseId, patch)` edits a single element (ordenen click-to-edit, splitsen manual numbers). When `curriculum?.locked`, `updateBlockSettings`/`updateBlockLayout`/`updateBlockInstruction` freeze everything but count + page-break.
 
-A store subscription auto-saves the worksheet to localStorage (1.5 s debounce) — see [persistence.ts](src/services/persistence.ts).
+A store subscription auto-saves the worksheet to localStorage (1.5 s debounce; payload includes `baseSettings` + `curriculum`) — see [persistence.ts](src/services/persistence.ts). **Share/file format is v2** (lz-string compressed `#share=` hash; optional `baseSettings` + `curriculum` for locked curriculum links).
+
+**Teacher-workflow layer** (base settings · mass-add · curriculum builder + locked mode) is documented in **[ARCHITECTURE.md](ARCHITECTURE.md) §13** — none of it adds `typeId` branches; it drives the registry/config machinery.
 
 `MathBlock.constraints` is typed as `any` — a loose bag of options read differently by each generator. Default constraints per block type are set in `addBlockFromType`.
 

@@ -79,25 +79,38 @@ lives in memory.
 | `docSettings` | `DocSettings` | titlePosition, headerStyle, opdrachtTitelStyle, showScores, showDividers, numberBlocks, gaps |
 | `showSolutions` | `boolean` | Global red-solution overlay (preview + print) |
 | `theme` | `'dark' \| 'light' \| 'colorblind'` | Persisted to localStorage, applied as `data-theme` on `<html>` |
+| `baseSettings` | `BaseSettings` | Global default difficulty (max/getalsoort/masks/bridges/decimalen/breuk-opties) snapshotted into each new block — see §13 |
+| `curriculum` | `CurriculumLock \| null` | Non-null + `locked` = restricted parent mode (whitelisted sidebar + frozen difficulty) — see §13 |
+| `draftBlocks` | `MathBlock[]` | Off-sheet scratch blocks the curriculum builder edits via the real config plugins; not rendered/autosaved/historied — see §13 |
 | `_history` / `_historyIndex` | `MathBlock[][]` / `number` | Undo/redo, max `MAX_HISTORY = 50` |
 
 **History rule (important):** mutations that change `blocks` call `pushHistory`
 (addBlock, remove, move, duplicate, updateBlockSettings, `setExercises`,
-updateExercise). `updateHeader` / `updateFooter` / `updateDocSettings` /
-`setShowSolutions` / `setTheme` / `toggleBlockLock` do **NOT** push history.
+updateExercise, `patchExercise`). `updateHeader` / `updateFooter` /
+`updateDocSettings` / `setShowSolutions` / `setTheme` / `toggleBlockLock` /
+`updateBaseSettings` / `setDraftBlocks` do **NOT** push history.
 
 Exercises are written by one **generic** action: `setExercises(id, field, data)`
 where `field` is the registry-declared `exerciseField` (e.g. `'mabExercises'`).
-There is no longer a setter per type.
+There is no longer a setter per type. A second generic action
+`patchExercise(id, field, exerciseId, patch)` updates **one** element in any array
+field (used by ordenen click-to-edit and the splitsen "type a number" textboxes).
+
+**Curriculum lock gate:** `updateBlockSettings` / `updateBlockLayout` /
+`updateBlockInstruction` check `curriculum?.locked` and, when locked, allow only
+`numberOfExercises` + `pageBreakBefore` (difficulty/wording frozen). This single
+choke point enforces the lock without touching the ~16 config plugins. Draft-block
+edits bypass the gate (authoring runs unlocked).
 
 **`MathBlock.constraints` is typed `any`** — a loose per-type bag. Each generator
 and config plugin reads the keys it expects. Defaults are set in `addBlockFromType`
 (big per-type ternary, line ~146).
 
-**Autosave:** a store subscription (line ~343) debounces 1.5 s after
-`blocks`/`header`/`footer`/`docSettings` change and writes to localStorage. UI-only
-state (activeBlockId, showSolutions, theme, history) is excluded. Empty fresh-tab
-state never overwrites a populated autosave.
+**Autosave:** a store subscription debounces 1.5 s after
+`blocks`/`header`/`footer`/`docSettings`/`baseSettings` change and writes to
+localStorage (payload also carries `curriculum`, so a locked sheet stays locked
+across refresh). UI-only state (activeBlockId, showSolutions, theme, history,
+draftBlocks) is excluded. Empty fresh-tab state never overwrites a populated autosave.
 
 ---
 
@@ -125,7 +138,7 @@ one exercise array **per family** (only one is populated per block, keyed by
 
 Every exercise element has `id: string` and `isManuallyEdited: boolean` (set
 `false` on generation; flipped `true` when a teacher hand-edits via
-`updateExercise` / `updateCijferExercise`).
+`updateExercise` / `updateCijferExercise` / the generic `patchExercise`).
 
 ---
 
@@ -257,11 +270,11 @@ only.
 | `geld-teruggeven` | `geldTeruggevenExercises` | `generateGeldTeruggevenExercises` | `GeldTeruggevenViewer` | `GeldTeruggevenConfig` | min/maxPriceEuros, payWithOptions, centenDeel, antwoordType |
 | `mab-herkennen` | `mabExercises` | `generateMabExercises` | `MabViewer` (mode=herkennen) | `MabConfig` | maxNumber, operand1Mask, mabStyle, scaffolding |
 | `mab-tekenen` | `mabExercises` | `generateMabExercises` | `MabViewer` (mode=tekenen) | `MabConfig` | maxNumber, operand1Mask, mabStyle, scaffolding |
-| `ordenen` | `ordenenExercises` | `generateOrdenenExercises` | `OrdenenViewer` | `OrdenenConfig` | numberType, count(3–5), operatorMode (oplopend/aflopend/beide), maxGetal |
-| `deelbaarheid` | `deelbaarheidExercises` | `generateDeelbaarheidExercises` | `DeelbaarheidViewer` | `DeelbaarheidConfig` | layout (tabel/veelvouden), divisors[], maxGetal, base, terms, givenCount |
-| `splitsen` (positie-*) | `splitsenExercises` | `generateSplitsenExercises` | `SplitsenViewer` | `SplitsenConfig` | layout positie-tabel/-benen/-math, maxGetal(≤1e9), blankSide, mathForm, mathDirection |
-| `getallenas` | `getallenasExercises` | `generateGetallenasExercises` | `GetallenasViewer` | `GetallenasConfig` | maxGetal, step, direction, hardMode, ticks (natural only) |
-| `temperatuur` | `temperatuurExercises` | `generateTemperatuurExercises` | `TemperatuurViewer` | `TemperatuurConfig` | variant (kleuren/aflezen), includeNegatives, perRow |
+| `ordenen` | `ordenenExercises` | `generateOrdenenExercises` | `OrdenenViewer` (click-to-edit) | `OrdenenConfig` | numberType, count(2–8), operatorMode, maxGetal, minGetal, decimalPlaces, numberMask, min/maxDenominator, unitFractionsOnly, allowMixed |
+| `deelbaarheid` | `deelbaarheidExercises` | `generateDeelbaarheidExercises` | `DeelbaarheidViewer` | `DeelbaarheidConfig` | layout (tabel/veelvouden — sidebar leaf only), divisors[], maxGetal, base, terms, givenCount |
+| `splitsen` (positie-*) | `splitsenExercises` | `generateSplitsenExercises` | `SplitsenViewer` | `SplitsenConfig` | layout positie-tabel/-benen/-math (sidebar leaf), maxGetal(≤1e9), decimalPlaces, operand1Mask, benenVariants[], mathForms[], mathDirection |
+| `getallenas` | `getallenasExercises` | `generateGetallenasExercises` | `GetallenasViewer` | `GetallenasConfig` | numberType (natural/decimal/rational/geheel), maxGetal, minGetal, step, fractionStep, direction(+beide), allowMixed, gelijknamig, hardMode, ticks |
+| `temperatuur` | `temperatuurExercises` | `generateTemperatuurExercises` | `TemperatuurViewer` | `TemperatuurConfig` | variant (kleuren/aflezen/verschil — sidebar leaf), mode1/mode2 (verschil), includeNegatives, perRow |
 
 > Note: matching is now exact-key, so the old substring collision between
 > `hr-std-optellen` and `cijferen-optellen-*` (which forced
@@ -377,22 +390,28 @@ that multi-item viewers go through `FragmentableGrid`.
 
 All localStorage; nothing leaves the browser except share links the user copies.
 
-- **Format gate:** `WORKSHEET_FORMAT_VERSION = 1`. `parseWorksheetFile` validates
-  version + required fields (blocks/header/footer/docSettings) and rejects
-  future/invalid files.
+- **Format gate:** `WORKSHEET_FORMAT_VERSION = 2`. `parseWorksheetFile` validates
+  version + required fields (blocks/header/footer/docSettings) + the optional
+  `curriculum` shape, and rejects future/invalid files. v2 added optional
+  `baseSettings` + `curriculum` (absent → defaults, so v1 files still load).
 - **Full vs template mode** (`WorksheetFileMode`): `full` = complete snapshot with
   exercises; `template` = settings only (exercise arrays stripped by
   `stripBlock`), so the recipient configures-then-Genereer to populate.
+- **`CurriculumLock`** (`{ locked, allowedTypes: [{typeId, label, lockedConstraints}] }`)
+  rides in the payload for locked curriculum share links (§13).
 - **Autosave** — single slot `enderklas_autosave_v1`; `saveAutosave` /
   `loadAutosave` / `clearAutosave`. App.tsx offers to restore on boot if the
   current sheet is empty.
 - **Presets** — named library `enderklas_presets_v1`, `MAX_PRESETS = 20`. CRUD via
   `loadPresets` / `savePreset` / `deletePreset` / `renamePreset`. Managed in
   [PresetModal.tsx](src/components/layout/PresetModal.tsx).
-- **Share link** — `encodeShareLink` → JSON → `encodeURIComponent` → `btoa` →
-  `#share=…` in the URL hash (never sent to a server). `MAX_SHARE_BYTES = 6000`
-  keeps URLs under browser limits; returns `null` if too big. `decodeShareHash`
-  reverses it; App.tsx consumes it on boot (a shared link wins over autosave).
+- **Share link** — `encodeShareLink` → JSON → **lz-string**
+  `compressToEncodedURIComponent` → `#share=…` in the URL hash (never sent to a
+  server). `MAX_SHARE_BYTES = 30000` (worksheet JSON compresses ~8×, so this covers
+  ~100+ blocks); returns `null` if too big. `decodeShareHash` decompresses + parses;
+  App.tsx consumes it on boot (a shared link wins over autosave) with a confirm whose
+  wording differs for full / template / locked-curriculum links. `opts.curriculum`
+  embeds a `CurriculumLock` (used by the curriculum builder, §13).
 - **File export/import** — `exportWorksheet` (JSON blob,
   `werkbundel-<slug>-<YYYYMMDD>.json`) / `parseWorksheetFile`.
 - **Release banner** — [version.ts](src/config/version.ts) `RELEASE_VERSION` +
@@ -416,6 +435,8 @@ src/
 │   ├── appstructure.ts          # APP_STRUCTURE tree (Domain→Subdomain→ExerciseType), placeholders
 │   ├── exerciseRegistry.ts      # REGISTRY: typeId → {exerciseField, generate, defaultConstraints, defaultCount} (pure data)
 │   ├── exerciseUI.tsx           # EXERCISE_UI: typeId → {Viewer, Config} (React)
+│   ├── baseSettings.ts          # BaseSettings + baseApply (global snapshot-on-add, §13)
+│   ├── exerciseCatalog.ts       # flat addable catalog for mass-add / curriculum (§13)
 │   └── version.ts               # RELEASE_VERSION / RELEASE_SUMMARY for the banner
 ├── store/
 │   └── useWorksheetStore.tsx    # single Zustand store: state, actions, history, autosave subscription
@@ -432,16 +453,25 @@ src/
 │   ├── splitsen/splitsenGenerator.ts
 │   ├── cijferen/cijferGenerator.ts
 │   ├── geld/geldGenerator.ts    # 3 exports: herkennen/tekenen, wissel, teruggeven
-│   └── mab/mabGenerator.ts
+│   ├── mab/mabGenerator.ts
+│   ├── ordenen/ordenenGenerator.ts          # + recompute for manual edits
+│   ├── deelbaarheid/deelbaarheidGenerator.ts
+│   ├── getallenas/getallenasGenerator.ts
+│   └── temperatuur/temperatuurGenerator.ts  # kleuren / aflezen / verschil
 └── components/
-    ├── layout/{sidebar.tsx,TopBar.tsx,AlphaPopup.tsx,HelpModal.tsx,PresetModal.tsx}
+    ├── layout/{sidebar.tsx,TopBar.tsx,AlphaPopup.tsx,HelpModal.tsx,PresetModal.tsx,
+    │           BaseSettingsPanel.tsx,BaseSettingsModal.tsx}   # §13 sidebar Geavanceerd + base modal
+    ├── massadd/MassAddModal.tsx                                # §13 "Toevoegen" modal
+    ├── curriculum/CurriculumBuilderModal.tsx                   # §13 curriculum builder
+    ├── shared/ExercisePreview.tsx                              # §13 fit-to-card live example
     ├── ui/IconButton.tsx
     ├── configurator/
-    │   ├── Inspector.tsx        # mounts EXERCISE_UI[typeId].Config
-    │   ├── sharedPluginStyles.ts
+    │   ├── Inspector.tsx        # mounts EXERCISE_UI[typeId].Config; locked-mode gating; splitsen manual-number boxes
+    │   ├── sharedPluginStyles.ts  # radioBtn + pill + onOff helpers
     │   └── plugins/*Config.tsx  # one per family (+ addition/ & multiplication/ sub-settings)
     └── viewer/
         ├── *Viewer.tsx + *SVG.tsx      # one renderer per family; ClockViewer/FractionViewer wrap item components
+        ├── VerticalFraction.tsx        # shared stacked-fraction component
         └── FragmentableGrid.tsx        # block-stack-of-rows layout so items flow across print page breaks
 ```
 
@@ -473,3 +503,64 @@ The same ship rewrote the **print system** (§9): the A4 card became a real `<ta
 so Chrome repeats the header/footer on every page, `@page margin:0` makes margins
 dialog-proof, and `FragmentableGrid` lets exercises flow across page breaks. The old
 `position:fixed` footer + `@page` margins + single-grid viewers are gone.
+
+---
+
+## 13. Teacher-workflow layer (base settings · mass-add · curriculum)
+
+Three features built on top of the registry. None add `typeId` branches — they all
+drive the existing registry/config machinery.
+
+### Global base settings (snapshot-on-add)
+
+[baseSettings.ts](src/config/baseSettings.ts) — pure data: `BaseSettings`
+(max/getalsoort/operand masks/bridges map/decimalen/breuk-opties) + `DEFAULT_BASE` +
+`baseApply(base, registryDefaults)`. The teacher sets these once (sidebar →
+Geavanceerd → Basisinstellingen, [BaseSettingsModal.tsx](src/components/layout/BaseSettingsModal.tsx)).
+`addBlockFromType` snapshots them into each **new** block:
+`constraints = { ...registryDefaults, ...baseApply(base, defaults), ...leafOverride }`
+(leaf wins). `baseApply` writes a key **only if** that type's realized defaults declare
+it (`'key' in defaults`), mapping the semantic max onto `maxGetal`/`maxRange`/`maxNumber`
+and the masks/bridges/decimalen/breuk-toggles where present. Snapshot, not live — changing
+the base never retro-affects existing blocks.
+
+### Mass-add modal ("Toevoegen")
+
+[exerciseCatalog.ts](src/config/exerciseCatalog.ts) walks `APP_STRUCTURE` → a flat
+list of implemented leaves grouped by `typeId` into variant rows (+ `catalogDomains`
+for the filter chips; multi-parent typeIds like klok get parent-prefixed variant
+labels). [MassAddModal.tsx](src/components/massadd/MassAddModal.tsx) renders a card per
+type with a **live example** via the shared
+[ExercisePreview.tsx](src/components/shared/ExercisePreview.tsx) — it builds a throwaway
+1-exercise block, calls `REGISTRY[typeId].generate` **directly** (no store writes), and
+renders `EXERCISE_UI[typeId].Viewer` in an error boundary + IntersectionObserver, scaled
+to fit the card width. "Alles toevoegen" calls `addBlockFromType` per selected type then
+`generateAllBlocks`.
+
+### Curriculum builder + locked parent mode
+
+[CurriculumBuilderModal.tsx](src/components/curriculum/CurriculumBuilderModal.tsx)
+(sidebar → Geavanceerd → Curriculum samenstellen) lets a teacher pick which types are
+allowed and tune each type's difficulty using the **real config plugin**. To edit
+off-sheet it seeds the store's `draftBlocks` slice (one per type) and mounts
+`EXERCISE_UI[typeId].Config` against the draft; `updateBlockSettings` falls through to
+`draftBlocks` when the id isn't in `blocks`, so the plugins work unchanged. "Deel
+curriculum-link" derives `allowedTypes` (typeId + label + the draft's constraints) and
+shares a **template + `CurriculumLock`** link.
+
+Opening such a link sets `store.curriculum` (via `loadWorksheet`). In locked mode:
+sidebar ([sidebar.tsx](src/components/layout/sidebar.tsx)) shows only the whitelist
+(hides the tree + Geavanceerd), the Inspector shows a banner and hides difficulty/
+differentiation (count + Genereer stay), and the store gate (§3) freezes everything but
+count + page-break. The lock is enforced in the store, so it holds regardless of UI.
+
+### Shared bits
+
+- [VerticalFraction.tsx](src/components/viewer/VerticalFraction.tsx) — single stacked
+  numerator/bar/denominator (+ optional whole) component; used by every fraction render
+  (mental-math, fraction viewer, ordenen, getallenas rational lines).
+- [TopBar.tsx](src/components/layout/TopBar.tsx) — "Toevoegen" (mass-add), "Genereer
+  alles", a **Delen** dropdown (Blad / Sjabloon), and a **⋯ Meer** overflow
+  (Exporteer / Importeer / Presets).
+- `numberMatchesMask` / `digitAtPlace` in [mathEngine.ts](src/services/math/mathEngine.ts)
+  — place-mask filtering reused by ordenen (and the splitsen decimal masks).
