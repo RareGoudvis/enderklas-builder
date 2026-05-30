@@ -67,6 +67,7 @@ export interface SplitsenExercise {
     // Place-value variants (positie-* layouts). One non-null set of these per item.
     placeBreakdown?: Array<{ key: string; label: string; digit: number; weight: number }>;
     blankSide?: 'legs' | 'top';                 // positie-benen: which side the pupil fills
+    notation?: 'value' | 'letters';             // positie-benen: legs as 30 (value) vs 3T (letters)
     mathForm?: 'letters' | 'expanded';          // positie-math: 7H+9T+2E  vs  300+70+8
     mathDirection?: 'decompose' | 'compose';    // N=__+__+__  vs  __+__+__=N
     words?: string;                             // positie-tabel: Dutch number-word prompt
@@ -100,6 +101,9 @@ export interface GetallenasExercise {
     tickCount: number;
     blankMask: boolean[];     // true = pupil fills this tick
     direction: 'left' | 'right';
+    // Precomputed tick values L→R (source of truth for decimal/rational/geheel lines).
+    values?: (number | Fraction)[];
+    numberType?: string;      // natural | decimal | rational | geheel
     isManuallyEdited: boolean;
 }
 

@@ -104,6 +104,8 @@ const mabDefaults = (): Record<string, unknown> => ({
 
 const ordenenDefaults = (): Record<string, unknown> => ({
     numberType: 'natural', count: 3, operatorMode: 'oplopend', maxGetal: 100,
+    // declared so the global base (decimalen / stambreuken / gemengd) can target them
+    decimalPlaces: 1, unitFractionsOnly: false, allowMixed: false,
 });
 
 const deelbaarheidDefaults = (): Record<string, unknown> => ({

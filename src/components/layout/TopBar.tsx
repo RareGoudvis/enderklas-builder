@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
-import { Undo2, Redo2, Sparkles, Download, Upload, Bookmark, Share2, LayoutTemplate, Eye, EyeOff, Printer, Check } from 'lucide-react';
+import { Undo2, Redo2, Sparkles, Download, Upload, Bookmark, Share2, Eye, EyeOff, Printer, Check, LayoutGrid, MoreHorizontal, FileText, LayoutTemplate } from 'lucide-react';
 import { useWorksheetStore } from '../../store/useWorksheetStore';
 import { exportWorksheet, parseWorksheetFile, encodeShareLink } from '../../services/persistence';
 import IconButton from '../ui/IconButton';
 import PresetModal from './PresetModal';
+import MassAddModal from '../massadd/MassAddModal';
 
 interface Props {
     onPrint: (withSolutions: boolean) => void;
@@ -23,11 +24,13 @@ export default function TopBar({ onPrint }: Props) {
 
     const importInputRef = useRef<HTMLInputElement>(null);
     const [presetOpen, setPresetOpen] = useState(false);
+    const [massAddOpen, setMassAddOpen] = useState(false);
+    const [menu, setMenu] = useState<null | 'share' | 'more'>(null);
     const [shareFlash, setShareFlash] = useState<'full' | 'template' | null>(null);
 
     const handleExport = () => {
         const st = useWorksheetStore.getState();
-        exportWorksheet({ blocks: st.blocks, header: st.header, footer: st.footer, docSettings: st.docSettings });
+        exportWorksheet({ blocks: st.blocks, header: st.header, footer: st.footer, docSettings: st.docSettings, baseSettings: st.baseSettings });
     };
 
     const handleImportClick = () => importInputRef.current?.click();
@@ -51,8 +54,9 @@ export default function TopBar({ onPrint }: Props) {
     };
 
     const handleShare = async (mode: 'full' | 'template') => {
+        setMenu(null);
         const st = useWorksheetStore.getState();
-        const link = encodeShareLink({ blocks: st.blocks, header: st.header, footer: st.footer, docSettings: st.docSettings }, { template: mode === 'template' });
+        const link = encodeShareLink({ blocks: st.blocks, header: st.header, footer: st.footer, docSettings: st.docSettings, baseSettings: st.baseSettings }, { template: mode === 'template' });
         if (!link) {
             window.alert('Werkbundel te groot voor een deelbare link. Gebruik Exporteer i.p.v.');
             return;
@@ -74,6 +78,14 @@ export default function TopBar({ onPrint }: Props) {
             </div>
 
             <IconButton
+                icon={LayoutGrid}
+                label="Meerdere oefeningen tegelijk toevoegen"
+                visibleLabel="Toevoegen"
+                onClick={() => setMassAddOpen(true)}
+                variant="primary"
+            />
+
+            <IconButton
                 icon={Sparkles}
                 label="Alle niet-vergrendelde blokken opnieuw genereren"
                 visibleLabel="Genereer alles"
@@ -82,32 +94,57 @@ export default function TopBar({ onPrint }: Props) {
                 variant="primary"
             />
 
-            <div style={S.group}>
-                <IconButton icon={Download} label="Exporteer als JSON-bestand" onClick={handleExport} />
-                <IconButton icon={Upload} label="Importeer JSON-bestand" onClick={handleImportClick} />
-                <IconButton icon={Bookmark} label="Presets beheren" onClick={() => setPresetOpen(true)} />
+            <div style={S.spacer} />
+
+            {/* Delen — prompt sheet vs template */}
+            <div style={S.menuWrap}>
                 <IconButton
-                    icon={shareFlash === 'full' ? Check : Share2}
-                    label={shareFlash === 'full' ? 'Link gekopieerd' : 'Deel link (volledig)'}
-                    onClick={() => handleShare('full')}
-                    variant={shareFlash === 'full' ? 'active' : 'neutral'}
+                    icon={shareFlash ? Check : Share2}
+                    label={shareFlash ? 'Link gekopieerd' : 'Delen'}
+                    visibleLabel={shareFlash ? 'Gekopieerd' : 'Delen'}
+                    onClick={() => setMenu(menu === 'share' ? null : 'share')}
+                    variant={shareFlash ? 'active' : 'neutral'}
                 />
-                <IconButton
-                    icon={shareFlash === 'template' ? Check : LayoutTemplate}
-                    label={shareFlash === 'template' ? 'Sjabloon-link gekopieerd' : 'Deel sjabloon (enkel instellingen)'}
-                    onClick={() => handleShare('template')}
-                    variant={shareFlash === 'template' ? 'active' : 'neutral'}
-                />
-                <input
-                    ref={importInputRef}
-                    type="file"
-                    accept="application/json,.json"
-                    onChange={handleImportFile}
-                    style={{ display: 'none' }}
-                />
+                {menu === 'share' && (
+                    <>
+                        <div style={S.backdrop} onClick={() => setMenu(null)} />
+                        <div style={S.menu}>
+                            <button style={S.menuItem} onClick={() => handleShare('full')}>
+                                <FileText size={15} /> <span><b>Blad delen</b><br /><span style={S.menuHint}>volledige werkbundel</span></span>
+                            </button>
+                            <button style={S.menuItem} onClick={() => handleShare('template')}>
+                                <LayoutTemplate size={15} /> <span><b>Sjabloon delen</b><br /><span style={S.menuHint}>enkel instellingen</span></span>
+                            </button>
+                        </div>
+                    </>
+                )}
             </div>
 
-            <div style={S.spacer} />
+            {/* ⋯ Meer — file operations */}
+            <div style={S.menuWrap}>
+                <IconButton
+                    icon={MoreHorizontal}
+                    label="Meer acties"
+                    onClick={() => setMenu(menu === 'more' ? null : 'more')}
+                    variant={menu === 'more' ? 'active' : 'neutral'}
+                />
+                {menu === 'more' && (
+                    <>
+                        <div style={S.backdrop} onClick={() => setMenu(null)} />
+                        <div style={S.menu}>
+                            <button style={S.menuItem} onClick={() => { setMenu(null); handleExport(); }}>
+                                <Download size={15} /> Exporteer als bestand
+                            </button>
+                            <button style={S.menuItem} onClick={() => { setMenu(null); handleImportClick(); }}>
+                                <Upload size={15} /> Importeer bestand
+                            </button>
+                            <button style={S.menuItem} onClick={() => { setMenu(null); setPresetOpen(true); }}>
+                                <Bookmark size={15} /> Presets beheren
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
 
             <IconButton
                 icon={showSolutions ? EyeOff : Eye}
@@ -132,7 +169,16 @@ export default function TopBar({ onPrint }: Props) {
                 />
             </div>
 
+            <input
+                ref={importInputRef}
+                type="file"
+                accept="application/json,.json"
+                onChange={handleImportFile}
+                style={{ display: 'none' }}
+            />
+
             {presetOpen && <PresetModal onClose={() => setPresetOpen(false)} />}
+            {massAddOpen && <MassAddModal onClose={() => setMassAddOpen(false)} />}
         </div>
     );
 }
@@ -150,4 +196,18 @@ const S = {
     } as React.CSSProperties,
     group: { display: 'flex', gap: '4px' } as React.CSSProperties,
     spacer: { flex: 1 } as React.CSSProperties,
+    menuWrap: { position: 'relative', display: 'flex' } as React.CSSProperties,
+    backdrop: { position: 'fixed', inset: 0, zIndex: 30 } as React.CSSProperties,
+    menu: {
+        position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 31,
+        minWidth: '210px', background: 'var(--bg-panel)', border: '1px solid var(--border-color)',
+        borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.25)', padding: '6px',
+        display: 'flex', flexDirection: 'column', gap: '2px',
+    } as React.CSSProperties,
+    menuItem: {
+        display: 'flex', alignItems: 'center', gap: '10px', width: '100%', textAlign: 'left',
+        padding: '8px 10px', borderRadius: '6px', cursor: 'pointer', border: 'none',
+        background: 'transparent', color: 'var(--text-main)', fontSize: '13px', fontFamily: 'inherit',
+    } as React.CSSProperties,
+    menuHint: { fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 } as React.CSSProperties,
 };

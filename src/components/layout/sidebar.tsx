@@ -4,6 +4,7 @@ import logo from '../../assets/enderklas-logo.png';
 import { APP_STRUCTURE, type Domain } from '../../config/appstructure';
 import { useWorksheetStore } from '../../store/useWorksheetStore';
 import HelpModal from './HelpModal';
+import BaseSettingsPanel from './BaseSettingsPanel';
 
 // Walk the domain tree keeping only entries whose label matches the search needle.
 // A parent survives when any of its descendants match. Returns the filtered tree.
@@ -40,6 +41,8 @@ export default function Sidebar() {
     const addBlockFromType = useWorksheetStore((state) => state.addBlockFromType);
     const theme = useWorksheetStore((state) => state.theme);
     const setTheme = useWorksheetStore((state) => state.setTheme);
+    const curriculum = useWorksheetStore((state) => state.curriculum);
+    const locked = !!curriculum?.locked;
 
     const [openSubdomain, setOpenSubdomain] = useState<string | null>(null);
     const [openType, setOpenType] = useState<string | null>(null);
@@ -87,12 +90,39 @@ export default function Sidebar() {
                     <input
                         value={siteSubtitle}
                         onChange={(e) => setSiteSubtitle(e.target.value)}
-                        placeholder="using Basisonderwijs Vlaanderen"
+                        placeholder="Werkbundels maken, snel en simpel."
                         style={S.siteSubtitleInput}
                     />
                 </div>
             </div>
 
+            {locked && (
+                <div style={S.lockedPalette}>
+                    <div style={S.lockedBanner}>
+                        🔒 Vergrendelde werkbundel — je kan enkel oefeningen uit deze lijst toevoegen.
+                    </div>
+                    <div style={S.lockedListTitle}>Toegestane oefeningen</div>
+                    <div style={S.navArea}>
+                        {(curriculum?.allowedTypes ?? []).map((t, i) => (
+                            <button
+                                key={`${t.typeId}-${i}`}
+                                style={S.leafBtn}
+                                onClick={() => addBlockFromType(t.typeId, t.label, t.lockedConstraints)}
+                                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-main)'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+                            >
+                                <span style={S.addBadge}>+</span>
+                                <span>{t.label}</span>
+                            </button>
+                        ))}
+                        {(curriculum?.allowedTypes ?? []).length === 0 && (
+                            <div style={S.noResults}>Geen oefeningen in deze werkbundel.</div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {!locked && (<>
             <div style={S.searchWrap}>
                 <input
                     type="text"
@@ -209,6 +239,7 @@ export default function Sidebar() {
                     );
                 })}
             </div>
+            </>)}
 
             <div style={S.themeRow}>
                 <span style={S.themeLabel}>Thema</span>
@@ -218,6 +249,8 @@ export default function Sidebar() {
                     <button style={S.themeBtn(theme === 'colorblind')} onClick={() => setTheme('colorblind')} title="Hoog contrast / kleurenblind-veilig" aria-label="Hoog contrast"><Contrast size={14} /></button>
                 </div>
             </div>
+
+            {!locked && <BaseSettingsPanel />}
 
             <div style={S.footer}>
                 <div style={S.footerActions}>
@@ -262,6 +295,10 @@ const S = {
     } as React.CSSProperties,
     noResults: { padding: '12px 18px', fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' } as React.CSSProperties,
     navArea: { flex: 1, overflowY: 'auto', padding: '10px 0' } as React.CSSProperties,
+
+    lockedPalette: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } as React.CSSProperties,
+    lockedBanner: { margin: '4px 16px 8px', padding: '8px 10px', fontSize: '11px', lineHeight: 1.4, color: 'var(--text-main)', background: 'rgba(172,41,233,0.10)', border: '1px solid var(--accent-purple)', borderRadius: '8px' } as React.CSSProperties,
+    lockedListTitle: { padding: '4px 18px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, color: 'var(--text-muted)' } as React.CSSProperties,
 
     domainWrap: { marginBottom: '14px' } as React.CSSProperties,
 

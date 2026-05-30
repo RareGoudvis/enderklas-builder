@@ -128,16 +128,20 @@ function PositieBenenItem({ ex, showSolutions }: { ex: SplitsenExercise; showSol
             <svg width={W} height="26" style={{ display: 'block' }}>
                 {xs.map((x, i) => <line key={i} x1={W / 2} y1="2" x2={x} y2="24" stroke="#000" strokeWidth="1.5" />)}
             </svg>
-            {/* place boxes */}
+            {/* place boxes — 'value' shows the whole value (30); 'letters' shows digit + key (3T) */}
             <div style={{ display: 'flex', justifyContent: 'space-around', width: W }}>
-                {places.map((p, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                        {topBlank
-                            ? <span style={{ fontWeight: 'bold' }}>{p.digit}</span>
-                            : (showSolutions ? <span style={SOL}>{p.digit}</span> : blankLine(24))}
-                        <span style={{ fontWeight: 'bold' }}>{p.key}</span>
-                    </div>
-                ))}
+                {places.map((p, i) => {
+                    const asValue = ex.notation === 'value';
+                    const shown = asValue ? fmt(p.digit * p.weight) : String(p.digit);
+                    return (
+                        <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                            {topBlank
+                                ? <span style={{ fontWeight: 'bold' }}>{shown}</span>
+                                : (showSolutions ? <span style={SOL}>{shown}</span> : blankLine(asValue ? 40 : 24))}
+                            {!asValue && <span style={{ fontWeight: 'bold' }}>{p.key}</span>}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
@@ -152,8 +156,9 @@ function PositieTabelItem({ ex, showSolutions }: { ex: SplitsenExercise; showSol
         alignItems: 'center', justifyContent: 'center', fontFamily: "'Azeret Mono', monospace", fontSize: '16px', boxSizing: 'border-box',
     };
     return (
-        <div className="print-exercise" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ minWidth: '220px', fontFamily: "'Azeret Mono', monospace", fontSize: '16px' }}>{ex.words}</div>
+        <div className="print-exercise" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {/* Right-align the word so every table starts at the same x → calmer worksheet. */}
+            <div style={{ width: '260px', textAlign: 'right', fontFamily: "'Azeret Mono', monospace", fontSize: '16px' }}>{ex.words}</div>
             <div>
                 <div style={{ display: 'flex' }}>
                     {cols.map(p => <div key={p.key} style={{ ...cell, backgroundColor: '#f4cbb8', fontWeight: 'bold' }}>{p.key}</div>)}

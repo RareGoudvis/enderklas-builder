@@ -32,7 +32,7 @@ export default function PresetModal({ onClose }: Props) {
 
     const handleSave = () => {
         const st = useWorksheetStore.getState();
-        savePreset(draftName, { blocks: st.blocks, header: st.header, footer: st.footer, docSettings: st.docSettings });
+        savePreset(draftName, { blocks: st.blocks, header: st.header, footer: st.footer, docSettings: st.docSettings, baseSettings: st.baseSettings });
         setDraftName('');
         refresh();
     };

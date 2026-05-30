@@ -3,6 +3,7 @@ import { isFraction } from '../../services/math/types';
 import { formatMathNumber } from '../../services/math/formatters';
 import type { MathBlock, Fraction } from '../../services/math/types';
 import FragmentableGrid from './FragmentableGrid';
+import VerticalFraction from './VerticalFraction';
 
 interface Props {
     block: MathBlock;
@@ -23,16 +24,7 @@ const styles = {
 };
 
 function FractionDisplay({ val, color }: { val: Fraction; color?: string }) {
-    const hasWhole = val.whole !== undefined && val.whole > 0;
-    return (
-        <div style={{ display: 'inline-flex', alignItems: 'center', ...(color ? { color, fontWeight: 'bold' } : {}) }}>
-            {hasWhole && <span style={{ ...styles.wholeNumberStyle, ...(color ? { color } : {}) }}>{val.whole}</span>}
-            <div style={styles.fractionWrapper}>
-                <span style={{ ...styles.fractionTop, ...(color ? { borderBottomColor: color } : {}) }}>{val.n}</span>
-                <span style={styles.fractionBottom}>{val.d}</span>
-            </div>
-        </div>
-    );
+    return <VerticalFraction value={val} color={color} fontSize={15} />;
 }
 
 export default function MathBlockRenderer({ block, showSolutions }: Props) {

@@ -21,6 +21,7 @@ export default function Inspector() {
 
     const activeBlockId = useWorksheetStore((state) => state.activeBlockId);
     const activeBlock = useWorksheetStore((state) => state.blocks.find(b => b.id === activeBlockId));
+    const locked = useWorksheetStore((state) => !!state.curriculum?.locked);
 
     const headerData = useWorksheetStore((state) => state.header);
     const footerData = useWorksheetStore((state) => state.footer);
@@ -220,52 +221,67 @@ export default function Inspector() {
     return (
         <aside style={S.sidebar}>
 
-            {/* ── 1. Opdrachtblok ── */}
-            <div style={S.card}>
-                <h4 style={S.cardTitle}>Opdrachtblok</h4>
-                <div style={S.col}>
-                    <label style={S.label}>Titel</label>
-                    <input
-                        style={S.input}
-                        value={activeBlock.instructionText || ''}
-                        onChange={(e) => updateBlockInstruction(activeBlock.id, e.target.value)}
-                        placeholder="Bv. Optellen:"
-                    />
-
-                    <div style={S.row}>
-                        <div style={{ flex: 1 }}>
-                            <label style={{ ...S.label, marginTop: '12px' }}>Oefeningen</label>
-                            <input
-                                type="number" min="1"
-                                style={S.input}
-                                value={activeBlock.numberOfExercises || 10}
-                                onChange={(e) => updateBlockSettings(activeBlock.id, { numberOfExercises: Number(e.target.value) })}
-                            />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <label style={{ ...S.label, marginTop: '12px' }}>Punten</label>
-                            <input
-                                type="number" step="0.5" min="0"
-                                style={S.input}
-                                value={activeBlock.totalPoints || 0}
-                                onChange={(e) => updateBlockSettings(activeBlock.id, { totalPoints: Number(e.target.value) })}
-                            />
-                        </div>
-                    </div>
-
-                    {!activeBlock.typeId.startsWith('cijferen-') && (
-                    <div style={{ marginTop: '12px' }}>
-                        <label style={S.label}>Spatiëring ({activeBlock.verticalSpacing || 14}px)</label>
-                        <input
-                            type="range" min="8" max="40"
-                            value={activeBlock.verticalSpacing || 14}
-                            onChange={(e) => updateBlockSettings(activeBlock.id, { verticalSpacing: Number(e.target.value) })}
-                            style={{ width: '100%', accentColor: 'var(--accent-purple)' }}
-                        />
-                    </div>
-                    )}
+            {locked && (
+                <div style={S.lockBanner}>
+                    🔒 Vergrendeld curriculum — je kan enkel het aantal aanpassen en opnieuw genereren.
                 </div>
-            </div>
+            )}
+
+            {/* ── 1. Opdrachtblok ── */}
+            {(() => {
+                const aantal = activeBlock.numberOfExercises || 10;
+                const scoreMax = Math.max(1, aantal * 2);   // Score caps at 2 points per exercise
+                const sliderStyle = (on: boolean): React.CSSProperties => ({ width: '100%', accentColor: 'var(--accent-purple)', cursor: on ? 'pointer' : 'not-allowed', opacity: on ? 1 : 0.5 });
+                return (
+                    <div style={S.card}>
+                        <h4 style={S.cardTitle}>Opdrachtblok</h4>
+                        <div style={S.col}>
+                            <label style={S.label}>Instructie</label>
+                            <input
+                                style={S.input}
+                                value={activeBlock.instructionText || ''}
+                                onChange={(e) => updateBlockInstruction(activeBlock.id, e.target.value)}
+                                placeholder="Los op."
+                                disabled={locked}
+                            />
+
+                            <label style={{ ...S.label, marginTop: '14px' }}>Score ({activeBlock.totalPoints || 0})</label>
+                            <input
+                                type="range" min="0" max={scoreMax} step="0.5"
+                                value={Math.min(activeBlock.totalPoints || 0, scoreMax)}
+                                disabled={locked}
+                                onChange={(e) => updateBlockSettings(activeBlock.id, { totalPoints: Number(e.target.value) })}
+                                style={sliderStyle(!locked)}
+                            />
+
+                            <label style={{ ...S.label, marginTop: '14px' }}>Aantal oefeningen ({aantal})</label>
+                            <input
+                                type="range" min="1" max="20" step="1"
+                                value={aantal}
+                                onChange={(e) => {
+                                    const next = Number(e.target.value);
+                                    // Clamp Score so it never exceeds the new 2×aantal ceiling.
+                                    const cappedPoints = Math.min(activeBlock.totalPoints || 0, next * 2);
+                                    updateBlockSettings(activeBlock.id, { numberOfExercises: next, totalPoints: cappedPoints });
+                                }}
+                                style={sliderStyle(true)}
+                            />
+
+                            {!locked && !activeBlock.typeId.startsWith('cijferen-') && (
+                                <>
+                                    <label style={{ ...S.label, marginTop: '14px' }}>Witruimte ({activeBlock.verticalSpacing || 14}px)</label>
+                                    <input
+                                        type="range" min="8" max="40"
+                                        value={activeBlock.verticalSpacing || 14}
+                                        onChange={(e) => updateBlockSettings(activeBlock.id, { verticalSpacing: Number(e.target.value) })}
+                                        style={sliderStyle(true)}
+                                    />
+                                </>
+                            )}
+                        </div>
+                    </div>
+                );
+            })()}
 
             {/* ── 2. Engine (pill box) ── */}
             <div style={S.engineCard}>
@@ -274,7 +290,11 @@ export default function Inspector() {
                     <button onClick={handleGenerate} style={S.generateBtn}>✨ Genereer</button>
                 </div>
                 <div style={S.engineBody}>
-                    {(() => {
+                    {locked ? (
+                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+                            Instellingen zijn vergrendeld. Klik op ✨ Genereer voor nieuwe getallen.
+                        </p>
+                    ) : (() => {
                         // Registry decides which config plugin this typeId mounts.
                         const Config = EXERCISE_UI[activeBlock.typeId]?.Config;
                         return Config ? <Config block={activeBlock} /> : null;
@@ -283,6 +303,7 @@ export default function Inspector() {
             </div>
 
             {/* ── 3. Differentiatie ── */}
+            {!locked && (
             <div style={S.card}>
                 <h4 style={S.cardTitle}>Differentiatie</h4>
                 <div style={S.col}>
@@ -613,9 +634,10 @@ export default function Inspector() {
                     })()}
                 </div>
             </div>
+            )}
 
             {/* ── 4. Geavanceerd (accordion) ── */}
-            {(activeBlock.typeId.startsWith('cijferen-') || activeBlock.typeId.startsWith('geld-') || activeBlock.typeId === 'mab-herkennen' || activeBlock.typeId === 'mab-tekenen') && (
+            {!locked && (activeBlock.typeId.startsWith('cijferen-') || activeBlock.typeId.startsWith('geld-') || activeBlock.typeId === 'mab-herkennen' || activeBlock.typeId === 'mab-tekenen') && (
                 <div style={S.advancedWrap}>
                     <button style={S.advancedToggle} onClick={() => setAdvancedOpen(!advancedOpen)}>
                         <span>Geavanceerd</span>
@@ -714,6 +736,7 @@ export default function Inspector() {
 
 const S = {
     sidebar: { width: '380px', minWidth: '380px', backgroundColor: 'var(--bg-dark)', borderLeft: '1px solid var(--border-color)', height: '100%', boxSizing: 'border-box', overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' } as React.CSSProperties,
+    lockBanner: { padding: '10px 12px', fontSize: '12px', lineHeight: 1.4, color: 'var(--text-main)', background: 'rgba(172,41,233,0.10)', border: '1px solid var(--accent-purple)', borderRadius: '8px' } as React.CSSProperties,
     card: { backgroundColor: 'var(--bg-panel)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' } as React.CSSProperties,
     cardTitle: { color: 'var(--accent-purple)', margin: '0 0 14px 0', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 } as React.CSSProperties,
     col: { display: 'flex', flexDirection: 'column', gap: '4px' } as React.CSSProperties,

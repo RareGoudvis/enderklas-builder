@@ -21,8 +21,6 @@ export default function SplitsenConfig({ block }: Props) {
         layout = 'basic',
         rowsPerBox = 4,
         rowHeight = 28,
-        blankSide = 'legs',
-        mathForm = 'letters',
         mathDirection = 'decompose',
     } = block.constraints;
 
@@ -31,6 +29,23 @@ export default function SplitsenConfig({ block }: Props) {
 
     const set = (key: string, value: unknown) =>
         updateBlockSettings(block.id, { constraints: { ...block.constraints, [key]: value } });
+
+    // Splitsbenen: which (blankSide, notation) combos are included (≥1). Generator mixes them.
+    const benenVariants: string[] = Array.isArray(block.constraints.benenVariants) && block.constraints.benenVariants.length
+        ? block.constraints.benenVariants : ['legs-letters'];
+    const toggleBenen = (key: string) => {
+        const has = benenVariants.includes(key);
+        const next = has ? benenVariants.filter(v => v !== key) : [...benenVariants, key];
+        set('benenVariants', next.length ? next : benenVariants);   // keep ≥1
+    };
+    // Plaatswaarden: included notations (letters/expanded).
+    const mathForms: string[] = Array.isArray(block.constraints.mathForms) && block.constraints.mathForms.length
+        ? block.constraints.mathForms : ['letters'];
+    const toggleMathForm = (key: string) => {
+        const has = mathForms.includes(key);
+        const next = has ? mathForms.filter(v => v !== key) : [...mathForms, key];
+        set('mathForms', next.length ? next : mathForms);
+    };
 
     const toggleMask = (posKey: string) => {
         const cur = operand1Mask || {};
@@ -42,17 +57,8 @@ export default function SplitsenConfig({ block }: Props) {
         set('operand2Mask', { ...cur, [posKey]: !cur[posKey] });
     };
 
-    const partLayouts = maxGetal > 100
-        ? [{ val: 'basic', label: 'Basis' }, { val: 'mathematic', label: 'Wiskundig' }]
-        : [{ val: 'basic', label: 'Basis' }, { val: 'mathematic', label: 'Wiskundig' }, { val: 'verliefde-harten', label: '♥ Harten' }];
-    const positieLayouts = [
-        { val: 'positie-tabel', label: 'Positietabel' },
-        { val: 'positie-benen', label: 'Splitsbenen' },
-        { val: 'positie-math', label: 'Plaatswaarden' },
-    ];
-    const availableLayouts = [...partLayouts, ...positieLayouts];
-
-    const currentLayout = availableLayouts.some(l => l.val === layout) ? layout : 'basic';
+    // Layout is fixed by the sidebar leaf; the config only refines that layout.
+    const currentLayout = typeof layout === 'string' ? layout : 'basic';
     const maxPresets = isPositie && currentLayout !== 'positie-tabel'
         ? [...MAX_PRESETS, 1000000000]
         : MAX_PRESETS;
@@ -60,41 +66,40 @@ export default function SplitsenConfig({ block }: Props) {
     return (
         <div style={styles.container}>
 
-            {/* LAYOUT */}
-            <div style={styles.section}>
-                <label style={styles.label}>Lay-out:</label>
-                <div style={styles.buttonGroup}>
-                    {availableLayouts.map(l => (
-                        <button
-                            key={l.val}
-                            onClick={() => set('layout', l.val)}
-                            style={styles.radioBtn(currentLayout === l.val)}
-                        >
-                            {l.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* POSITIE-BENEN — which side the pupil fills */}
+            {/* POSITIE-BENEN — include any of the 4 (benen/getal × 30/3T) combos */}
             {currentLayout === 'positie-benen' && (
                 <div style={styles.section}>
-                    <label style={styles.label}>Leerling vult in:</label>
-                    <div style={styles.buttonGroup}>
-                        <button onClick={() => set('blankSide', 'legs')} style={styles.radioBtn(blankSide === 'legs')}>De benen (H/T/E)</button>
-                        <button onClick={() => set('blankSide', 'top')} style={styles.radioBtn(blankSide === 'top')}>Het getal</button>
+                    <label style={styles.label}>Soorten (vink aan wat mag voorkomen):</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {([
+                            { key: 'legs-letters', label: 'Benen invullen · 3T' },
+                            { key: 'legs-value', label: 'Benen invullen · 30' },
+                            { key: 'top-letters', label: 'Getal invullen · 3T' },
+                            { key: 'top-value', label: 'Getal invullen · 30' },
+                        ]).map(o => (
+                            <label key={o.key} style={checkRow}>
+                                <input type="checkbox" checked={benenVariants.includes(o.key)} onChange={() => toggleBenen(o.key)} style={checkbox} />
+                                {o.label}
+                            </label>
+                        ))}
                     </div>
                 </div>
             )}
 
-            {/* POSITIE-MATH — notation + direction */}
+            {/* POSITIE-MATH — notation (include either/both) + direction */}
             {currentLayout === 'positie-math' && (
                 <>
                     <div style={styles.section}>
-                        <label style={styles.label}>Notatie:</label>
-                        <div style={styles.buttonGroup}>
-                            <button onClick={() => set('mathForm', 'letters')} style={styles.radioBtn(mathForm === 'letters')}>Met letters (7H+9T+2E)</button>
-                            <button onClick={() => set('mathForm', 'expanded')} style={styles.radioBtn(mathForm === 'expanded')}>Uitgebreid (300+70+8)</button>
+                        <label style={styles.label}>Notatie (vink aan wat mag voorkomen):</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <label style={checkRow}>
+                                <input type="checkbox" checked={mathForms.includes('letters')} onChange={() => toggleMathForm('letters')} style={checkbox} />
+                                Met letters (7H+9T+2E)
+                            </label>
+                            <label style={checkRow}>
+                                <input type="checkbox" checked={mathForms.includes('expanded')} onChange={() => toggleMathForm('expanded')} style={checkbox} />
+                                Uitgebreid (300+70+8)
+                            </label>
                         </div>
                     </div>
                     <div style={styles.section}>
@@ -228,6 +233,14 @@ const maskBtnStyle = (active: boolean): React.CSSProperties => ({
     backgroundColor: active ? 'var(--accent-purple)' : 'var(--bg-input)',
     color: active ? '#fff' : 'var(--text-muted)',
 });
+
+const checkRow: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-main)', cursor: 'pointer',
+};
+
+const checkbox: React.CSSProperties = {
+    accentColor: 'var(--accent-purple)', width: '15px', height: '15px', cursor: 'pointer', flexShrink: 0,
+};
 
 const inputStyle: React.CSSProperties = {
     flex: 1, padding: '8px 10px', backgroundColor: 'var(--bg-input)',

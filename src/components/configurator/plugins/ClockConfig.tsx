@@ -43,25 +43,14 @@ export default function ClockConfig({ block }: Props) {
 
     return (
         <div style={styles.container}>
-            {/* ACTIVITEIT */}
-            <div style={styles.section}>
-                <label style={styles.label}>Activiteit:</label>
-                <div style={styles.buttonGroup}>
-                    <button onClick={() => updateConstraint('exerciseMode', 'lezen')} style={styles.radioBtn(exerciseMode === 'lezen')}>Lezen</button>
-                    <button onClick={() => updateConstraint('exerciseMode', 'tekenen')} style={styles.radioBtn(exerciseMode === 'tekenen')}>Tekenen</button>
-                    {clockType === 'analoog' && (
-                        <button onClick={() => updateConstraint('exerciseMode', 'omzetten')} style={styles.radioBtn(exerciseMode === 'omzetten')}>Omzetten</button>
-                    )}
-                </div>
-                {/* Context hint */}
-                <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                    {clockType === 'analoog' && exerciseMode === 'lezen' && 'Klok zien → tijd in woorden schrijven'}
-                    {clockType === 'analoog' && exerciseMode === 'tekenen' && 'Tijd in woorden → wijzers tekenen op klok'}
-                    {clockType === 'analoog' && exerciseMode === 'omzetten' && 'Klok zien → digitale tijd invullen'}
-                    {clockType === 'digitaal' && exerciseMode === 'lezen' && 'Digitale tijd zien → tijd in woorden schrijven'}
-                    {clockType === 'digitaal' && exerciseMode === 'tekenen' && 'Tijd in woorden → digitale klok invullen'}
-                    {clockType === 'digitaal' && exerciseMode === 'omzetten' && 'Digitale tijd zien → wijzers tekenen op klok'}
-                </div>
+            {/* Activity + clock type come from the sidebar leaf; show the current mode as a hint. */}
+            <div style={{ ...styles.section, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                {clockType === 'analoog' && exerciseMode === 'lezen' && 'Analoog · Klok zien → tijd in woorden schrijven'}
+                {clockType === 'analoog' && exerciseMode === 'tekenen' && 'Analoog · Tijd in woorden → wijzers tekenen op klok'}
+                {clockType === 'analoog' && exerciseMode === 'omzetten' && 'Analoog · Klok zien → digitale tijd invullen'}
+                {clockType === 'digitaal' && exerciseMode === 'lezen' && 'Digitaal · Digitale tijd zien → tijd in woorden schrijven'}
+                {clockType === 'digitaal' && exerciseMode === 'tekenen' && 'Digitaal · Tijd in woorden → digitale klok invullen'}
+                {clockType === 'digitaal' && exerciseMode === 'omzetten' && 'Digitaal · Digitale tijd zien → wijzers tekenen op klok'}
             </div>
 
             {/* TIJDSSYSTEEM */}

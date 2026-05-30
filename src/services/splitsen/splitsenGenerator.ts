@@ -34,14 +34,30 @@ function nonZeroPlaces(num: number): Place[] {
     return INT_PLACES.map(p => ({ ...p, digit: Math.floor(num / p.weight) % 10 })).filter(p => p.digit !== 0);
 }
 
+// Splitsbenen variant = a (blankSide, notation) combo, e.g. 'legs-letters'.
+type BenenCombo = { blankSide: 'legs' | 'top'; notation: 'value' | 'letters' };
+function parseBenenCombos(c: Record<string, unknown>): BenenCombo[] {
+    const list = Array.isArray(c.benenVariants) ? (c.benenVariants as string[]) : [];
+    const combos = list.map(s => {
+        const [side, notation] = s.split('-');
+        return { blankSide: side === 'top' ? 'top' : 'legs', notation: notation === 'value' ? 'value' : 'letters' } as BenenCombo;
+    });
+    if (combos.length) return combos;
+    // Back-compat: single combo from the old blankSide + notation keys.
+    return [{ blankSide: (c.blankSide === 'top' ? 'top' : 'legs'), notation: (c.notation === 'value' ? 'value' : 'letters') }];
+}
+
 function generatePlaceValueExercises(block: MathBlock): SplitsenExercise[] {
     const {
         layout,
         maxGetal = 1000,
-        blankSide = 'legs',
-        mathForm = 'letters',
         mathDirection = 'decompose',
     } = block.constraints;
+    const benenCombos = parseBenenCombos(block.constraints);
+    // Included plaatswaarden notations (letters/expanded); fall back to single mathForm.
+    const mathFormList: string[] = Array.isArray(block.constraints.mathForms) && block.constraints.mathForms.length
+        ? block.constraints.mathForms
+        : [block.constraints.mathForm === 'expanded' ? 'expanded' : 'letters'];
     const n = block.numberOfExercises;
     const results: SplitsenExercise[] = [];
     const used = new Set<number>();
@@ -58,11 +74,14 @@ function generatePlaceValueExercises(block: MathBlock): SplitsenExercise[] {
         if (layout === 'positie-tabel') {
             results.push({ ...base, placeBreakdown: fullColumns(num, maxGetal), words: numberToDutchWords(num) });
         } else if (layout === 'positie-benen') {
-            results.push({ ...base, placeBreakdown: nonZeroPlaces(num), blankSide });
+            // Mix among the teacher's included (blankSide, notation) combos.
+            const combo = benenCombos[randInt(0, benenCombos.length - 1)];
+            results.push({ ...base, placeBreakdown: nonZeroPlaces(num), blankSide: combo.blankSide, notation: combo.notation });
         } else {
-            // positie-math
+            // positie-math: mix the included notations (letters/expanded) + direction.
+            const form = mathFormList[randInt(0, mathFormList.length - 1)] === 'expanded' ? 'expanded' : 'letters';
             const dir = mathDirection === 'beide' ? (Math.random() < 0.5 ? 'decompose' : 'compose') : mathDirection;
-            results.push({ ...base, placeBreakdown: nonZeroPlaces(num), mathForm, mathDirection: dir });
+            results.push({ ...base, placeBreakdown: nonZeroPlaces(num), mathForm: form, mathDirection: dir });
         }
     }
     return results;

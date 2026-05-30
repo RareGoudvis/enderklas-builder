@@ -81,6 +81,35 @@ export const getBridgePlaces = (maxGetal: number, numberType: 'natural' | 'decim
     return getMaskPlaces(maxGetal, numberType).filter(p => p.weight < maxGetal);
 };
 
+// Digit (0-9) at a given place weight. Scales to integers first so decimals
+// (e.g. extracting the thousandths of 12.345) don't suffer float drift.
+export const digitAtPlace = (num: number, weight: number): number => {
+    const S = 1e6;   // covers PLACE_VALUES down to 0.0001 and numbers up to ~1e6
+    const intNum = Math.round(Math.abs(num) * S);
+    const intWeight = Math.round(weight * S);
+    if (intWeight <= 0) return 0;
+    return Math.floor(intNum / intWeight) % 10;
+};
+
+// 'Specifieke getalopbouw': a number matches the mask when its nonzero places are
+// EXACTLY the masked places (same semantics as generateMaskedInt). Empty mask = no
+// restriction. Used to filter candidates in generators that don't build from a mask.
+export const numberMatchesMask = (
+    num: number,
+    mask: Record<string, boolean>,
+    maxGetal: number,
+    numberType: 'natural' | 'decimal' | 'rational' = 'natural',
+    decimalPlaces: number = 0,
+): boolean => {
+    const trueKeys = Object.keys(mask || {}).filter(k => mask[k]);
+    if (trueKeys.length === 0) return true;
+    for (const p of getMaskPlaces(maxGetal, numberType, decimalPlaces)) {
+        const present = digitAtPlace(num, p.weight) > 0;
+        if (present !== !!mask[p.key]) return false;
+    }
+    return true;
+};
+
 // ============================================================================
 // 4. OPTELLEN (ADDITION)
 // ============================================================================

@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import type { MathBlock, Equation, CijferExercise, FooterData, LayoutPreset } from '../services/math/types';
 import { regenerateBlock } from '../services/generateDispatch';
 import { REGISTRY } from '../config/exerciseRegistry';
-import { saveAutosave } from '../services/persistence';
+import { saveAutosave, type CurriculumLock } from '../services/persistence';
+import { baseApply, DEFAULT_BASE, type BaseSettings } from '../config/baseSettings';
 
 export type HeaderField = 'naam' | 'klas' | 'nummer' | 'datum';
 
@@ -40,6 +41,12 @@ interface WorksheetState {
     header: HeaderData;
     footer: FooterData;
     docSettings: DocSettings;
+    baseSettings: BaseSettings;
+    curriculum: CurriculumLock | null;   // non-null + locked = restricted parent mode
+    // Off-sheet scratch blocks edited by the curriculum builder so the real config
+    // plugins can run unchanged (they target updateBlockSettings(block.id)). Not
+    // rendered, not autosaved, no history.
+    draftBlocks: MathBlock[];
     showSolutions: boolean;
     theme: ThemeName;
     _history: MathBlock[][];
@@ -56,14 +63,19 @@ interface WorksheetState {
     setExercises: (id: string, field: keyof MathBlock, data: unknown[]) => void;
     updateExercise: (blockId: string, exerciseId: string, updates: Partial<Equation>) => void;
     updateCijferExercise: (blockId: string, exerciseId: string, updates: Partial<CijferExercise>) => void;
+    // Generic single-exercise patch for any array field (ordenen/getallenas/…), keyed by exercise id.
+    patchExercise: (blockId: string, field: keyof MathBlock, exerciseId: string, patch: Record<string, unknown>) => void;
     setActiveSelection: (id: string | 'document' | null) => void;
+    setDraftBlocks: (blocks: MathBlock[]) => void;
+    clearDraftBlocks: () => void;
     toggleBlockLock: (id: string) => void;
     duplicateBlock: (id: string) => void;
     generateAllBlocks: () => void;
-    loadWorksheet: (file: { blocks: MathBlock[]; header: HeaderData; footer: FooterData; docSettings: DocSettings }) => void;
+    loadWorksheet: (file: { blocks: MathBlock[]; header: HeaderData; footer: FooterData; docSettings: DocSettings; baseSettings?: BaseSettings; curriculum?: CurriculumLock }) => void;
     updateHeader: (updates: Partial<HeaderData>) => void;
     updateFooter: (updates: Partial<FooterData>) => void;
     updateDocSettings: (updates: Partial<DocSettings>) => void;
+    updateBaseSettings: (updates: Partial<BaseSettings>) => void;
     setShowSolutions: (show: boolean) => void;
     setTheme: (theme: ThemeName) => void;
     undo: () => void;
@@ -105,6 +117,9 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     header: { naam: true, klas: true, nummer: false, datum: false, titel: '', fieldOrder: [...DEFAULT_FIELD_ORDER], fieldWidths: { ...DEFAULT_FIELD_WIDTHS }, repeatHeader: false },
     footer: { school: '', klas: '', leerkracht: '', showSchool: true, showKlas: true, showLeerkracht: true, showPagina: true, centerText: '', showCenterText: false },
     docSettings: { showScores: true, opdrachtTitelStyle: 'regular', showDividers: true, headerStyle: 'geen', titlePosition: 'center', titleFieldsGap: 16, headerContentGap: 12, blockSpacing: 12, numberBlocks: false },
+    baseSettings: { ...DEFAULT_BASE },
+    curriculum: null,
+    draftBlocks: [],
     showSolutions: false,
     theme: INITIAL_THEME,
     _history: [[]],
@@ -131,6 +146,10 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
         // overrideConstraints and are merged on top.
         const def = REGISTRY[typeId];
         const defaultConstraints = def ? def.defaultConstraints(typeId) : {};
+        // Snapshot the global base difficulty onto this block's constraints.
+        // Order matters: registry defaults → base snapshot → leaf override, so a
+        // leaf that pins a value (e.g. splitsen-basis maxGetal:10) always wins.
+        const baseSnapshot = def ? baseApply(state.baseSettings, defaultConstraints) : {};
 
         const newBlock: MathBlock = {
             id: Math.random().toString(36).substring(2, 9),
@@ -142,7 +161,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
             numberOfExercises: def ? def.defaultCount : 10,
             totalPoints: 5,
             verticalSpacing: 14,
-            constraints: { ...defaultConstraints, ...overrideConstraints },
+            constraints: { ...defaultConstraints, ...baseSnapshot, ...overrideConstraints },
             exercises: []
         };
 
@@ -171,18 +190,42 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
         return { blocks: newBlocks, ...pushHistory(state._history, state._historyIndex, newBlocks) };
     }),
 
-    updateBlockInstruction: (id, text) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, instructionText: text } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
-    updateBlockLayout: (id, layout, steppedLines) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, layoutPreset: layout, steppedLines: steppedLines ?? b.steppedLines } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
-    updateBlockSettings: (id, updates) => set((state) => { const nb = state.blocks.map(b => b.id === id ? { ...b, ...updates } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
+    // Curriculum lock is enforced at the store — the single choke point all ~12
+    // config plugins + Inspector route through. Wording/layout edits are frozen;
+    // only block count + page-break survive (parent can adjust amount + regenerate).
+    updateBlockInstruction: (id, text) => set((state) => { if (state.curriculum?.locked) return state; const nb = state.blocks.map(b => b.id === id ? { ...b, instructionText: text } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
+    updateBlockLayout: (id, layout, steppedLines) => set((state) => { if (state.curriculum?.locked) return state; const nb = state.blocks.map(b => b.id === id ? { ...b, layoutPreset: layout, steppedLines: steppedLines ?? b.steppedLines } : b); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
+    updateBlockSettings: (id, updates) => set((state) => {
+        // Curriculum-builder draft blocks live off-sheet — edit them directly, no
+        // history, no lock gate (authoring runs unlocked).
+        if (state.draftBlocks.some(b => b.id === id)) {
+            return { draftBlocks: state.draftBlocks.map(b => b.id === id ? { ...b, ...updates } : b) };
+        }
+        let next = updates;
+        if (state.curriculum?.locked) {
+            const allowed: Partial<MathBlock> = {};
+            if ('numberOfExercises' in updates) allowed.numberOfExercises = updates.numberOfExercises;
+            if ('pageBreakBefore' in updates) allowed.pageBreakBefore = updates.pageBreakBefore;
+            if (Object.keys(allowed).length === 0) return state;   // drop difficulty/wording/points edits
+            next = allowed;
+        }
+        const nb = state.blocks.map(b => b.id === id ? { ...b, ...next } : b);
+        return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) };
+    }),
     updateExercise: (blockId, exerciseId, updates) => set((state) => { const nb = state.blocks.map(b => b.id !== blockId ? b : { ...b, exercises: b.exercises.map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex) }); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
     updateCijferExercise: (blockId, exerciseId, updates) => set((state) => { const nb = state.blocks.map(b => b.id !== blockId ? b : { ...b, cijferExercises: (b.cijferExercises || []).map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex) }); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
+    patchExercise: (blockId, field, exerciseId, patch) => set((state) => { const nb = state.blocks.map(b => { if (b.id !== blockId) return b; const arr = b[field] as Array<{ id: string }> | undefined; if (!Array.isArray(arr)) return b; return { ...b, [field]: arr.map(ex => ex.id === exerciseId ? { ...ex, ...patch } : ex) }; }); return { blocks: nb, ...pushHistory(state._history, state._historyIndex, nb) }; }),
     setActiveSelection: (id) => set({ activeBlockId: id }),
+    setDraftBlocks: (blocks) => set({ draftBlocks: blocks }),
+    clearDraftBlocks: () => set({ draftBlocks: [] }),
     toggleBlockLock: (id) => set((state) => ({ blocks: state.blocks.map(b => b.id === id ? { ...b, locked: !b.locked } : b) })),
     loadWorksheet: (file) => set(() => ({
         blocks: file.blocks,
         header: file.header,
         footer: file.footer,
         docSettings: file.docSettings,
+        baseSettings: file.baseSettings ? { ...DEFAULT_BASE, ...file.baseSettings } : { ...DEFAULT_BASE },
+        curriculum: file.curriculum ?? null,
         activeBlockId: null,
         _history: [file.blocks],
         _historyIndex: 0,
@@ -200,6 +243,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     updateHeader: (updates) => set((state) => ({ header: { ...state.header, ...updates } })),
     updateFooter: (updates) => set((state) => ({ footer: { ...state.footer, ...updates } })),
     updateDocSettings: (updates) => set((state) => ({ docSettings: { ...state.docSettings, ...updates } })),
+    updateBaseSettings: (updates) => set((state) => ({ baseSettings: { ...state.baseSettings, ...updates } })),
     setShowSolutions: (show) => set({ showSolutions: show }),
     setTheme: (theme) => {
         applyTheme(theme);
@@ -227,12 +271,13 @@ useWorksheetStore.subscribe((state, prev) => {
         state.blocks !== prev.blocks ||
         state.header !== prev.header ||
         state.footer !== prev.footer ||
-        state.docSettings !== prev.docSettings;
+        state.docSettings !== prev.docSettings ||
+        state.baseSettings !== prev.baseSettings;
     if (!changed) return;
     // Don't overwrite a populated autosave with an empty fresh-tab state.
     if (state.blocks.length === 0) return;
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => {
-        saveAutosave({ blocks: state.blocks, header: state.header, footer: state.footer, docSettings: state.docSettings });
+        saveAutosave({ blocks: state.blocks, header: state.header, footer: state.footer, docSettings: state.docSettings, baseSettings: state.baseSettings }, state.curriculum);
     }, 1500);
 });

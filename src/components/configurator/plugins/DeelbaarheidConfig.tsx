@@ -31,15 +31,7 @@ export default function DeelbaarheidConfig({ block }: Props) {
 
     return (
         <div style={styles.container}>
-            {/* LAYOUT */}
-            <div style={styles.section}>
-                <label style={styles.label}>Lay-out:</label>
-                <div style={styles.buttonGroup}>
-                    <button onClick={() => set('layout', 'tabel')} style={styles.radioBtn(layout === 'tabel')}>Tabel</button>
-                    <button onClick={() => set('layout', 'veelvouden')} style={styles.radioBtn(layout === 'veelvouden')}>Veelvouden</button>
-                </div>
-            </div>
-
+            {/* Layout is fixed by the sidebar leaf (Tabel / Veelvouden). */}
             {layout === 'tabel' ? (
                 <>
                     <div style={styles.section}>

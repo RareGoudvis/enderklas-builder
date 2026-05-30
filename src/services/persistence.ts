@@ -1,10 +1,12 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import type { MathBlock, FooterData } from './math/types';
 import type { DocSettings } from '../store/useWorksheetStore';
+import type { BaseSettings } from '../config/baseSettings';
 
 // Bump this when the JSON schema gains/loses required fields so older files
 // fail loudly instead of half-loading. Keep the parser strict on read.
-export const WORKSHEET_FORMAT_VERSION = 1;
+// v2 added optional baseSettings + curriculum (both back-compat: absent → defaults).
+export const WORKSHEET_FORMAT_VERSION = 2;
 
 export const AUTOSAVE_KEY = 'enderklas_autosave_v1';
 export const PRESETS_KEY = 'enderklas_presets_v1';
@@ -27,6 +29,18 @@ interface HeaderData {
 // Genereer alles to populate. 'full' (or absent for back-compat) = complete snapshot.
 export type WorksheetFileMode = 'full' | 'template';
 
+// Curated curriculum lock: restricts the palette to allowedTypes and freezes each
+// block's difficulty so a parent can only add on-curriculum exercises (count +
+// regenerate stay editable). Authored by a teacher, distributed via share link.
+export interface CurriculumLock {
+    locked: boolean;
+    allowedTypes: Array<{
+        typeId: string;
+        label: string;
+        lockedConstraints?: Record<string, unknown>;
+    }>;
+}
+
 export interface WorksheetFile {
     version: number;
     exportedAt: string;
@@ -35,6 +49,8 @@ export interface WorksheetFile {
     header: HeaderData;
     footer: FooterData;
     docSettings: DocSettings;
+    baseSettings?: BaseSettings;   // v2+; absent → receiver keeps DEFAULT_BASE
+    curriculum?: CurriculumLock;   // v2+; absent → normal (unlocked) editing
 }
 
 export interface SerialisableState {
@@ -42,6 +58,7 @@ export interface SerialisableState {
     header: HeaderData;
     footer: FooterData;
     docSettings: DocSettings;
+    baseSettings: BaseSettings;
 }
 
 export interface AutosaveRecord {
@@ -87,7 +104,7 @@ function stripBlock(b: MathBlock): MathBlock {
     };
 }
 
-function buildPayload(state: SerialisableState, mode: WorksheetFileMode = 'full'): WorksheetFile {
+function buildPayload(state: SerialisableState, mode: WorksheetFileMode = 'full', curriculum?: CurriculumLock): WorksheetFile {
     const blocks = mode === 'template' ? state.blocks.map(stripBlock) : state.blocks;
     return {
         version: WORKSHEET_FORMAT_VERSION,
@@ -97,6 +114,8 @@ function buildPayload(state: SerialisableState, mode: WorksheetFileMode = 'full'
         header: state.header,
         footer: state.footer,
         docSettings: state.docSettings,
+        baseSettings: state.baseSettings,
+        ...(curriculum ? { curriculum } : {}),
     };
 }
 
@@ -131,14 +150,21 @@ export function parseWorksheetFile(json: string): WorksheetFile {
     if (!obj.header || typeof obj.header !== 'object') throw new Error('header-veld ontbreekt.');
     if (!obj.footer || typeof obj.footer !== 'object') throw new Error('footer-veld ontbreekt.');
     if (!obj.docSettings || typeof obj.docSettings !== 'object') throw new Error('docSettings-veld ontbreekt.');
+    // curriculum is optional, but if present must be well-formed (locked + allowedTypes array).
+    if (obj.curriculum !== undefined) {
+        const cur = obj.curriculum as Record<string, unknown>;
+        if (!cur || typeof cur !== 'object' || typeof cur.locked !== 'boolean' || !Array.isArray(cur.allowedTypes)) {
+            throw new Error('curriculum-veld is ongeldig.');
+        }
+    }
     return obj as unknown as WorksheetFile;
 }
 
 // ── Auto-save (1 implicit slot, crash recovery) ───────────────────────────────
 
-export function saveAutosave(state: SerialisableState): void {
+export function saveAutosave(state: SerialisableState, curriculum?: CurriculumLock | null): void {
     try {
-        const record: AutosaveRecord = { savedAt: new Date().toISOString(), payload: buildPayload(state) };
+        const record: AutosaveRecord = { savedAt: new Date().toISOString(), payload: buildPayload(state, 'full', curriculum ?? undefined) };
         localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(record));
     } catch { /* quota / unavailable — ignore */ }
 }
@@ -202,9 +228,9 @@ export function renamePreset(id: string, name: string): void {
 
 // ── Share via URL hash (base64 in fragment, not query — never leaves browser) ─
 
-export function encodeShareLink(state: SerialisableState, opts: { template?: boolean } = {}): string | null {
+export function encodeShareLink(state: SerialisableState, opts: { template?: boolean; curriculum?: CurriculumLock } = {}): string | null {
     try {
-        const json = JSON.stringify(buildPayload(state, opts.template ? 'template' : 'full'));
+        const json = JSON.stringify(buildPayload(state, opts.template ? 'template' : 'full', opts.curriculum));
         // LZ-compress to URL-safe text — repetitive worksheet JSON shrinks ~8×.
         const data = compressToEncodedURIComponent(json);
         if (data.length > MAX_SHARE_BYTES) return null;

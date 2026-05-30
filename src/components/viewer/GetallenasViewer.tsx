@@ -1,5 +1,7 @@
-import type { MathBlock, GetallenasExercise } from '../../services/math/types';
+import type { MathBlock, GetallenasExercise, Fraction } from '../../services/math/types';
+import { formatMathNumber } from '../../services/math/formatters';
 import FragmentableGrid from './FragmentableGrid';
+import VerticalFraction from './VerticalFraction';
 
 interface Props {
     block: MathBlock;
@@ -7,44 +9,53 @@ interface Props {
 }
 
 const mono = "'Azeret Mono', monospace";
+const isFrac = (v: number | Fraction): v is Fraction => typeof v !== 'number';
+
+function label(v: number | Fraction, color?: string) {
+    if (isFrac(v)) return <VerticalFraction value={v} color={color} fontSize={13} mono />;
+    return <span style={{ fontSize: '15px', fontWeight: 'bold', color: color || '#000', fontFamily: mono }}>{formatMathNumber(v)}</span>;
+}
 
 function NumberLine({ ex, showSolutions }: { ex: GetallenasExercise; showSolutions: boolean }) {
-    const { start, step, tickCount, blankMask, direction } = ex;
+    const { tickCount, blankMask, direction } = ex;
+    const arrowLeft = direction === 'left';
+    // Tick values: precomputed (decimal/rational/geheel) or derived (legacy natural).
+    const values: (number | Fraction)[] = ex.values && ex.values.length
+        ? ex.values
+        : Array.from({ length: tickCount }, (_, i) => (arrowLeft ? ex.start - i * ex.step : ex.start + i * ex.step));
+    const hasFrac = values.some(isFrac);
+
     const pad = 24;
     const gap = 96;
     const W = pad * 2 + gap * (tickCount - 1);
-    const H = 70;
     const axisY = 30;
-    const arrowLeft = direction === 'left';
-
-    const valueAt = (i: number) => (arrowLeft ? start - i * step : start + i * step);
+    const H = hasFrac ? 88 : 70;
     const tickX = (i: number) => pad + i * gap;
 
     return (
-        <svg width={W} height={H} style={{ display: 'block', fontFamily: mono }}>
-            {/* axis */}
-            <line x1={pad - 12} y1={axisY} x2={W - pad + 12} y2={axisY} stroke="#000" strokeWidth="1.5" />
-            {/* arrowhead */}
-            {arrowLeft
-                ? <polygon points={`${pad - 12},${axisY} ${pad - 4},${axisY - 5} ${pad - 4},${axisY + 5}`} fill="#000" />
-                : <polygon points={`${W - pad + 12},${axisY} ${W - pad + 4},${axisY - 5} ${W - pad + 4},${axisY + 5}`} fill="#000" />}
-            {/* ticks + labels */}
-            {Array.from({ length: tickCount }, (_, i) => {
-                const x = tickX(i);
-                const v = valueAt(i);
+        <div style={{ position: 'relative', width: W, height: H, fontFamily: mono }}>
+            <svg width={W} height={H} style={{ display: 'block', position: 'absolute', inset: 0 }}>
+                <line x1={pad - 12} y1={axisY} x2={W - pad + 12} y2={axisY} stroke="#000" strokeWidth="1.5" />
+                {arrowLeft
+                    ? <polygon points={`${pad - 12},${axisY} ${pad - 4},${axisY - 5} ${pad - 4},${axisY + 5}`} fill="#000" />
+                    : <polygon points={`${W - pad + 12},${axisY} ${W - pad + 4},${axisY - 5} ${W - pad + 4},${axisY + 5}`} fill="#000" />}
+                {Array.from({ length: tickCount }, (_, i) => {
+                    const x = tickX(i);
+                    return <line key={i} x1={x} y1={axisY - 7} x2={x} y2={axisY + 7} stroke="#000" strokeWidth="1.5" />;
+                })}
+            </svg>
+            {/* HTML label layer (so fractions can render vertically) */}
+            {values.map((v, i) => {
                 const blank = blankMask[i];
                 return (
-                    <g key={i}>
-                        <line x1={x} y1={axisY - 7} x2={x} y2={axisY + 7} stroke="#000" strokeWidth="1.5" />
+                    <div key={i} style={{ position: 'absolute', left: tickX(i), top: axisY + 12, transform: 'translateX(-50%)', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
                         {blank
-                            ? (showSolutions
-                                ? <text x={x} y={axisY + 26} textAnchor="middle" fontSize="15" fontWeight="bold" fill="#e11d48">{v}</text>
-                                : <line x1={x - 16} y1={axisY + 22} x2={x + 16} y2={axisY + 22} stroke="#000" strokeWidth="1.5" />)
-                            : <text x={x} y={axisY + 26} textAnchor="middle" fontSize="15" fontWeight="bold" fill="#000">{v}</text>}
-                    </g>
+                            ? (showSolutions ? label(v, '#e11d48') : <span style={{ borderBottom: '1.5px solid #000', display: 'inline-block', width: '32px', height: '16px' }} />)
+                            : label(v)}
+                    </div>
                 );
             })}
-        </svg>
+        </div>
     );
 }
 

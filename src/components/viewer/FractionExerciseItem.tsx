@@ -1,5 +1,6 @@
 import type { FractionExercise, MathBlock } from '../../services/math/types';
 import FractionShapeSVG from './FractionShapeSVG';
+import VerticalFraction from './VerticalFraction';
 
 interface Props {
     ex: FractionExercise;
@@ -14,10 +15,7 @@ export default function FractionExerciseItem({ ex, block, showSolutions }: Props
     const blank = (w = 40) => <div style={{ borderBottom: '1.5px solid #000', width: `${w}px`, height: '18px', display: 'inline-block', margin: '0 2px' }} />;
 
     const vertFrac = (n: number, d: number, color?: string) => (
-        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', fontSize: '13px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', lineHeight: 1.1, color: color || '#000' }}>
-            <span style={{ borderBottom: `1.5px solid ${color || '#000'}`, minWidth: '16px', textAlign: 'center', paddingLeft: '3px', paddingRight: '3px' }}>{n}</span>
-            <span style={{ minWidth: '16px', textAlign: 'center', paddingLeft: '3px', paddingRight: '3px' }}>{d}</span>
-        </div>
+        <VerticalFraction value={{ n, d }} color={color} fontSize={13} mono />
     );
 
     // ── SHAPE-BASED (kleuren / herkennen) ────────────────────────────────────

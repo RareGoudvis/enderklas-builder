@@ -46,7 +46,10 @@ export default function App() {
     const shared = decodeShareHash(window.location.hash);
     if (shared) {
       const isTemplate = shared.mode === 'template';
-      const msg = isTemplate
+      const isCurriculum = !!shared.curriculum?.locked;
+      const msg = isCurriculum
+        ? 'Vergrendelde werkbundel laden? Je kan enkel oefeningen uit de gekozen lijst toevoegen, het aantal aanpassen en opnieuw genereren. Huidige werkbundel wordt vervangen.'
+        : isTemplate
         ? 'Sjabloon gedeeld via link laden? Bevat enkel instellingen — klik daarna op "Genereer alles" om oefeningen te maken. Huidige werkbundel wordt vervangen.'
         : 'Werkbundel gedeeld via link laden? Huidige werkbundel wordt vervangen.';
       if (window.confirm(msg)) {
@@ -207,20 +210,15 @@ export default function App() {
               const centerFields = fieldsRowAligned('left');
               return (
                 <>
-                  {centerFields && <div style={{ marginBottom: '8px' }}>{centerFields}</div>}
-                  {(hasTitle || showScore) && (
-                    <div style={{
-                      position: 'relative',
-                      display: 'flex',
-                      // No title? push score right (in flow, not absolute) so it doesn't sit on top of the answer lines above.
-                      justifyContent: hasTitle ? 'center' : 'flex-end',
-                      alignItems: 'center',
-                      marginTop: '4px',
-                    }}>
-                      {hasTitle && <h1 style={{ margin: 0, fontSize: '24px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', textAlign: 'center' }}>{headerData!.titel}</h1>}
-                      {showScore && <div style={{ ...styles.scoreBox, ...(hasTitle ? { position: 'absolute', right: 0 } : {}) }}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
+                  {/* Name fields + Score share the top row so the Score box sits at the
+                      Naam/Klas height (not floating below); the centered title drops beneath. */}
+                  {(centerFields || showScore) && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: `${gap}px` }}>
+                      <div style={{ minWidth: 0 }}>{centerFields}</div>
+                      {showScore && <div style={{ ...styles.scoreBox, flexShrink: 0 }}>Score: &nbsp; &nbsp; &nbsp; / {totalScore}</div>}
                     </div>
                   )}
+                  {hasTitle && <h1 style={{ margin: '8px 0 0', fontSize: '24px', fontFamily: 'Azeret Mono, monospace', fontWeight: 'bold', textAlign: 'center' }}>{headerData!.titel}</h1>}
                 </>
               );
             })()}

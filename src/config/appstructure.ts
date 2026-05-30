@@ -61,11 +61,10 @@ export const APP_STRUCTURE: Domain[] = [
                         label: 'Splitsen',
                         children: [
                             { id: 'splitsen-basis', label: 'Splitsen (basis)', typeId: 'splitsen', defaultConstraints: { maxGetal: 10, layout: 'basic', rowsPerBox: 4 } },
-                            { id: 'splitsen-math', label: 'Splitsen (wiskundig)', typeId: 'splitsen', defaultConstraints: { maxGetal: 10, layout: 'mathematic' } },
                             { id: 'splitsen-harten', label: 'Verliefde harten', typeId: 'splitsen', defaultConstraints: { maxGetal: 10, layout: 'verliefde-harten' } },
                             { id: 'splitsen-positietabel', label: 'Positietabel', typeId: 'splitsen', defaultConstraints: { maxGetal: 1000, layout: 'positie-tabel' } },
-                            { id: 'splitsen-benen', label: 'Splitsbenen (H/T/E)', typeId: 'splitsen', defaultConstraints: { maxGetal: 1000, layout: 'positie-benen', blankSide: 'legs' } },
-                            { id: 'splitsen-plaatswaarden', label: 'Plaatswaarden', typeId: 'splitsen', defaultConstraints: { maxGetal: 1000, layout: 'positie-math', mathForm: 'letters', mathDirection: 'decompose' } },
+                            { id: 'splitsen-benen', label: 'Splitsbenen (H/T/E)', typeId: 'splitsen', defaultConstraints: { maxGetal: 1000, layout: 'positie-benen', benenVariants: ['legs-letters'] } },
+                            { id: 'splitsen-plaatswaarden', label: 'Plaatswaarden', typeId: 'splitsen', defaultConstraints: { maxGetal: 1000, layout: 'positie-math', mathForms: ['letters'], mathDirection: 'decompose' } },
                         ],
                     },
                     {
@@ -83,9 +82,9 @@ export const APP_STRUCTURE: Domain[] = [
                         label: 'Getallenassen',
                         children: [
                             { id: 'getalbegrip-getallenassen-nat', label: 'Natuurlijke getallen', typeId: 'getallenas', defaultConstraints: { numberType: 'natural' } },
-                            phLeaf('getalbegrip-getallenassen-dec', 'Decimale getallen'),
-                            phLeaf('getalbegrip-getallenassen-rat', 'Rationale getallen'),
-                            phLeaf('getalbegrip-getallenassen-geh', 'Gehele getallen'),
+                            { id: 'getalbegrip-getallenassen-dec', label: 'Decimale getallen', typeId: 'getallenas', defaultConstraints: { numberType: 'decimal', step: 0.5, maxGetal: 20 } },
+                            { id: 'getalbegrip-getallenassen-rat', label: 'Rationale getallen', typeId: 'getallenas', defaultConstraints: { numberType: 'rational', fractionStep: 4, ticks: 6 } },
+                            { id: 'getalbegrip-getallenassen-geh', label: 'Gehele getallen', typeId: 'getallenas', defaultConstraints: { numberType: 'geheel', maxGetal: 20, step: 5 } },
                         ],
                     },
                     ph('getalbegrip-functie', 'Functie van getallen'),
@@ -251,8 +250,21 @@ export const APP_STRUCTURE: Domain[] = [
                 id: 'kloklezen',
                 label: 'Kloklezen',
                 types: [
-                    { id: 'klok-analoog', label: 'Analoge klok', typeId: 'klok-kloklezen', defaultConstraints: { clockType: 'analoog' } },
-                    { id: 'klok-digitaal', label: 'Digitale klok', typeId: 'klok-kloklezen', defaultConstraints: { clockType: 'digitaal' } },
+                    {
+                        id: 'klok-analoog', label: 'Analoge klok',
+                        children: [
+                            { id: 'klok-analoog-lezen', label: 'Lezen', typeId: 'klok-kloklezen', defaultConstraints: { clockType: 'analoog', exerciseMode: 'lezen' } },
+                            { id: 'klok-analoog-tekenen', label: 'Tekenen', typeId: 'klok-kloklezen', defaultConstraints: { clockType: 'analoog', exerciseMode: 'tekenen' } },
+                            { id: 'klok-analoog-omzetten', label: 'Omzetten', typeId: 'klok-kloklezen', defaultConstraints: { clockType: 'analoog', exerciseMode: 'omzetten' } },
+                        ],
+                    },
+                    {
+                        id: 'klok-digitaal', label: 'Digitale klok',
+                        children: [
+                            { id: 'klok-digitaal-lezen', label: 'Lezen', typeId: 'klok-kloklezen', defaultConstraints: { clockType: 'digitaal', exerciseMode: 'lezen' } },
+                            { id: 'klok-digitaal-tekenen', label: 'Tekenen', typeId: 'klok-kloklezen', defaultConstraints: { clockType: 'digitaal', exerciseMode: 'tekenen' } },
+                        ],
+                    },
                 ],
             },
             {
