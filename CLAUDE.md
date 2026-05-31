@@ -49,6 +49,10 @@ Dutch primary-school **worksheet generator**. Teachers compose math exercise blo
 > See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system map (data flow, the
 > add-a-type wiring contract, generator contract, per-type registry table). Keep
 > both files in sync.
+>
+> See [UI-GUIDE.md](UI-GUIDE.md) for design tokens (theme.css CSS variables) and
+> canonical component styles. **Use the tokens — never hardcode bg/text/border/accent
+> hex** — and reuse the shared style helpers (incl. the place-value mask-button canon).
 
 ---
 
