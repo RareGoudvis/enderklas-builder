@@ -13,6 +13,7 @@ import { generateTemperatuurExercises } from '../services/temperatuur/temperatuu
 import { generatePlaatswaardeExercises } from '../services/plaatswaarde/plaatswaardeGenerator';
 import { generateEvenOnevenExercises } from '../services/evenoneven/evenOnevenGenerator';
 import { generateVergelijkenExercises } from '../services/vergelijken/vergelijkenGenerator';
+import { generateAfrondenExercises } from '../services/afronden/afrondenGenerator';
 
 // ── Single source of truth for exercise types ───────────────────────────────
 // Every typeId maps to one row here. Adding a type = add a generator + a row
@@ -27,7 +28,7 @@ type ExerciseField = Extract<keyof MathBlock,
     | 'cijferExercises' | 'geldExercises' | 'geldWisselExercises'
     | 'geldTeruggevenExercises' | 'mabExercises'
     | 'ordenenExercises' | 'deelbaarheidExercises' | 'getallenasExercises' | 'temperatuurExercises'
-    | 'plaatswaardeExercises' | 'evenOnevenExercises' | 'vergelijkenExercises'>;
+    | 'plaatswaardeExercises' | 'evenOnevenExercises' | 'vergelijkenExercises' | 'afrondenExercises'>;
 
 export interface ExerciseTypeDef {
     // The array field on MathBlock that holds this type's exercises.
@@ -139,6 +140,10 @@ const vergelijkenDefaults = (): Record<string, unknown> => ({
     subType: 'getallen', maxGetal: 1000, numberMask: {}, chooseTarget: 'grootste', setSize: 4,
 });
 
+const afrondenDefaults = (): Record<string, unknown> => ({
+    subType: 'rooster', maxGetal: 1000, numberMask: {}, roundTargets: ['T', 'H'],
+});
+
 // All cijferen leaves share the same generator/field/defaults (operator + numberType
 // come from the appstructure leaf's defaultConstraints, merged on top at add time).
 const cijferRow = (): ExerciseTypeDef => ({
@@ -182,4 +187,5 @@ export const REGISTRY: Record<string, ExerciseTypeDef> = {
     'plaatswaarde': { exerciseField: 'plaatswaardeExercises', generate: generatePlaatswaardeExercises, defaultConstraints: plaatswaardeDefaults, defaultCount: 6 },
     'even-oneven':  { exerciseField: 'evenOnevenExercises',   generate: generateEvenOnevenExercises,   defaultConstraints: evenOnevenDefaults,   defaultCount: 3 },
     'vergelijken':  { exerciseField: 'vergelijkenExercises',  generate: generateVergelijkenExercises,  defaultConstraints: vergelijkenDefaults,  defaultCount: 6 },
+    'afronden':     { exerciseField: 'afrondenExercises',     generate: generateAfrondenExercises,     defaultConstraints: afrondenDefaults,     defaultCount: 6 },
 };

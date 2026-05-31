@@ -19,6 +19,7 @@ import TemperatuurViewer from '../components/viewer/TemperatuurViewer';
 import PlaatswaardeViewer from '../components/viewer/PlaatswaardeViewer';
 import EvenOnevenViewer from '../components/viewer/EvenOnevenViewer';
 import VergelijkenViewer from '../components/viewer/VergelijkenViewer';
+import AfrondenViewer from '../components/viewer/AfrondenViewer';
 
 // Config plugins (one per family). All take {block}.
 import AdditionConfig from '../components/configurator/plugins/AdditionConfig';
@@ -40,6 +41,7 @@ import TemperatuurConfig from '../components/configurator/plugins/TemperatuurCon
 import PlaatswaardeConfig from '../components/configurator/plugins/PlaatswaardeConfig';
 import EvenOnevenConfig from '../components/configurator/plugins/EvenOnevenConfig';
 import VergelijkenConfig from '../components/configurator/plugins/VergelijkenConfig';
+import AfrondenConfig from '../components/configurator/plugins/AfrondenConfig';
 
 // ── React side of the registry ──────────────────────────────────────────────
 // Keyed by the SAME typeIds as REGISTRY in exerciseRegistry.ts. Split out so the
@@ -90,4 +92,5 @@ export const EXERCISE_UI: Record<string, ExerciseUIDef> = {
     'plaatswaarde': { Viewer: PlaatswaardeViewer, Config: PlaatswaardeConfig },
     'even-oneven':  { Viewer: EvenOnevenViewer,   Config: EvenOnevenConfig },
     'vergelijken':  { Viewer: VergelijkenViewer,  Config: VergelijkenConfig },
+    'afronden':     { Viewer: AfrondenViewer,     Config: AfrondenConfig },
 };

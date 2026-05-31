@@ -109,6 +109,14 @@ export interface EvenOnevenExercise {
     isManuallyEdited: boolean;
 }
 
+// Afronden — round a natural number to a place (rooster of targets, or one ≈ line)
+export interface AfrondenExercise {
+    id: string;
+    number: number;
+    targetKey?: string;   // simpel view: which place to round to (T/H/D/TD)
+    isManuallyEdited: boolean;
+}
+
 // Vergelijken — fill <, > or = between two numbers, or circle the largest/smallest
 export interface VergelijkenExercise {
     id: string;
@@ -178,6 +186,7 @@ export interface MathBlock {
     plaatswaardeExercises?: PlaatswaardeExercise[];
     evenOnevenExercises?: EvenOnevenExercise[];
     vergelijkenExercises?: VergelijkenExercise[];
+    afrondenExercises?: AfrondenExercise[];
     verticalSpacing: number;
 }
 

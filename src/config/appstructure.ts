@@ -116,9 +116,14 @@ export const APP_STRUCTURE: Domain[] = [
             {
                 id: 'afronden',
                 label: 'Afronden',
-                placeholder: true,
                 types: [
-                    ph('afronden-nat', 'Natuurlijke getallen'),
+                    {
+                        id: 'afronden-nat', label: 'Natuurlijke getallen',
+                        children: [
+                            { id: 'afronden-nat-rooster', label: 'Rooster', typeId: 'afronden', defaultConstraints: { subType: 'rooster' } },
+                            { id: 'afronden-nat-simpel',  label: 'Eenvoudig (≈)', typeId: 'afronden', defaultConstraints: { subType: 'simpel' } },
+                        ],
+                    },
                     ph('afronden-dec', 'Decimale getallen'),
                 ],
             },
