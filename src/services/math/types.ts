@@ -101,6 +101,14 @@ export interface PlaatswaardeExercise {
     isManuallyEdited: boolean;
 }
 
+// Even en oneven — colour even/odd numbers in a grid, or pair circles
+export interface EvenOnevenExercise {
+    id: string;
+    numbers?: number[];   // rooster: a row of numbers to colour
+    number?: number;      // cirkels: one number drawn as circles
+    isManuallyEdited: boolean;
+}
+
 // #6 Getallenas — a number line; pupil fills the blank ticks
 export interface GetallenasExercise {
     id: string;
@@ -158,6 +166,7 @@ export interface MathBlock {
     getallenasExercises?: GetallenasExercise[];
     temperatuurExercises?: TemperatuurExercise[];
     plaatswaardeExercises?: PlaatswaardeExercise[];
+    evenOnevenExercises?: EvenOnevenExercise[];
     verticalSpacing: number;
 }
 

@@ -5,16 +5,11 @@ import { sharedPluginStyles as styles } from './sharedPluginStyles';
 
 interface Props { block: MathBlock; }
 
-const SUBTYPES = [
-    { v: 'waarde', l: 'Waarde van cijfer' },
-    { v: 'plaats', l: 'Plaats benoemen' },
-    { v: 'tabel',  l: 'Tabel invullen' },
-];
 const MAX_PRESETS = [100, 1000, 10000, 100000, 1000000];
 
 export default function PlaatswaardeConfig({ block }: Props) {
     const updateBlockSettings = useWorksheetStore((state) => state.updateBlockSettings);
-    const { subType = 'waarde', maxGetal = 1000, numberMask = {} } = block.constraints;
+    const { maxGetal = 1000, numberMask = {} } = block.constraints;
 
     const set = (key: string, value: unknown) =>
         updateBlockSettings(block.id, { constraints: { ...block.constraints, [key]: value } });
@@ -22,20 +17,9 @@ export default function PlaatswaardeConfig({ block }: Props) {
     const toggleMask = (k: string) => set('numberMask', { ...numberMask, [k]: !numberMask[k] });
     const places = getMaskPlaces(maxGetal, 'natural');
 
+    // subType (view) is chosen by the sidebar leaf — not repeated here.
     return (
         <div style={styles.container}>
-            <div style={styles.section}>
-                <label style={styles.label}>Type oefening:</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {SUBTYPES.map(s => (
-                        <button key={s.v} onClick={() => set('subType', s.v)}
-                            style={{ ...styles.radioBtn(subType === s.v), justifyContent: 'flex-start', textAlign: 'left' }}>
-                            {s.l}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
             <div style={styles.section}>
                 <label style={styles.label}>Maximum getal:</label>
                 <div style={styles.buttonGroup}>

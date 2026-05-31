@@ -90,7 +90,13 @@ export const APP_STRUCTURE: Domain[] = [
                     ph('getalbegrip-functie', 'Functie van getallen'),
                     ph('getalbegrip-vergelijken', 'Vergelijken (<, >, =)'),
                     ph('getalbegrip-verbanden', 'Verbanden (breuk · decimaal · procent)'),
-                    ph('getalbegrip-even-oneven', 'Even en oneven'),
+                    {
+                        id: 'getalbegrip-even-oneven', label: 'Even en oneven',
+                        children: [
+                            { id: 'even-oneven-rooster', label: 'Rooster kleuren', typeId: 'even-oneven', defaultConstraints: { subType: 'rooster' } },
+                            { id: 'even-oneven-cirkels', label: 'Cirkels groeperen', typeId: 'even-oneven', defaultConstraints: { subType: 'cirkels' } },
+                        ],
+                    },
                     {
                         id: 'getalbegrip-plaatswaarde', label: 'Plaatswaarde benoemen',
                         children: [
@@ -122,15 +128,15 @@ export const APP_STRUCTURE: Domain[] = [
             {
                 id: 'veelvouden-delers',
                 label: 'Veelvouden en delers',
-                placeholder: true,
-                types: [ph('veelvouden-delers-item', 'Veelvouden en delers')],
+                types: [
+                    { id: 'deelbaarheid-veelvouden', label: 'Veelvouden aanvullen', typeId: 'deelbaarheid', defaultConstraints: { layout: 'veelvouden' } },
+                ],
             },
             {
                 id: 'deelbaarheid',
                 label: 'Deelbaarheid',
                 types: [
                     { id: 'deelbaarheid-tabel', label: 'Deelbaarheidstabel', typeId: 'deelbaarheid', defaultConstraints: { layout: 'tabel' } },
-                    { id: 'deelbaarheid-veelvouden', label: 'Veelvouden aanvullen', typeId: 'deelbaarheid', defaultConstraints: { layout: 'veelvouden' } },
                 ],
             },
             {
