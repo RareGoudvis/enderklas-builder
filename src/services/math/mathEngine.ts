@@ -425,6 +425,9 @@ export const generateMultiplicationExercises = (block: MathBlock): Equation[] =>
                 continue;
             }
 
+            // excludeOne: drop a whole-number factor of 1 (e.g. 1 × ⅔) when toggled on
+            if (constraints.excludeOne && op1 === 1) continue;
+
             const comboId = typeof op1 === 'object' ? `${op1.n}/${op1.d}*${op2.n}/${op2.d}` : `${op1}*${op2.n}/${op2.d}`;
             if (usedCombinations.has(comboId)) continue;
             usedCombinations.add(comboId);
@@ -440,7 +443,8 @@ export const generateMultiplicationExercises = (block: MathBlock): Equation[] =>
     // B. NATUURLIJKE EN DECIMALE GETALLEN
     const {
         multiplicationMode = 'tafels', selectedTables = [], tableLimit = 10,
-        maxGetal = 1000, operand1Mask = {}, operand2Mask = {}, numberType = 'natural', decimalPlaces = 2
+        maxGetal = 1000, operand1Mask = {}, operand2Mask = {}, numberType = 'natural', decimalPlaces = 2,
+        excludeOne = false   // skip ×1 exercises (trivially easy) when set
     } = constraints;
 
     const exercises: Equation[] = [];
@@ -458,6 +462,8 @@ export const generateMultiplicationExercises = (block: MathBlock): Equation[] =>
 
             let a = baseTable, b = multiplier;
             if (Math.random() > 0.5) { a = multiplier; b = baseTable; }
+
+            if (excludeOne && (a === 1 || b === 1)) continue;
 
             const comboId = `${a}*${b}`;
             if (usedCombinations.has(comboId)) continue;
@@ -495,6 +501,7 @@ export const generateMultiplicationExercises = (block: MathBlock): Equation[] =>
             const b = Math.round((intB / INTERNAL_SCALE) * displayScale) / displayScale;
 
             if (a * b > maxGetal || a <= 0 || b <= 0) continue;
+            if (excludeOne && (a === 1 || b === 1)) continue;
 
             const comboId = `${a}*${b}`;
             if (usedCombinations.has(comboId)) continue;

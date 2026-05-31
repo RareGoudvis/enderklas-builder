@@ -9,7 +9,7 @@ interface Props { block: MathBlock; }
 
 export default function MultiplicationConfig({ block }: Props) {
     const updateBlockSettings = useWorksheetStore((state) => state.updateBlockSettings);
-    const { numberType = 'natural', equationType = 'normal' } = block.constraints;
+    const { numberType = 'natural', equationType = 'normal', excludeOne = false } = block.constraints;
 
     const updateConstraint = (key: string, value: unknown) => {
         updateBlockSettings(block.id, { constraints: { ...block.constraints, [key]: value } });
@@ -36,6 +36,16 @@ export default function MultiplicationConfig({ block }: Props) {
 
             {/* 🔥 Hier vertellen we React om jouw nieuwe paneel te tonen */}
             {numberType === 'rational' && <RationalSettings block={block} />}
+
+            {/* EXCLUDE 1 — laatste engine-instelling: weert de makkelijkste oefeningen (×1) */}
+            <div style={styles.section}>
+                <div style={styles.onOffRow}>
+                    <span style={styles.onOffLabel}>Zonder ×1 (makkelijkste weglaten)</span>
+                    <button onClick={() => updateConstraint('excludeOne', !excludeOne)} style={styles.onOffBtn(excludeOne)}>
+                        {excludeOne ? 'AAN' : 'UIT'}
+                    </button>
+                </div>
+            </div>
 
         </div>
     );

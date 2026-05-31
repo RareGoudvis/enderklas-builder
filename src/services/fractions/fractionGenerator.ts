@@ -24,18 +24,22 @@ function randInt(min: number, max: number) {
 }
 
 function makeShapeExercise(subType: FractionSubType, block: MathBlock): FractionExercise {
-    const { shape = 'rectangle', minDenominator = 2, maxDenominator = 8 } = block.constraints;
+    const { shape = 'rectangle', shapes, minDenominator = 2, maxDenominator = 8 } = block.constraints;
+    // Teacher may enable several shapes; pick one per exercise (back-compat: fall back to single `shape`).
+    const shapeOptions: FractionShape[] = Array.isArray(shapes) && shapes.length ? shapes : [shape as FractionShape];
+    const chosenShape = shapeOptions[randInt(0, shapeOptions.length - 1)];
     const valid = [2, 3, 4, 5, 6, 8, 9, 10, 12].filter(d => d >= minDenominator && d <= maxDenominator);
     const denominator = valid.length ? valid[randInt(0, valid.length - 1)] : 4;
     const numerator = randInt(1, denominator - 1);
-    const { rows, cols } = getGridLayout(denominator);
+    // Square = single row of `denominator` vertical strips; rectangle uses the per-denominator grid.
+    const { rows, cols } = chosenShape === 'square' ? { rows: 1, cols: denominator } : getGridLayout(denominator);
     const coloredIndices = shuffle(Array.from({ length: denominator }, (_, i) => i))
         .slice(0, numerator).sort((a, b) => a - b);
     return {
         id: Math.random().toString(36).substring(2, 9),
         subType,
         numerator, denominator,
-        shape: shape as FractionShape,
+        shape: chosenShape,
         coloredIndices, gridRows: rows, gridCols: cols,
         isManuallyEdited: false,
     };

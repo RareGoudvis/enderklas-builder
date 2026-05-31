@@ -10,6 +10,12 @@ interface Props {
     showColored?: boolean;
     cellSize?: number;
     style?: React.CSSProperties;
+    // Static-size overrides (cm→px done by caller). When set, the whole shape keeps
+    // a fixed size regardless of the denominator. SVG picks the one matching `shape`.
+    fixedWidthPx?: number;     // rectangle outer width
+    fixedHeightPx?: number;    // rectangle outer height
+    fixedSidePx?: number;      // square outer side
+    fixedDiameterPx?: number;  // circle diameter
 }
 
 const FILL_COLOR = '#93c5fd';
@@ -30,9 +36,10 @@ function piePath(cx: number, cy: number, r: number, startDeg: number, endDeg: nu
 export default function FractionShapeSVG({
     denominator, shape, coloredIndices,
     gridRows, gridCols, showColored = true, cellSize = 35, style,
+    fixedWidthPx, fixedHeightPx, fixedSidePx, fixedDiameterPx,
 }: Props) {
     if (shape === 'circle') {
-        const r = 44;
+        const r = fixedDiameterPx ? fixedDiameterPx / 2 : 44;
         const margin = 6;
         const svgSize = r * 2 + margin * 2;
         const cx = svgSize / 2, cy = svgSize / 2;
@@ -57,9 +64,34 @@ export default function FractionShapeSVG({
         );
     }
 
-    // square / rectangle grid
-    const width = gridCols * cellSize;
-    const height = gridRows * cellSize;
+    if (shape === 'square') {
+        // SYNC: mirrors the rect branch's fill logic, but the outer shape is always a
+        // square divided into `denominator` equal vertical strips (kleuren/herkennen).
+        const side = fixedSidePx ?? 90;
+        const stripW = side / denominator;
+        return (
+            <svg width={side} height={side} viewBox={`0 0 ${side} ${side}`} style={style}>
+                {Array.from({ length: denominator }, (_, i) => (
+                    <rect
+                        key={i}
+                        x={i * stripW}
+                        y={0}
+                        width={stripW}
+                        height={side}
+                        fill={showColored && coloredIndices.includes(i) ? FILL_COLOR : 'white'}
+                        stroke={STROKE}
+                        strokeWidth={1.5}
+                    />
+                ))}
+            </svg>
+        );
+    }
+
+    // rectangle grid (optionally a fixed outer size, so cells stretch to fit)
+    const cw = fixedWidthPx ? fixedWidthPx / gridCols : cellSize;
+    const ch = fixedHeightPx ? fixedHeightPx / gridRows : cellSize;
+    const width = gridCols * cw;
+    const height = gridRows * ch;
 
     return (
         <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={style}>
@@ -69,10 +101,10 @@ export default function FractionShapeSVG({
                     return (
                         <rect
                             key={idx}
-                            x={col * cellSize}
-                            y={row * cellSize}
-                            width={cellSize}
-                            height={cellSize}
+                            x={col * cw}
+                            y={row * ch}
+                            width={cw}
+                            height={ch}
                             fill={showColored && coloredIndices.includes(idx) ? FILL_COLOR : 'white'}
                             stroke={STROKE}
                             strokeWidth={1.5}

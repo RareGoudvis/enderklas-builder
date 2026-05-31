@@ -16,6 +16,7 @@ import OrdenenViewer from '../components/viewer/OrdenenViewer';
 import DeelbaarheidViewer from '../components/viewer/DeelbaarheidViewer';
 import GetallenasViewer from '../components/viewer/GetallenasViewer';
 import TemperatuurViewer from '../components/viewer/TemperatuurViewer';
+import PlaatswaardeViewer from '../components/viewer/PlaatswaardeViewer';
 
 // Config plugins (one per family). All take {block}.
 import AdditionConfig from '../components/configurator/plugins/AdditionConfig';
@@ -34,6 +35,7 @@ import OrdenenConfig from '../components/configurator/plugins/OrdenenConfig';
 import DeelbaarheidConfig from '../components/configurator/plugins/DeelbaarheidConfig';
 import GetallenasConfig from '../components/configurator/plugins/GetallenasConfig';
 import TemperatuurConfig from '../components/configurator/plugins/TemperatuurConfig';
+import PlaatswaardeConfig from '../components/configurator/plugins/PlaatswaardeConfig';
 
 // ── React side of the registry ──────────────────────────────────────────────
 // Keyed by the SAME typeIds as REGISTRY in exerciseRegistry.ts. Split out so the
@@ -81,4 +83,5 @@ export const EXERCISE_UI: Record<string, ExerciseUIDef> = {
     'deelbaarheid': { Viewer: DeelbaarheidViewer, Config: DeelbaarheidConfig },
     'getallenas':   { Viewer: GetallenasViewer,   Config: GetallenasConfig },
     'temperatuur':  { Viewer: TemperatuurViewer,  Config: TemperatuurConfig },
+    'plaatswaarde': { Viewer: PlaatswaardeViewer, Config: PlaatswaardeConfig },
 };

@@ -131,6 +131,9 @@ export default function Sidebar() {
                     onChange={(e) => setSearch(e.target.value)}
                     style={S.searchInput}
                 />
+                <button style={S.footerIconBtn} onClick={() => setHelpOpen(true)} title="Help / uitleg" aria-label="Help">
+                    <HelpCircle size={16} />
+                </button>
             </div>
 
             <hr style={S.divider} />
@@ -254,19 +257,15 @@ export default function Sidebar() {
 
             <div style={S.footer}>
                 <div style={S.footerActions}>
+                    <span style={{ ...S.footerText, flex: 1 }}>Gemaakt door Ruben V.H.</span>
                     <a href="https://x.com/ruben_vah" target="_blank" rel="noopener noreferrer" style={S.footerIconBtn} title="Contact via X" aria-label="Contact via X">
                         <span style={{ fontFamily: 'serif', fontWeight: 700, fontSize: '16px' }}>𝕏</span>
                     </a>
-                    <button style={S.footerIconBtn} onClick={() => setHelpOpen(true)} title="Help / uitleg" aria-label="Help">
-                        <HelpCircle size={16} />
-                    </button>
-                    {/* TODO: replace REPLACE_ME with the real Buy Me a Coffee handle before merging */}
-                    <a href="https://buymeacoffee.com/REPLACE_ME" target="_blank" rel="noopener noreferrer" style={{ ...S.footerIconBtn, color: '#e11d48', borderColor: '#e11d48' }} title="Steun deze tool met een koffie ☕" aria-label="Doneer">
+                    <a href="https://buymeacoffee.com/raregoudvis" target="_blank" rel="noopener noreferrer" style={{ ...S.footerIconBtn, color: '#e11d48', borderColor: '#e11d48' }} title="Steun deze tool met een koffie ☕" aria-label="Doneer">
                         <Heart size={16} fill="#e11d48" />
                     </a>
                 </div>
                 <div style={S.footerText}>
-                    Gemaakt door Ruben V.H. — gratis beschikbaar.<br/>
                     Code onder <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>AGPL-3.0</a>.
                 </div>
             </div>
@@ -287,9 +286,9 @@ const S = {
     siteTitleInput: { background: 'transparent', border: 'none', outline: 'none', padding: 0, fontSize: '17px', fontWeight: 700, color: 'var(--text-main)', width: '100%', fontFamily: 'inherit' } as React.CSSProperties,
     siteSubtitleInput: { background: 'transparent', border: 'none', outline: 'none', padding: 0, fontSize: '12px', fontWeight: 400, color: 'var(--accent-purple)', width: '100%', fontFamily: 'inherit' } as React.CSSProperties,
     divider: { border: 'none', height: '1px', backgroundColor: 'var(--border-color)', margin: '0 16px' } as React.CSSProperties,
-    searchWrap: { padding: '4px 16px 8px' } as React.CSSProperties,
+    searchWrap: { padding: '4px 16px 8px', display: 'flex', alignItems: 'center', gap: '8px' } as React.CSSProperties,
     searchInput: {
-        width: '100%', padding: '6px 10px', fontSize: '12px', fontFamily: "'Azeret Mono', monospace",
+        flex: 1, padding: '6px 10px', fontSize: '12px', fontFamily: "'Azeret Mono', monospace",
         backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '6px',
         color: 'var(--text-main)', outline: 'none', boxSizing: 'border-box',
     } as React.CSSProperties,

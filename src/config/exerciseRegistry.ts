@@ -10,6 +10,7 @@ import { generateOrdenenExercises } from '../services/ordenen/ordenenGenerator';
 import { generateDeelbaarheidExercises } from '../services/deelbaarheid/deelbaarheidGenerator';
 import { generateGetallenasExercises } from '../services/getallenas/getallenasGenerator';
 import { generateTemperatuurExercises } from '../services/temperatuur/temperatuurGenerator';
+import { generatePlaatswaardeExercises } from '../services/plaatswaarde/plaatswaardeGenerator';
 
 // ── Single source of truth for exercise types ───────────────────────────────
 // Every typeId maps to one row here. Adding a type = add a generator + a row
@@ -23,7 +24,8 @@ type ExerciseField = Extract<keyof MathBlock,
     | 'exercises' | 'clockExercises' | 'fractionExercises' | 'splitsenExercises'
     | 'cijferExercises' | 'geldExercises' | 'geldWisselExercises'
     | 'geldTeruggevenExercises' | 'mabExercises'
-    | 'ordenenExercises' | 'deelbaarheidExercises' | 'getallenasExercises' | 'temperatuurExercises'>;
+    | 'ordenenExercises' | 'deelbaarheidExercises' | 'getallenasExercises' | 'temperatuurExercises'
+    | 'plaatswaardeExercises'>;
 
 export interface ExerciseTypeDef {
     // The array field on MathBlock that holds this type's exercises.
@@ -64,10 +66,13 @@ const clockDefaults = (): Record<string, unknown> => ({
 });
 
 const fractionDefaults = (): Record<string, unknown> => ({
-    subType: 'kleuren', shape: 'rectangle', minDenominator: 2, maxDenominator: 8,
+    subType: 'kleuren', shape: 'rectangle', shapes: ['rectangle'], minDenominator: 2, maxDenominator: 8,
     answerFormat: 'fraction-questions', objectShape: 'circle', maxTotal: 20,
     minLineLength: 4, maxLineLength: 12, level: 1, answerMode: 'berekeningslijnen',
     maxDimension: 6, maxAbstractN3: 1000,
+    // teacher refinements: shape mix + static size, concreet grouping, schematisch box, veelhoek grid
+    staticSize: false, staticW: 4, staticH: 3, staticSide: 4, staticDiam: 4,
+    groupingMode: 'standaard', drawBoxH: 3, showGrid: true,
 });
 
 const splitsenDefaults = (): Record<string, unknown> => ({
@@ -120,6 +125,10 @@ const temperatuurDefaults = (): Record<string, unknown> => ({
     variant: 'kleuren', includeNegatives: false, perRow: 4,
 });
 
+const plaatswaardeDefaults = (): Record<string, unknown> => ({
+    subType: 'waarde', maxGetal: 1000, numberMask: {},
+});
+
 // All cijferen leaves share the same generator/field/defaults (operator + numberType
 // come from the appstructure leaf's defaultConstraints, merged on top at add time).
 const cijferRow = (): ExerciseTypeDef => ({
@@ -160,4 +169,5 @@ export const REGISTRY: Record<string, ExerciseTypeDef> = {
     'deelbaarheid': { exerciseField: 'deelbaarheidExercises', generate: generateDeelbaarheidExercises, defaultConstraints: deelbaarheidDefaults, defaultCount: 6 },
     'getallenas':   { exerciseField: 'getallenasExercises',   generate: generateGetallenasExercises,   defaultConstraints: getallenasDefaults,   defaultCount: 5 },
     'temperatuur':  { exerciseField: 'temperatuurExercises',  generate: generateTemperatuurExercises,  defaultConstraints: temperatuurDefaults,  defaultCount: 4 },
+    'plaatswaarde': { exerciseField: 'plaatswaardeExercises', generate: generatePlaatswaardeExercises, defaultConstraints: plaatswaardeDefaults, defaultCount: 6 },
 };

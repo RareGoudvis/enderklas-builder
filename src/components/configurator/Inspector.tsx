@@ -336,16 +336,25 @@ export default function Inspector() {
                         </div>
                     )}
 
-                    {/* ── Niveau (hoeveelheid-abstract only) ── */}
+                    {/* ── Niveau (hoeveelheid-abstract only) — with example range per level ── */}
                     {subType === 'hoeveelheid-abstract' && (
                         <>
                             <label style={{ ...S.label, marginTop: '12px' }}>Niveau</label>
-                            <div style={S.btnGroup}>
-                                {([1, 2, 3] as const).map((n) => (
-                                    <button key={n} onClick={() => updateConstraint('level', n)} style={S.radioBtn((c.level ?? 1) === n)}>
-                                        N{n}
-                                    </button>
-                                ))}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {([
+                                    { n: 1, hint: 'Kleine getallen (× 1 – 10), bv. ⅗ van 30' },
+                                    { n: 2, hint: 'Tientallen (× 10 – 100), bv. ⅗ van 300' },
+                                    { n: 3, hint: 'Tot het ingestelde maximum' },
+                                ] as const).map(({ n, hint }) => {
+                                    const isActive = (c.level ?? 1) === n;
+                                    return (
+                                        <button key={n} onClick={() => updateConstraint('level', n)}
+                                            style={{ ...S.radioBtn(isActive), display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', padding: '7px 12px' }}>
+                                            <span style={{ fontWeight: 'bold' }}>N{n}</span>
+                                            <span style={{ fontSize: '10px', opacity: 0.8 }}>{hint}</span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                             {(c.level ?? 1) === 3 && (
                                 <div style={{ marginTop: '8px' }}>
@@ -397,6 +406,25 @@ export default function Inspector() {
                                     </button>
                                 ))}
                             </div>
+
+                            {/* Groepering — makkelijker groeperen helpt starters de delen zien */}
+                            <label style={{ ...S.label, marginTop: '12px' }}>Groepering</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {([
+                                    { val: 'standaard',    label: 'Standaard',          hint: 'Rijen van 10' },
+                                    { val: 'gebalanceerd', label: 'Gelijke rijen',      hint: 'Evenveel per rij (18 → 2×9)' },
+                                    { val: 'per-deel',     label: 'Per breukdeel',      hint: 'Elke rij = één gelijk deel' },
+                                ] as const).map(({ val, label, hint }) => {
+                                    const isActive = (c.groupingMode ?? 'standaard') === val;
+                                    return (
+                                        <button key={val} onClick={() => updateConstraint('groupingMode', val)}
+                                            style={{ ...S.radioBtn(isActive), display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', padding: '7px 12px' }}>
+                                            <span style={{ fontWeight: isActive ? 'bold' : 'normal' }}>{label}</span>
+                                            <span style={{ fontSize: '10px', opacity: 0.8 }}>{hint}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </>
                     )}
 
@@ -411,21 +439,25 @@ export default function Inspector() {
                         </>
                     )}
 
-                    {/* ── Scaffolding (lijnstuk / hoeveelheid-abstract) ── */}
+                    {/* ── Scaffolding (lijnstuk / hoeveelheid-abstract) — with example line layout ── */}
                     {(subType === 'lijnstuk' || subType === 'hoeveelheid-abstract') && (
                         <>
                             <label style={{ ...S.label, marginTop: '12px' }}>Scaffolding</label>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 {([
-                                    { val: 'berekeningslijnen', label: 'Berekeningslijnen' },
-                                    { val: 'structuurlijnen',   label: 'Structuurlijnen' },
-                                    { val: 'blanco',            label: 'Blanco' },
-                                ] as const).map(({ val, label }) => (
-                                    <button key={val} onClick={() => updateConstraint('answerMode', val)}
-                                        style={{ ...S.radioBtn((c.answerMode ?? 'berekeningslijnen') === val), justifyContent: 'flex-start', textAlign: 'left' }}>
-                                        {label}
-                                    </button>
-                                ))}
+                                    { val: 'berekeningslijnen', label: 'Berekeningslijnen', hint: '___ : ___ = ___  en  ___ × ___ = ___' },
+                                    { val: 'structuurlijnen',   label: 'Structuurlijnen',   hint: '___ : ___ = ___   /   ___ × ___ = ___' },
+                                    { val: 'blanco',            label: 'Blanco',            hint: '2 lege lijnen' },
+                                ] as const).map(({ val, label, hint }) => {
+                                    const isActive = (c.answerMode ?? 'berekeningslijnen') === val;
+                                    return (
+                                        <button key={val} onClick={() => updateConstraint('answerMode', val)}
+                                            style={{ ...S.radioBtn(isActive), display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', padding: '7px 12px' }}>
+                                            <span style={{ fontWeight: isActive ? 'bold' : 'normal' }}>{label}</span>
+                                            <span style={{ fontSize: '10px', opacity: 0.8, fontFamily: 'Azeret Mono, monospace' }}>{hint}</span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </>
                     )}
@@ -640,7 +672,7 @@ export default function Inspector() {
             )}
 
             {/* ── 4. Geavanceerd (accordion) ── */}
-            {!locked && (activeBlock.typeId.startsWith('cijferen-') || activeBlock.typeId.startsWith('geld-') || activeBlock.typeId === 'mab-herkennen' || activeBlock.typeId === 'mab-tekenen' || activeBlock.typeId === 'splitsen') && (
+            {!locked && (activeBlock.typeId.startsWith('cijferen-') || activeBlock.typeId.startsWith('geld-') || activeBlock.typeId === 'mab-herkennen' || activeBlock.typeId === 'mab-tekenen' || activeBlock.typeId === 'splitsen' || (activeBlock.typeId === 'breuken' && ((subType === 'kleuren' || subType === 'herkennen') && (Array.isArray(c.shapes) ? c.shapes.length === 1 : true) && c.staticSize || subType === 'hoeveelheid-rechthoek'))) && (
                 <div style={S.advancedWrap}>
                     <button style={S.advancedToggle} onClick={() => setAdvancedOpen(!advancedOpen)}>
                         <span>Geavanceerd</span>
@@ -748,6 +780,55 @@ export default function Inspector() {
                                         </>
                                     );
                                 })()}
+                                {/* ── Breuken: vaste vormgrootte (kleuren/herkennen) ── */}
+                                {activeBlock.typeId === 'breuken' && (subType === 'kleuren' || subType === 'herkennen') && c.staticSize && (() => {
+                                    const shape: string = Array.isArray(c.shapes) && c.shapes.length ? c.shapes[0] : (c.shape ?? 'rectangle');
+                                    if (shape === 'circle') {
+                                        return (
+                                            <>
+                                                <label style={S.label}>Diameter cirkel: {c.staticDiam ?? 4} cm</label>
+                                                <input type="range" min={1} max={10} step={0.5} value={c.staticDiam ?? 4}
+                                                    onChange={e => updateConstraint('staticDiam', Number(e.target.value))}
+                                                    style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
+                                            </>
+                                        );
+                                    }
+                                    if (shape === 'square') {
+                                        return (
+                                            <>
+                                                <label style={S.label}>Zijde vierkant: {c.staticSide ?? 4} cm</label>
+                                                <input type="range" min={1} max={10} step={0.5} value={c.staticSide ?? 4}
+                                                    onChange={e => updateConstraint('staticSide', Number(e.target.value))}
+                                                    style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
+                                            </>
+                                        );
+                                    }
+                                    return (
+                                        <>
+                                            <label style={S.label}>Breedte rechthoek: {c.staticW ?? 4} cm</label>
+                                            <input type="range" min={1} max={12} step={0.5} value={c.staticW ?? 4}
+                                                onChange={e => updateConstraint('staticW', Number(e.target.value))}
+                                                style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
+                                            <label style={{ ...S.label, marginTop: '10px' }}>Hoogte rechthoek: {c.staticH ?? 3} cm</label>
+                                            <input type="range" min={1} max={10} step={0.5} value={c.staticH ?? 3}
+                                                onChange={e => updateConstraint('staticH', Number(e.target.value))}
+                                                style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
+                                        </>
+                                    );
+                                })()}
+                                {/* ── Breuken: tekenvak (schematisch / hoeveelheid-rechthoek) ── */}
+                                {activeBlock.typeId === 'breuken' && subType === 'hoeveelheid-rechthoek' && (
+                                    <>
+                                        <label style={S.label}>Breedte tekenvak: {c.drawBoxW ? `${c.drawBoxW} cm` : 'volledig'}</label>
+                                        <input type="range" min={0} max={16} step={0.5} value={c.drawBoxW ?? 0}
+                                            onChange={e => updateConstraint('drawBoxW', Number(e.target.value))}
+                                            style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
+                                        <label style={{ ...S.label, marginTop: '10px' }}>Hoogte tekenvak: {c.drawBoxH ?? 3} cm</label>
+                                        <input type="range" min={1} max={12} step={0.5} value={c.drawBoxH ?? 3}
+                                            onChange={e => updateConstraint('drawBoxH', Number(e.target.value))}
+                                            style={{ width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer' }} />
+                                    </>
+                                )}
                             </div>
                         </div>
                     )}

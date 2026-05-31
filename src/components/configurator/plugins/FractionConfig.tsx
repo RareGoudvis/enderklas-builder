@@ -12,8 +12,8 @@ const HOEVEELHEID_VARIANTS: { value: FractionSubType; label: string; description
 
 function defaultsFor(subType: FractionSubType): Record<string, unknown> {
     switch (subType) {
-        case 'kleuren':               return { shape: 'rectangle', minDenominator: 2, maxDenominator: 8 };
-        case 'herkennen':             return { shape: 'rectangle', minDenominator: 2, maxDenominator: 8, answerFormat: 'fraction-questions' };
+        case 'kleuren':               return { shapes: ['rectangle'], minDenominator: 2, maxDenominator: 8 };
+        case 'herkennen':             return { shapes: ['rectangle'], minDenominator: 2, maxDenominator: 8, answerFormat: 'fraction-questions' };
         case 'hoeveelheid':           return { objectShape: 'circle', minDenominator: 2, maxDenominator: 5, maxTotal: 20, answerFormat: 'met-hulp' };
         case 'hoeveelheid-rechthoek': return { minDenominator: 2, maxDenominator: 5, maxTotal: 20, answerFormat: 'met-berekening' };
         case 'hoeveelheid-abstract':  return { minDenominator: 2, maxDenominator: 9, level: 1, answerMode: 'berekeningslijnen', maxAbstractN3: 1000 };
@@ -30,6 +30,14 @@ export default function FractionConfig({ block }: Props) {
 
     const updateConstraint = (key: string, value: unknown) =>
         updateBlockSettings(block.id, { constraints: { ...c, [key]: value } });
+
+    // kleuren/herkennen shapes: ≥1 included; back-compat reads the legacy single `shape`.
+    const selectedShapes: string[] = Array.isArray(c.shapes) && c.shapes.length ? c.shapes : [c.shape ?? 'rectangle'];
+    const toggleShape = (s: string) => {
+        const has = selectedShapes.includes(s);
+        const next = has ? selectedShapes.filter(x => x !== s) : [...selectedShapes, s];
+        updateConstraint('shapes', next.length ? next : selectedShapes);   // keep ≥1
+    };
 
     const handleSubTypeChange = (newSubType: FractionSubType) => {
         const isHoeveelheidType = newSubType === 'hoeveelheid' || newSubType === 'hoeveelheid-rechthoek' || newSubType === 'hoeveelheid-abstract';
@@ -83,18 +91,39 @@ export default function FractionConfig({ block }: Props) {
                 </div>
             )}
 
-            {/* ── SHAPE (kleuren / herkennen) — Rechthoek & Cirkel only ── */}
+            {/* ── SHAPE (kleuren / herkennen) — multi-select toggles, mixed per exercise ── */}
             {isShape && (
-                <div style={styles.section}>
-                    <label style={styles.label}>Vorm:</label>
-                    <div style={styles.buttonGroup}>
-                        {(['rectangle', 'circle'] as const).map(s => (
-                            <button key={s} onClick={() => updateConstraint('shape', s)} style={styles.radioBtn(c.shape === s || (s === 'rectangle' && !c.shape))}>
-                                {s === 'rectangle' ? 'Rechthoek' : 'Cirkel'}
-                            </button>
-                        ))}
+                <>
+                    <div style={styles.section}>
+                        <label style={styles.label}>Vorm:</label>
+                        <div style={styles.buttonGroup}>
+                            {([
+                                { val: 'rectangle', label: 'Rechthoek' },
+                                { val: 'square',    label: 'Vierkant' },
+                                { val: 'circle',    label: 'Cirkel' },
+                            ] as const).map(({ val, label }) => (
+                                <button key={val} onClick={() => toggleShape(val)} style={styles.radioBtn(selectedShapes.includes(val))}>
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
+
+                    {/* Static size only makes sense with a single shape (mixed shapes scale per fraction) */}
+                    {selectedShapes.length === 1 && (
+                        <div style={styles.section}>
+                            <div style={styles.onOffRow}>
+                                <span style={styles.onOffLabel}>Vaste grootte</span>
+                                <button onClick={() => updateConstraint('staticSize', !c.staticSize)} style={styles.onOffBtn(!!c.staticSize)}>
+                                    {c.staticSize ? 'AAN' : 'UIT'}
+                                </button>
+                            </div>
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: '4px 0 0' }}>
+                                Vorm blijft even groot, ook als de breuk verandert. Stel de maat in onder Geavanceerd.
+                            </p>
+                        </div>
+                    )}
+                </>
             )}
 
             {/* ── OBJECT SHAPE (hoeveelheid concreet) ── */}
@@ -195,6 +224,14 @@ export default function FractionConfig({ block }: Props) {
                         value={c.maxHeight ?? 6}
                         onChange={(e) => updateConstraint('maxHeight', Number(e.target.value))}
                         style={sliderStyle} />
+
+                    {/* Achtergrondrooster aan/uit — uit = enkel omtrek + gekleurd gebied, vakjes van 1 cm */}
+                    <div style={{ ...styles.onOffRow, marginTop: '12px' }}>
+                        <span style={styles.onOffLabel}>Achtergrondrooster</span>
+                        <button onClick={() => updateConstraint('showGrid', c.showGrid === false)} style={styles.onOffBtn(c.showGrid !== false)}>
+                            {c.showGrid !== false ? 'AAN' : 'UIT'}
+                        </button>
+                    </div>
                 </div>
             )}
 

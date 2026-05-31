@@ -144,7 +144,12 @@ function ScaffoldingArea({ ex, scaffolding, showSolutions, boxHeight }: {
 }) {
     if (scaffolding === 'leeg') return null;
     if (scaffolding === 'rechthoek') {
-        return <div style={{ width: '100%', height: `${boxHeight}px`, border: '1px solid transparent', boxSizing: 'border-box', borderRadius: '3px' }} />;
+        // 'lege ruimte' — empty calc space; label so pupils know what the space is for
+        return (
+            <div style={{ width: '100%', height: `${boxHeight}px`, border: '1px solid transparent', boxSizing: 'border-box', borderRadius: '3px', padding: '4px' }}>
+                <span style={{ fontSize: '11px', fontStyle: 'italic', color: '#666' }}>Berekening:</span>
+            </div>
+        );
     }
     return <ArrowDiagram ex={ex} scaffolding={scaffolding} showSolutions={showSolutions} />;
 }
@@ -179,7 +184,9 @@ function TeruggevenCell({ ex, block, showSolutions }: { ex: GeldTeruggevenExerci
             {/* Answer */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '2px' }}>
                 {antwoordType === 'tekenen-schrijven' && (
-                    <div style={{ width: '100%', height: `${boxHeight}px`, border: '1px solid #000', boxSizing: 'border-box', borderRadius: '3px' }} />
+                    <div style={{ width: '100%', height: `${boxHeight}px`, border: '1px solid #000', boxSizing: 'border-box', borderRadius: '3px', padding: '4px' }}>
+                        <span style={{ fontSize: '11px', fontStyle: 'italic', color: '#666' }}>Teken dit bedrag.</span>
+                    </div>
                 )}
                 <AnswerLine ex={ex} antwoordFormat={antwoordFormat} showSolutions={showSolutions} />
             </div>

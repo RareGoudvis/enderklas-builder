@@ -203,7 +203,7 @@ export default function SplitsenConfig({ block }: Props) {
 
             {/* SPECIFIC NUMBER STRUCTURE — getal 1 (total) */}
             <div style={styles.section}>
-                <label style={styles.label}>Specifieke getalopbouw — Getal 1:</label>
+                <label style={styles.label}>Specifieke getalopbouw — Getal bovenaan:</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                     {maskPlaces.map(p => (
                         <button
@@ -219,7 +219,7 @@ export default function SplitsenConfig({ block }: Props) {
 
             {/* SPECIFIC NUMBER STRUCTURE — getal 2 (given part) */}
             <div style={styles.section}>
-                <label style={styles.label}>Specifieke getalopbouw — Getal 2:</label>
+                <label style={styles.label}>Specifieke getalopbouw — Ingevuld getal:</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                     {maskPlaces.map(p => (
                         <button

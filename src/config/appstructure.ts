@@ -88,6 +88,17 @@ export const APP_STRUCTURE: Domain[] = [
                         ],
                     },
                     ph('getalbegrip-functie', 'Functie van getallen'),
+                    ph('getalbegrip-vergelijken', 'Vergelijken (<, >, =)'),
+                    ph('getalbegrip-verbanden', 'Verbanden (breuk · decimaal · procent)'),
+                    ph('getalbegrip-even-oneven', 'Even en oneven'),
+                    {
+                        id: 'getalbegrip-plaatswaarde', label: 'Plaatswaarde benoemen',
+                        children: [
+                            { id: 'plaatswaarde-waarde', label: 'Waarde van cijfer', typeId: 'plaatswaarde', defaultConstraints: { subType: 'waarde' } },
+                            { id: 'plaatswaarde-plaats', label: 'Plaats benoemen',    typeId: 'plaatswaarde', defaultConstraints: { subType: 'plaats' } },
+                            { id: 'plaatswaarde-tabel',  label: 'Tabel invullen',     typeId: 'plaatswaarde', defaultConstraints: { subType: 'tabel' } },
+                        ],
+                    },
                 ],
             },
             {
@@ -239,6 +250,29 @@ export const APP_STRUCTURE: Domain[] = [
                     },
                 ],
             },
+            {
+                id: 'hoofdrekenen-handig',
+                label: 'Hoofdrekenen (handig rekenen)',
+                placeholder: true,
+                types: [
+                    ph('handig-tienvoud', '× / : met 10, 100, 1000'),
+                    ph('handig-compenseren', 'Handig rekenen (compenseren, splitsen)'),
+                    ph('handig-rekenvolgorde', 'Rekenvolgorde en haakjes'),
+                    ph('handig-kettingsommen', 'Kettingsommen'),
+                ],
+            },
+            {
+                id: 'schattend-rekenen',
+                label: 'Schattend rekenen',
+                placeholder: true,
+                types: [ph('schattend-rekenen-item', 'Schattend rekenen')],
+            },
+            {
+                id: 'controleren',
+                label: 'Controleren',
+                placeholder: true,
+                types: [ph('controleren-negenproef', 'Negenproef / omgekeerde bewerking')],
+            },
         ],
     },
     {
@@ -291,6 +325,51 @@ export const APP_STRUCTURE: Domain[] = [
                     { id: 'temperatuur-verschil', label: 'Verschil', typeId: 'temperatuur', defaultConstraints: { variant: 'verschil', mode1: 'gekleurd', mode2: 'getal' } },
                 ],
             },
+            {
+                id: 'tijdsduur',
+                label: 'Tijdsduur',
+                placeholder: true,
+                types: [ph('tijdsduur-berekenen', 'Tijdsduur berekenen')],
+            },
+            {
+                id: 'kalender',
+                label: 'Kalender',
+                placeholder: true,
+                types: [ph('kalender-datum', 'Kalender / datum lezen')],
+            },
+            {
+                id: 'lengte-oppervlakte',
+                label: 'Lengte en oppervlakte',
+                placeholder: true,
+                types: [
+                    ph('meten-liniaal', 'Meten met liniaal'),
+                    ph('omtrek', 'Omtrek'),
+                    ph('oppervlakte', 'Oppervlakte'),
+                ],
+            },
+            {
+                id: 'massa',
+                label: 'Massa',
+                placeholder: true,
+                types: [ph('massa-weegschaal', 'Meten met weegschaal')],
+            },
+            {
+                id: 'maateenheden',
+                label: 'Maateenheden',
+                placeholder: true,
+                types: [ph('maateenheid-kiezen', 'Passende maateenheid kiezen')],
+            },
+            {
+                id: 'herleidingen',
+                label: 'Herleidingen',
+                placeholder: true,
+                types: [
+                    ph('herleidingen-lengte', 'Lengte'),
+                    ph('herleidingen-oppervlakte', 'Oppervlakte'),
+                    ph('herleidingen-inhoud', 'Inhoud'),
+                    ph('herleidingen-massa', 'Massa'),
+                ],
+            },
         ],
     },
     {
@@ -317,6 +396,19 @@ export const APP_STRUCTURE: Domain[] = [
                         phLeaf('vormleer-vierhoeken', 'Vierhoeken'),
                     ]),
                 ],
+            },
+        ],
+    },
+    {
+        id: 'vraagstukken',
+        label: 'Vraagstukken',
+        accentVar: '--accent-vraagstukken',
+        subdomains: [
+            {
+                id: 'vraagstukken-sub',
+                label: 'Vraagstukken',
+                placeholder: true,
+                types: [ph('vraagstukken-item', 'Vraagstukken')],
             },
         ],
     },

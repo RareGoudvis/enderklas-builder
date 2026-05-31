@@ -28,7 +28,7 @@ export interface Equation {
     remainder?: number;
 }
 
-export type FractionShape = 'rectangle' | 'circle';
+export type FractionShape = 'rectangle' | 'square' | 'circle';
 
 export type FractionSubType =
     | 'kleuren'
@@ -93,6 +93,14 @@ export interface DeelbaarheidExercise {
     isManuallyEdited: boolean;
 }
 
+// Plaatswaarde benoemen — name the value/place of a digit, or fill a place-value table
+export interface PlaatswaardeExercise {
+    id: string;
+    number: number;
+    placeKey: string;     // PLACE_VALUES key of the targeted digit (waarde/plaats)
+    isManuallyEdited: boolean;
+}
+
 // #6 Getallenas — a number line; pupil fills the blank ticks
 export interface GetallenasExercise {
     id: string;
@@ -149,6 +157,7 @@ export interface MathBlock {
     deelbaarheidExercises?: DeelbaarheidExercise[];
     getallenasExercises?: GetallenasExercise[];
     temperatuurExercises?: TemperatuurExercise[];
+    plaatswaardeExercises?: PlaatswaardeExercise[];
     verticalSpacing: number;
 }
 
@@ -303,17 +312,27 @@ export interface ClockConstraints {
 export interface FractionConstraints {
     subType: FractionSubType;
     shape: FractionShape;
+    shapes?: FractionShape[];          // kleuren/herkennen: included shapes (≥1, mixed per exercise)
+    staticSize?: boolean;              // keep shape size constant across denominators (only when 1 shape)
+    staticW?: number;                  // rectangle width (cm) when staticSize
+    staticH?: number;                  // rectangle height (cm) when staticSize
+    staticSide?: number;               // square side (cm) when staticSize
+    staticDiam?: number;               // circle diameter (cm) when staticSize
     minDenominator: number;
     maxDenominator: number;
     answerFormat: string;
     objectShape: 'circle' | 'square';
     maxTotal: number;
+    groupingMode?: 'standaard' | 'gebalanceerd' | 'per-deel';  // concreet object row layout
+    drawBoxW?: number;                 // schematisch draw box width (cm); 0/undefined = full width
+    drawBoxH?: number;                 // schematisch draw box height (cm)
     minLineLength: number;
     maxLineLength: number;
     level: number;
     answerMode: string;
     maxDimension: number;
     maxAbstractN3: number;
+    showGrid?: boolean;                // veelhoek: draw the 1cm background grid (default true)
 }
 
 export interface SplitsenConstraints {
