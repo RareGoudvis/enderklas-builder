@@ -50,13 +50,13 @@ export default function DecimalSettings({ block, isDivision = false }: Props) {
             </div>
 
             {/* SPECIFIEKE GETALOPBOUW */}
-            <div style={{ padding: '16px', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <h4 style={{ color: 'white', fontSize: '14px', margin: '0 0 16px 0' }}>Specifieke getalopbouw</h4>
+            <div style={styles.section}>
+                <label style={styles.label}>Specifieke getalopbouw</label>
 
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: '60px' }}>{isDivision ? 'Deeltal:' : 'Factor 1:'}</span>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', width: '56px', flexShrink: 0 }}>{isDivision ? 'Deeltal:' : 'Factor 1:'}</span>
                     {/* flexWrap: 'wrap' zorgt dat lange rijen maskers netjes op een nieuwe lijn komen */}
-                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         {availablePlaces.map(place => (
                             <button key={`op1-${place.key}`} onClick={() => handleMaskToggle(1, place.key)} style={maskBtnStyle(operand1Mask[place.key])} title={place.label}>
                                 {place.key}
@@ -66,8 +66,8 @@ export default function DecimalSettings({ block, isDivision = false }: Props) {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: '60px' }}>{isDivision ? 'Deler:' : 'Factor 2:'}</span>
-                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', width: '56px', flexShrink: 0 }}>{isDivision ? 'Deler:' : 'Factor 2:'}</span>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         {availablePlaces.map(place => (
                             <button key={`op2-${place.key}`} onClick={() => handleMaskToggle(2, place.key)} style={maskBtnStyle(operand2Mask[place.key])} title={place.label}>
                                 {place.key}
@@ -80,8 +80,10 @@ export default function DecimalSettings({ block, isDivision = false }: Props) {
     );
 }
 
+// Canonical mask button — matches optellen / splitsen (see UI-GUIDE.md).
 const maskBtnStyle = (active: boolean): React.CSSProperties => ({
-    width: '32px', height: '32px', fontSize: '12px', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer',
-    backgroundColor: active ? 'var(--accent-purple)' : '#222226',
-    color: active ? 'white' : 'var(--text-muted)', border: 'none'
+    width: '28px', height: '28px', fontSize: '10px', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer',
+    border: '1px solid var(--border-color)',
+    backgroundColor: active ? 'var(--accent-purple)' : 'var(--bg-input)',
+    color: active ? '#fff' : 'var(--text-muted)',
 });

@@ -82,8 +82,8 @@ export default function RationalSettings({ block, isDivision = false }: Props) {
             })()}
 
             {/* DYNAMISCHE GETALOPBOUW */}
-            <div style={{ marginBottom: '24px' }}>
-                <h4 style={{ color: 'white', fontSize: '14px', margin: '0 0 16px 0' }}>Specifieke getalopbouw</h4>
+            <div style={styles.section}>
+                <label style={styles.label}>Specifieke getalopbouw</label>
 
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
 
@@ -189,6 +189,7 @@ const radioListBtnStyle = (active: boolean): React.CSSProperties => ({ padding: 
 const fractionColStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center', width: '70px' };
 const numInputStyle: React.CSSProperties = { width: '100%', padding: '8px 0', textAlign: 'center', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-main)', outline: 'none', fontSize: '14px', fontWeight: 'bold' };
 const fractionLineStyle: React.CSSProperties = { width: '100%', border: 'none', borderBottom: '2px solid var(--text-muted)', margin: '8px 0' };
-const maskBtnStyle = (active: boolean): React.CSSProperties => ({ width: '28px', height: '28px', fontSize: '11px', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer', backgroundColor: active ? 'var(--accent-purple)' : 'var(--bg-input)', color: active ? 'white' : 'var(--text-muted)', border: 'none' });
+// Canonical mask button — matches optellen / splitsen (see UI-GUIDE.md).
+const maskBtnStyle = (active: boolean): React.CSSProperties => ({ width: '28px', height: '28px', fontSize: '10px', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer', backgroundColor: active ? 'var(--accent-purple)' : 'var(--bg-input)', color: active ? '#fff' : 'var(--text-muted)', border: '1px solid var(--border-color)' });
 const smallTabBtn = (active: boolean): React.CSSProperties => ({ padding: '4px 8px', fontSize: '10px', borderRadius: '4px', border: 'none', cursor: 'pointer', backgroundColor: active ? 'var(--accent-purple)' : 'var(--bg-input)', color: active ? 'white' : 'var(--text-muted)' });
 const miniLabelStyle: React.CSSProperties = { fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' };
