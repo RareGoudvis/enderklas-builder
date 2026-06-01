@@ -95,6 +95,9 @@ export default function HerleidingenViewer({ block, showSolutions }: Props) {
     // overflow into the block controls.
     const sideLen = (ps: HerleidingPart[]) => ps.map(p => `${formatMathNumber(p.value)} ${p.key}`).join('  ').length;
     const cols = Math.max(...exercises.map(ex => sideLen(ex.fromParts) + 3 + sideLen(ex.toParts))) > 38 ? 1 : 2;
+    // From-box sized to the block's widest from (≈9.5px/char Azeret Mono @16px) so a wide
+    // compound from never overflows the box; all '=' columns stay aligned.
+    const fromW = Math.max(150, Math.round(Math.max(...exercises.map(ex => sideLen(ex.fromParts))) * 9.5) + 12);
 
     const exerciseGrid = (
         <FragmentableGrid
@@ -103,7 +106,7 @@ export default function HerleidingenViewer({ block, showSolutions }: Props) {
             rowGap={gap + 2}
             items={exercises.map(ex => (
                 <div key={ex.id} className="print-exercise" style={{ display: 'flex', alignItems: 'baseline', gap: '8px', fontFamily: mono, fontSize: '16px' }}>
-                    <span style={{ display: 'inline-block', width: '150px', textAlign: 'right', whiteSpace: 'nowrap', flexShrink: 0 }}>{renderFrom(ex)}</span>
+                    <span style={{ display: 'inline-block', width: `${fromW}px`, textAlign: 'right', whiteSpace: 'nowrap', flexShrink: 0 }}>{renderFrom(ex)}</span>
                     <span>=</span>
                     <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: '10px' }}>{renderTo(ex)}</span>
                 </div>
