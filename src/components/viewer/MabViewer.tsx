@@ -30,7 +30,7 @@ export default function MabViewer({ block, showSolutions }: Props) {
     const perRow: number = c.exercisesPerRow || 3;
     // Back-compat: blocks saved before the rename used `showBox: boolean`.
     const scaffolding: MabScaffolding = c.scaffolding ?? (c.showBox === false ? 'geen' : 'positietabel');
-    const boxHeight: number = c.boxHeight || 60;
+    const boxHeight: number = c.boxHeight || 70;
     const answerHeight: number = c.answerHeight || 36;
     const gap = block.verticalSpacing || 14;
 

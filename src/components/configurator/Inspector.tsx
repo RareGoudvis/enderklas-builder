@@ -731,7 +731,7 @@ export default function Inspector() {
                                 )}
                                 {(activeBlock.typeId === 'mab-herkennen' || activeBlock.typeId === 'mab-tekenen') && (() => {
                                     const perRow       = (c.exercisesPerRow ?? 3) as number;
-                                    const boxHeight    = (c.boxHeight       ?? 60) as number;
+                                    const boxHeight    = (c.boxHeight       ?? 70) as number;
                                     const answerHeight = (c.answerHeight    ?? 36) as number;
                                     return (
                                         <>

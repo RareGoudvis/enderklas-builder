@@ -109,7 +109,7 @@ const geldTeruggevenDefaults = (): Record<string, unknown> => ({
 
 const mabDefaults = (): Record<string, unknown> => ({
     mabStyle: 'symbolic', maxNumber: 100, operand1Mask: {},
-    scaffolding: 'positietabel', exercisesPerRow: 3, boxHeight: 60, answerHeight: 36,
+    scaffolding: 'positietabel', exercisesPerRow: 3, boxHeight: 70, answerHeight: 36,
 });
 
 const ordenenDefaults = (): Record<string, unknown> => ({

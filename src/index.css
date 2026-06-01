@@ -74,6 +74,9 @@ textarea:focus-visible,
    inline onMouseEnter/Leave colour hacks). */
 .sidebar-leaf { transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out); }
 .sidebar-leaf:hover { background-color: var(--bg-hover); color: var(--text-main); }
+/* The add-badge (first child) tints accent when its row is hovered. */
+.sidebar-leaf > span:first-child { transition: color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out); }
+.sidebar-leaf:hover > span:first-child { color: var(--accent); border-color: var(--accent); }
 
 /* Respect the OS "reduce motion" setting — calm, no transitions/animations. */
 @media (prefers-reduced-motion: reduce) {

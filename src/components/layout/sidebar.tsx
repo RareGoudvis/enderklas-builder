@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { HelpCircle, Heart, Sun, Moon, Contrast, MessageSquare } from 'lucide-react';
+import { HelpCircle, Heart, Sun, Moon, Contrast, MessageSquare, Plus } from 'lucide-react';
 import logo from '../../assets/enderklas-logo.png';
 import { APP_STRUCTURE, type Domain } from '../../config/appstructure';
 import { useWorksheetStore } from '../../store/useWorksheetStore';
@@ -118,7 +118,7 @@ export default function Sidebar() {
                                 style={S.leafBtn}
                                 onClick={() => addBlockFromType(t.typeId, t.label, t.lockedConstraints)}
                             >
-                                <span style={S.addBadge}>+</span>
+                                <span style={S.addBadge}><Plus size={13} strokeWidth={2.5} /></span>
                                 <span>{t.label}</span>
                             </button>
                         ))}
@@ -166,7 +166,7 @@ export default function Sidebar() {
                                                     style={S.subdomainBtn(subOpen, accent, subdomain.placeholder)}
                                                     onClick={() => toggleSubdomain(subdomain.id)}
                                                 >
-                                                    <span>{subdomain.label}</span>
+                                                    <span style={S.navText}>{subdomain.label}</span>
                                                     <span style={S.chevron(subOpen)}>›</span>
                                                 </button>
 
@@ -193,7 +193,7 @@ export default function Sidebar() {
                                                                         style={S.leafBtn}
                                                                         onClick={() => addBlockFromType(type.typeId!, type.label, type.defaultConstraints)}
                                                                     >
-                                                                        <span style={S.addBadge}>+</span>
+                                                                        <span style={S.addBadge}><Plus size={13} strokeWidth={2.5} /></span>
                                                                         <span>{type.label}</span>
                                                                     </button>
                                                                 );
@@ -208,7 +208,7 @@ export default function Sidebar() {
                                                                         style={isPhAcc ? S.placeholderTypeBtn(typeOpen, accent) : S.typeBtn(typeOpen, accent)}
                                                                         onClick={() => toggleType(type.id)}
                                                                     >
-                                                                        <span>{type.label}</span>
+                                                                        <span style={S.navText}>{type.label}</span>
                                                                         <span style={S.chevron(typeOpen)}>›</span>
                                                                     </button>
 
@@ -227,7 +227,7 @@ export default function Sidebar() {
                                                                                         style={S.leafBtn}
                                                                                         onClick={() => addBlockFromType(leaf.typeId, leaf.label, leaf.defaultConstraints)}
                                                                                     >
-                                                                                        <span style={S.addBadge}>+</span>
+                                                                                        <span style={S.addBadge}><Plus size={13} strokeWidth={2.5} /></span>
                                                                                         <span>{leaf.label}</span>
                                                                                     </button>
                                                                                 )
@@ -261,17 +261,18 @@ export default function Sidebar() {
             {!locked && <BaseSettingsPanel />}
 
             <div style={S.footer}>
+                {/* Name on its own full-width line so it never wraps; links + actions below. */}
+                <div style={S.footerText}>Gemaakt door Ruben Van Handenhove</div>
                 <div style={S.footerActions}>
-                    <span style={{ ...S.footerText, flex: 1 }}>Gemaakt door Ruben Van Handenhove</span>
+                    <span style={{ ...S.footerText, flex: 1 }}>
+                        Code onder <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>AGPL-3.0</a>.
+                    </span>
                     <a href="https://forms.gle/jc1LcMXaRG3V3M556" target="_blank" rel="noopener noreferrer" style={S.footerIconBtn} title="Feedback geven" aria-label="Feedback">
                         <MessageSquare size={16} />
                     </a>
                     <a href="https://buymeacoffee.com/raregoudvis" target="_blank" rel="noopener noreferrer" style={{ ...S.footerIconBtn, color: '#e11d48', border: '1px solid #e11d48' }} title="Steun deze tool met een koffie ☕" aria-label="Doneer">
                         <Heart size={16} fill="#e11d48" />
                     </a>
-                </div>
-                <div style={S.footerText}>
-                    Code onder <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>AGPL-3.0</a>.
                 </div>
             </div>
             {helpOpen && <HelpModal onClose={() => setHelpOpen(false)} />}
@@ -285,8 +286,8 @@ export default function Sidebar() {
 
 const S = {
     aside: { width: '300px', minWidth: '300px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--separator)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-1)', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } as React.CSSProperties,
-    headerRow: { display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', padding: 'var(--sp-5) var(--sp-4) var(--sp-3)' } as React.CSSProperties,
-    logoWrap: { width: '56px', height: '56px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' } as React.CSSProperties,
+    headerRow: { display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', padding: 'var(--sp-5) var(--sp-4) var(--sp-3)' } as React.CSSProperties,
+    logoWrap: { width: '48px', height: '48px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' } as React.CSSProperties,
     headerText: { flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 } as React.CSSProperties,
     siteTitleInput: { background: 'transparent', border: 'none', outline: 'none', padding: 0, fontSize: 'var(--text-lg)', fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--text-main)', width: '100%', fontFamily: 'inherit' } as React.CSSProperties,
     siteSubtitleInput: { background: 'transparent', border: 'none', outline: 'none', padding: 0, fontSize: 'var(--text-sm)', fontWeight: 500, color: 'var(--accent)', width: '100%', fontFamily: 'inherit' } as React.CSSProperties,
@@ -298,7 +299,9 @@ const S = {
         color: 'var(--text-main)', outline: 'none', boxSizing: 'border-box',
     } as React.CSSProperties,
     noResults: { padding: 'var(--sp-3) var(--sp-5)', fontSize: 'var(--text-sm)', color: 'var(--text-muted)', fontStyle: 'italic' } as React.CSSProperties,
-    navArea: { flex: 1, overflowY: 'auto', padding: 'var(--sp-2) var(--sp-2)' } as React.CSSProperties,
+    navArea: { flex: 1, overflowY: 'auto', padding: 'var(--sp-2) var(--sp-1)' } as React.CSSProperties,
+    // Truncate long nav labels with an ellipsis instead of colliding with the chevron.
+    navText: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 } as React.CSSProperties,
 
     lockedPalette: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } as React.CSSProperties,
     lockedBanner: { margin: 'var(--sp-1) var(--sp-4) var(--sp-2)', padding: 'var(--sp-2) var(--sp-3)', fontSize: 'var(--text-xs)', lineHeight: 1.4, color: 'var(--text-main)', background: 'var(--accent-soft)', border: '1px solid var(--accent)', borderRadius: 'var(--radius-md)' } as React.CSSProperties,
@@ -306,17 +309,16 @@ const S = {
 
     domainWrap: { marginBottom: 'var(--sp-3)' } as React.CSSProperties,
 
-    // Domain accent now reads as a soft inset rail rather than a heavy 3px bar.
+    // Domain accent reads as a soft inset rail (no extra marginLeft — reclaim width).
     domainContent: (accent: string): React.CSSProperties => ({
         borderLeft: `2px solid ${accent}`,
-        marginLeft: 'var(--sp-2)',
     }),
 
     subdomainBtn: (open: boolean, _accent: string, placeholder?: boolean): React.CSSProperties => ({
-        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-1)',
         padding: '9px 12px', cursor: 'pointer', border: 'none', background: 'none',
         color: open && !placeholder ? 'var(--text-main)' : 'var(--text-muted)',
-        fontSize: 'var(--text-base)', fontWeight: 600, textAlign: 'left',
+        fontSize: 'var(--text-sm)', fontWeight: 600, textAlign: 'left',
         transition: 'color var(--dur) var(--ease-out)',
         opacity: placeholder ? 0.45 : 1,
     }),
@@ -388,7 +390,7 @@ const S = {
     footerActions: { display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' } as React.CSSProperties,
     footerText: { fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.4 } as React.CSSProperties,
     footerIconBtn: {
-        width: '34px', height: '34px', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+        width: '32px', height: '32px', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
         border: '1px solid var(--separator)', backgroundColor: 'var(--bg-surface-2)',
         color: 'var(--text-muted)', fontSize: '14px', display: 'flex',
         alignItems: 'center', justifyContent: 'center', flexShrink: 0,

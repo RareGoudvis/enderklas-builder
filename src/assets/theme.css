@@ -176,7 +176,10 @@
     --accent-meetkunde: #785EF0;
     --accent-vraagstukken: #FFB000;
 
-    --shadow-1: 0 0 0 1px #000000;
+    /* Bordered chrome already carries a solid #000 edge — a shadow ring on top would
+       double it (the TopBar "header" doubling). Keep shadows only where a surface has
+       no border (menus, the A4 sheet). */
+    --shadow-1: none;
     --shadow-2: 0 0 0 1px #000000;
     --shadow-3: 0 0 0 2px #000000;
     --shadow-focus: 0 0 0 3px rgba(0, 0, 0, 0.55);
