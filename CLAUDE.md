@@ -109,7 +109,8 @@ src/
 │   ├── evenoneven/evenOnevenGenerator.ts     # rooster / cirkels
 │   ├── vergelijken/vergelijkenGenerator.ts   # getallen / kiezen
 │   ├── afronden/afrondenGenerator.ts         # natural+decimal rooster / simpel (targetsFor, roundTo)
-│   └── romeinse/romeinseGenerator.ts         # herkennen / schrijven (toRoman, NIVEAU_MAX)
+│   ├── romeinse/romeinseGenerator.ts         # herkennen / schrijven (toRoman, NIVEAU_MAX)
+│   └── herleidingen/herleidingenGenerator.ts # metric unit conversions (ladderFor; integer-exact)
 ├── config/
 │   ├── appstructure.ts            # APP_STRUCTURE tree (above)
 │   ├── exerciseRegistry.ts        # REGISTRY: typeId → generator/field/defaults (pure data)
@@ -281,10 +282,11 @@ All types defined in `APP_STRUCTURE` ([appstructure.ts](src/config/appstructure.
 | `vergelijken` | `vergelijkenExercises: VergelijkenExercise[]` | `vergelijkenGenerator.ts` | `VergelijkenViewer` |
 | `afronden` | `afrondenExercises: AfrondenExercise[]` | `afrondenGenerator.ts` | `AfrondenViewer` |
 | `romeinse-cijfers` | `romeinseExercises: RomeinseExercise[]` | `romeinseGenerator.ts` | `RomeinseViewer` |
+| `herleidingen` | `herleidingExercises: HerleidingExercise[]` | `herleidingenGenerator.ts` | `HerleidingenViewer` |
 
 `subType` (in `constraints`) selects the view within a family, set by the sidebar leaf
 (plaatswaarde waarde/plaats/tabel · even-oneven rooster/cirkels · vergelijken getallen/kiezen
-· afronden rooster/simpel · romeinse herkennen/schrijven).
+· afronden rooster/simpel · romeinse herkennen/schrijven · herleidingen measure lengte/inhoud/massa).
 
 Placeholder leaves in `appstructure.ts` (`placeholder: true` / `typeId: '__placeholder__'`) are **not implemented** — they show as greyed tree entries only. See the full per-typeId registry table in [ARCHITECTURE.md](ARCHITECTURE.md).
 

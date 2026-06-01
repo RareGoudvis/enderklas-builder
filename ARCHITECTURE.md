@@ -140,6 +140,7 @@ one exercise array **per family** (only one is populated per block, keyed by
 | `vergelijkenExercises` | `VergelijkenExercise` | `vergelijken` |
 | `afrondenExercises` | `AfrondenExercise` | `afronden` |
 | `romeinseExercises` | `RomeinseExercise` | `romeinse-cijfers` |
+| `herleidingExercises` | `HerleidingExercise` | `herleidingen` |
 
 Every exercise element has `id: string` and `isManuallyEdited: boolean` (set
 `false` on generation; flipped `true` when a teacher hand-edits via
@@ -285,6 +286,7 @@ only.
 | `vergelijken` | `vergelijkenExercises` | `generateVergelijkenExercises` | `VergelijkenViewer` | `VergelijkenConfig` | subType (getallen/kiezen), maxGetal, numberMask, chooseTarget, setSize, decimalPlaces (0–3, kommagetallen) |
 | `afronden` | `afrondenExercises` | `generateAfrondenExercises` | `AfrondenViewer` | `AfrondenConfig` | subType (rooster/simpel), numberType (natural/decimal — sidebar leaf), maxGetal, decimalPlaces, numberMask (natural), roundTargets[] (T/H/D/TD or E/t/h), roosterSize (rooster = one rooster per exercise, 2-up) |
 | `romeinse-cijfers` | `romeinseExercises` | `generateRomeinseExercises` | `RomeinseViewer` | `RomeinseConfig` | subType (herkennen/schrijven), niveau (1–4); always-subtractive notation, numberMask |
+| `herleidingen` | `herleidingExercises` | `generateHerleidingExercises` | `HerleidingenViewer` | `HerleidingenConfig` | measure (lengte/inhoud/massa — sidebar leaf), units[] (ladder subset), maxGetal (caps small coeffs, def 9), formats[] (enkel-getal/enkel-eenheid/samengesteld-enkel/enkel-samengesteld), writeUnits, scaffolding (geen/tabel-headers/tabel-blanco); integer-exact metric conversions |
 
 > Note: matching is now exact-key, so the old substring collision between
 > `hr-std-optellen` and `cijferen-optellen-*` (which forced
@@ -476,7 +478,8 @@ src/
 │   ├── evenoneven/evenOnevenGenerator.ts     # rooster / cirkels
 │   ├── vergelijken/vergelijkenGenerator.ts   # getallen / kiezen
 │   ├── afronden/afrondenGenerator.ts         # natural+decimal rooster / simpel (targetsFor, roundTo)
-│   └── romeinse/romeinseGenerator.ts         # herkennen / schrijven (toRoman, NIVEAU_MAX)
+│   ├── romeinse/romeinseGenerator.ts         # herkennen / schrijven (toRoman, NIVEAU_MAX)
+│   └── herleidingen/herleidingenGenerator.ts # metric unit conversions (ladderFor; integer-exact)
 └── components/
     ├── layout/{sidebar.tsx,TopBar.tsx,HelpModal.tsx,PresetModal.tsx,
     │           BaseSettingsPanel.tsx,BaseSettingsModal.tsx}   # §13 sidebar gear menu + base modal
