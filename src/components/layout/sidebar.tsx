@@ -376,7 +376,7 @@ const S = {
     themeLabel: { fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text-muted)' } as React.CSSProperties,
     // Segmented control: neutral track, selected = accent-soft tint + accent + ring
     // (the one canonical selected look across the whole app).
-    themeBtnGroup: { display: 'flex', gap: '2px', backgroundColor: 'var(--bg-surface-2)', padding: '3px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--separator)' } as React.CSSProperties,
+    themeBtnGroup: { display: 'flex', gap: '2px', backgroundColor: 'var(--bg-surface-2)', padding: '3px', borderRadius: 'var(--radius-sm)' } as React.CSSProperties,
     themeBtn: (active: boolean): React.CSSProperties => ({
         width: '34px', height: '28px', borderRadius: 'var(--radius-xs)', cursor: 'pointer',
         border: `1px solid ${active ? 'var(--accent)' : 'var(--separator)'}`,

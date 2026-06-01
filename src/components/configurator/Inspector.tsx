@@ -860,7 +860,8 @@ const S = {
     checkbox: { accentColor: 'var(--accent)', width: '16px', height: '16px', cursor: 'pointer', flexShrink: 0 } as React.CSSProperties,
     // Segmented control: neutral track, selected segment = accent-soft tint + accent
     // text + accent ring (the one canonical selected look — same as sharedPluginStyles).
-    btnGroup: { display: 'flex', gap: '2px', backgroundColor: 'var(--bg-surface-2)', padding: '3px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--separator)' } as React.CSSProperties,
+    // No track border — each segment carries its own; a track border would double it (colorblind).
+    btnGroup: { display: 'flex', gap: '2px', backgroundColor: 'var(--bg-surface-2)', padding: '3px', borderRadius: 'var(--radius-sm)' } as React.CSSProperties,
     radioBtn: (active: boolean): React.CSSProperties => ({ padding: '6px 10px', fontSize: 'var(--text-sm)', border: `1px solid ${active ? 'var(--accent)' : 'var(--separator)'}`, borderRadius: 'var(--radius-xs)', cursor: 'pointer', backgroundColor: active ? 'var(--accent-soft)' : 'transparent', color: active ? 'var(--accent)' : 'var(--text-muted)', fontWeight: active ? 600 : 500, flex: 1, whiteSpace: 'nowrap', transition: 'background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out)' }),
 
     engineCard: { backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--accent-soft)', boxShadow: 'var(--shadow-1)' } as React.CSSProperties,
