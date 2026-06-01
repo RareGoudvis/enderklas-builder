@@ -350,6 +350,24 @@ export default function Inspector() {
                                     <button key={v} className="seg-btn" aria-pressed={(c.scaffolding ?? 'geen') === v} onClick={() => updateConstraint('scaffolding', v)}>{lbl}</button>
                                 ))}
                             </div>
+                            {(c.scaffolding ?? 'geen') !== 'geen' && (
+                                <>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginTop: '10px' }}>
+                                        <span style={S.checkboxLabel as React.CSSProperties}>Oefening links tonen</span>
+                                        <Switch checked={!!c.tablePrompt} onChange={(v) => updateConstraint('tablePrompt', v)} aria-label="Oefening links tonen" />
+                                    </div>
+                                    <label style={{ ...S.label, marginTop: '10px' }}>Antwoord rechts</label>
+                                    <div className="seg-group">
+                                        {([['blank', 'Blanco'], ['filled', 'Ingevuld'], ['hidden', 'Verborgen']] as const).map(([v, lbl]) => (
+                                            <button key={v} className="seg-btn" aria-pressed={(c.tableAnswer ?? 'blank') === v} onClick={() => updateConstraint('tableAnswer', v)}>{lbl}</button>
+                                        ))}
+                                    </div>
+                                    <label style={{ ...S.label, marginTop: '10px' }}>Celbreedte: {c.tableCellW ?? 60}px</label>
+                                    <input type="range" min={40} max={120} step={5} value={c.tableCellW ?? 60} onChange={(e) => updateConstraint('tableCellW', Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer' }} />
+                                    <label style={{ ...S.label, marginTop: '10px' }}>Celhoogte: {c.tableCellH ?? 30}px</label>
+                                    <input type="range" min={24} max={60} step={2} value={c.tableCellH ?? 30} onChange={(e) => updateConstraint('tableCellH', Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer' }} />
+                                </>
+                            )}
                         </>
                     )}
 

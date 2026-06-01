@@ -91,9 +91,14 @@ export default function HerleidingenViewer({ block, showSolutions }: Props) {
         );
     });
 
+    // Auto single-column when exercises get wide (long compounds / big numbers) so they don't
+    // overflow into the block controls.
+    const sideLen = (ps: HerleidingPart[]) => ps.map(p => `${formatMathNumber(p.value)} ${p.key}`).join('  ').length;
+    const cols = Math.max(...exercises.map(ex => sideLen(ex.fromParts) + 3 + sideLen(ex.toParts))) > 38 ? 1 : 2;
+
     const exerciseGrid = (
         <FragmentableGrid
-            cols={2}
+            cols={cols}
             columnGap={28}
             rowGap={gap + 2}
             items={exercises.map(ex => (
@@ -106,22 +111,43 @@ export default function HerleidingenViewer({ block, showSolutions }: Props) {
         />
     );
 
-    // Conversion-table scaffold ABOVE the exercises (one blank row per exercise). "tabel-blanco"
-    // leaves the header cells empty so the pupil writes the units.
+    // Conversion-table scaffold ABOVE the exercises — centered, one row per exercise, with an
+    // optional left prompt column and an optional right "= ___" answer column.
     let table = null;
     if (scaffolding === 'tabel-headers' || scaffolding === 'tabel-blanco') {
-        const units = ladderFor(measure).filter(u => (block.constraints.units ?? []).includes(u.key));
-        const cols = units.map(() => '60px').join(' ');
-        const cell: React.CSSProperties = { border: '1px solid #000', height: '30px', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: mono, fontSize: '13px' };
+        const c = block.constraints;
+        const tablePrompt: boolean = !!c.tablePrompt;
+        const tableAnswer: string = c.tableAnswer ?? 'blank';
+        const cw: number = c.tableCellW ?? 60;
+        const ch: number = c.tableCellH ?? 30;
+        const units = ladderFor(measure).filter(u => (c.units ?? []).includes(u.key));
         const showHeaders = scaffolding === 'tabel-headers';
+        const unitCell: React.CSSProperties = { border: '1px solid #000', width: `${cw}px`, height: `${ch}px`, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: mono, fontSize: '13px' };
+        const sideCell: React.CSSProperties = { height: `${ch}px`, display: 'flex', alignItems: 'center', fontFamily: mono, fontSize: '14px', whiteSpace: 'nowrap' };
+
+        const promptStr = (ex: HerleidingExercise) => ex.fromParts.map(p => `${formatMathNumber(p.value)} ${p.key}`).join('  ');
+        const ansEl = (ex: HerleidingExercise) => {
+            if (tableAnswer === 'blank') return <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: '5px' }}>= <span style={{ borderBottom: '1.5px solid #000', width: '90px', display: 'inline-block', height: '15px' }} /></span>;
+            return <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: '6px' }}>= {ex.toParts.map((p, i) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'baseline', gap: '4px' }}>
+                    {ex.blank === 'number' ? numLine() : <span>{formatMathNumber(p.value)}</span>}
+                    {ex.blank === 'unit' ? unitLine() : <span>{p.key}</span>}
+                </span>
+            ))}</span>;
+        };
+
         table = (
-            <div style={{ marginBottom: `${gap + 6}px`, width: 'fit-content' }}>
-                <div className="print-row" style={{ display: 'grid', gridTemplateColumns: cols }}>
-                    {units.map(u => <div key={u.key} style={{ ...cell, backgroundColor: SALMON, fontWeight: 'bold' }}>{showHeaders ? u.key : ''}</div>)}
+            <div style={{ margin: '0 auto', width: 'fit-content', marginBottom: `${gap + 6}px` }}>
+                <div className="print-row" style={{ display: 'flex', alignItems: 'stretch' }}>
+                    {tablePrompt && <div style={{ ...sideCell, marginRight: '10px' }} />}
+                    {units.map(u => <div key={u.key} style={{ ...unitCell, backgroundColor: SALMON, fontWeight: 'bold' }}>{showHeaders ? u.key : ''}</div>)}
+                    {tableAnswer !== 'hidden' && <div style={{ ...sideCell, marginLeft: '10px' }} />}
                 </div>
                 {exercises.map(ex => (
-                    <div key={ex.id} className="print-row" style={{ display: 'grid', gridTemplateColumns: cols }}>
-                        {units.map(u => <div key={u.key} style={cell} />)}
+                    <div key={ex.id} className="print-row" style={{ display: 'flex', alignItems: 'stretch' }}>
+                        {tablePrompt && <div style={{ ...sideCell, marginRight: '10px', justifyContent: 'flex-end' }}>{promptStr(ex)}</div>}
+                        {units.map(u => <div key={u.key} style={unitCell} />)}
+                        {tableAnswer !== 'hidden' && <div style={{ ...sideCell, marginLeft: '10px' }}>{ansEl(ex)}</div>}
                     </div>
                 ))}
             </div>

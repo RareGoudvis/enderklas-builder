@@ -157,6 +157,7 @@ const herleidingenDefaults = (): Record<string, unknown> => ({
     measure: 'lengte', units: ['m', 'dm', 'cm', 'mm'], maxEnkel: 100, maxSamengesteld: 1000,
     formats: ['enkel-getal', 'enkel-eenheid', 'samengesteld-enkel', 'enkel-samengesteld'],
     compoundMode: '2', writeUnits: false, scaffolding: 'geen',
+    tablePrompt: false, tableAnswer: 'blank', tableCellW: 60, tableCellH: 30,
 });
 
 // All cijferen leaves share the same generator/field/defaults (operator + numberType
