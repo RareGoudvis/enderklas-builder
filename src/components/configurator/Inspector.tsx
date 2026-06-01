@@ -58,18 +58,18 @@ export default function Inspector() {
                         <input style={S.input} value={headerData.titel || ''} onChange={(e) => updateHeader({ titel: e.target.value })} placeholder="Bv. Herhalingstoets" />
 
                         <label style={{ ...S.label, marginTop: '12px' }}>Koptekst stijl</label>
-                        <div style={S.btnGroup}>
+                        <div className="seg-group">
                             {(['geen', 'kader'] as const).map((s) => (
-                                <button key={s} onClick={() => updateDocSettings({ headerStyle: s })} style={S.radioBtn(docSettings.headerStyle === s)}>
+                                <button key={s} onClick={() => updateDocSettings({ headerStyle: s })} className="seg-btn" aria-pressed={docSettings.headerStyle === s}>
                                     {s === 'geen' ? 'Geen' : 'Kader'}
                                 </button>
                             ))}
                         </div>
 
                         <label style={{ ...S.label, marginTop: '12px' }}>Titel positie</label>
-                        <div style={S.btnGroup}>
+                        <div className="seg-group">
                             {(['left', 'center', 'right'] as const).map((p) => (
-                                <button key={p} onClick={() => updateDocSettings({ titlePosition: p })} style={S.radioBtn((docSettings.titlePosition ?? 'center') === p)}>
+                                <button key={p} onClick={() => updateDocSettings({ titlePosition: p })} className="seg-btn" aria-pressed={(docSettings.titlePosition ?? 'center') === p}>
                                     {p === 'left' ? 'Links' : p === 'center' ? 'Midden' : 'Rechts'}
                                 </button>
                             ))}
@@ -182,9 +182,9 @@ export default function Inspector() {
                         <div style={S.switchRow}><span style={S.switchText}>Opdrachten nummeren</span><Switch checked={docSettings.numberBlocks} onChange={(v) => updateDocSettings({ numberBlocks: v })} aria-label="Opdrachten nummeren" /></div>
 
                         <label style={{ ...S.label, marginTop: '10px' }}>Opdracht stijl</label>
-                        <div style={S.btnGroup}>
+                        <div className="seg-group">
                             {(['regular', 'underlined', 'boxed'] as const).map((s) => (
-                                <button key={s} onClick={() => updateDocSettings({ opdrachtTitelStyle: s })} style={S.radioBtn(docSettings.opdrachtTitelStyle === s)}>
+                                <button key={s} onClick={() => updateDocSettings({ opdrachtTitelStyle: s })} className="seg-btn" aria-pressed={docSettings.opdrachtTitelStyle === s}>
                                     {s === 'regular' ? 'Normaal' : s === 'underlined' ? 'Onderstreept' : 'Kader'}
                                 </button>
                             ))}
@@ -316,12 +316,12 @@ export default function Inspector() {
                 <h4 style={S.cardTitle}>Differentiatie</h4>
                 <div style={S.col}>
                     <label style={S.label}>Instructie prefix</label>
-                    <div style={S.btnGroup}>
+                    <div className="seg-group">
                         {(['geen', 'mag', 'moet', 'plus', 'aangepast'] as const).map((mode) => (
                             <button
                                 key={mode}
                                 onClick={() => updateBlockSettings(activeBlock.id, { instructionMode: activeBlock.instructionMode === mode ? 'geen' : mode })}
-                                style={S.radioBtn(activeBlock.instructionMode === mode)}
+                                className="seg-btn" aria-pressed={activeBlock.instructionMode === mode}
                                 title={mode === 'plus' ? 'Plusoefening' : mode === 'aangepast' ? 'Aangepaste tekst' : undefined}
                             >
                                 {mode === 'plus' ? '★' : mode === 'geen' ? '—' : mode === 'aangepast' ? 'A' : mode.toUpperCase()}
@@ -437,9 +437,9 @@ export default function Inspector() {
                     {subType === 'hoeveelheid-rechthoek' && (
                         <>
                             <label style={{ ...S.label, marginTop: '12px' }}>Scaffolding</label>
-                            <div style={S.btnGroup}>
-                                <button onClick={() => updateConstraint('answerFormat', 'met-berekening')} style={S.radioBtn((c.answerFormat ?? 'met-berekening') === 'met-berekening')}>Met lijnen</button>
-                                <button onClick={() => updateConstraint('answerFormat', 'zonder-berekening')} style={S.radioBtn((c.answerFormat ?? 'met-berekening') === 'zonder-berekening')}>Zonder lijnen</button>
+                            <div className="seg-group">
+                                <button onClick={() => updateConstraint('answerFormat', 'met-berekening')} className="seg-btn" aria-pressed={(c.answerFormat ?? 'met-berekening') === 'met-berekening'}>Met lijnen</button>
+                                <button onClick={() => updateConstraint('answerFormat', 'zonder-berekening')} className="seg-btn" aria-pressed={(c.answerFormat ?? 'met-berekening') === 'zonder-berekening'}>Zonder lijnen</button>
                             </div>
                         </>
                     )}
@@ -536,10 +536,10 @@ export default function Inspector() {
                     {isHrStd(activeBlock.typeId) && !activeBlock.typeId.startsWith('cijferen-') && (
                         <>
                             <label style={{ ...S.label, marginTop: '12px' }}>Scaffolding</label>
-                            <div style={S.btnGroup}>
-                                <button onClick={() => updateBlockLayout(activeBlock.id, 'inline-short')} style={S.radioBtn((activeBlock.layoutPreset ?? 'inline-short') === 'inline-short')}>Kort</button>
-                                <button onClick={() => updateBlockLayout(activeBlock.id, 'inline-long')}  style={S.radioBtn((activeBlock.layoutPreset ?? 'inline-short') === 'inline-long')}>Lang</button>
-                                <button onClick={() => updateBlockLayout(activeBlock.id, 'stepped')}      style={S.radioBtn((activeBlock.layoutPreset ?? 'inline-short') === 'stepped')}>Stappen</button>
+                            <div className="seg-group">
+                                <button onClick={() => updateBlockLayout(activeBlock.id, 'inline-short')} className="seg-btn" aria-pressed={(activeBlock.layoutPreset ?? 'inline-short') === 'inline-short'}>Kort</button>
+                                <button onClick={() => updateBlockLayout(activeBlock.id, 'inline-long')}  className="seg-btn" aria-pressed={(activeBlock.layoutPreset ?? 'inline-short') === 'inline-long'}>Lang</button>
+                                <button onClick={() => updateBlockLayout(activeBlock.id, 'stepped')}      className="seg-btn" aria-pressed={(activeBlock.layoutPreset ?? 'inline-short') === 'stepped'}>Stappen</button>
                             </div>
                             {(activeBlock.layoutPreset ?? 'inline-short') === 'stepped' && (
                                 <div style={{ marginTop: '8px' }}>
@@ -588,11 +588,11 @@ export default function Inspector() {
                         return (
                             <>
                                 <label style={{ ...S.label, marginTop: '12px' }}>Scaffolding</label>
-                                <div style={S.btnGroup}>
-                                    <button onClick={() => updateConstraint('scaffolding', 'positietabel')} style={S.radioBtn(scaff === 'positietabel')}>Positietabel</button>
-                                    <button onClick={() => updateConstraint('scaffolding', 'kader')}        style={S.radioBtn(scaff === 'kader')}>Kader</button>
+                                <div className="seg-group">
+                                    <button onClick={() => updateConstraint('scaffolding', 'positietabel')} className="seg-btn" aria-pressed={scaff === 'positietabel'}>Positietabel</button>
+                                    <button onClick={() => updateConstraint('scaffolding', 'kader')}        className="seg-btn" aria-pressed={scaff === 'kader'}>Kader</button>
                                     {isHerkennen && (
-                                        <button onClick={() => updateConstraint('scaffolding', 'geen')} style={S.radioBtn(scaff === 'geen')}>Geen</button>
+                                        <button onClick={() => updateConstraint('scaffolding', 'geen')} className="seg-btn" aria-pressed={scaff === 'geen'}>Geen</button>
                                     )}
                                 </div>
                             </>
@@ -618,19 +618,19 @@ export default function Inspector() {
                         return (
                             <>
                                 <label style={{ ...S.label, marginTop: '12px' }}>Opmaak</label>
-                                <div style={S.btnGroup}>
-                                    <button style={S.radioBtn(gFormat === 'euros')} onClick={() => updateConstraint('format', 'euros')}>Euro's (xx)</button>
-                                    <button style={S.radioBtn(gFormat === 'decimaal')} onClick={() => updateConstraint('format', 'decimaal')}>Decimaal (xx,xx)</button>
+                                <div className="seg-group">
+                                    <button className="seg-btn" aria-pressed={gFormat === 'euros'} onClick={() => updateConstraint('format', 'euros')}>Euro's (xx)</button>
+                                    <button className="seg-btn" aria-pressed={gFormat === 'decimaal'} onClick={() => updateConstraint('format', 'decimaal')}>Decimaal (xx,xx)</button>
                                 </div>
 
                                 {isGeldHerkennen && (
                                     <>
                                         <label style={{ ...S.label, marginTop: '12px' }}>Antwoord</label>
-                                        <div style={S.btnGroup}>
-                                            <button style={S.radioBtn(gScaffolding === 'invullen')} onClick={() => updateConstraint('scaffolding', 'invullen')}>
+                                        <div className="seg-group">
+                                            <button className="seg-btn" aria-pressed={gScaffolding === 'invullen'} onClick={() => updateConstraint('scaffolding', 'invullen')}>
                                                 {gFormat === 'decimaal' ? 'Invullen (€__,__)' : 'Invullen (€___)'}
                                             </button>
-                                            <button style={S.radioBtn(gScaffolding === 'zelf-schrijven')} onClick={() => updateConstraint('scaffolding', 'zelf-schrijven')}>Zelf schrijven</button>
+                                            <button className="seg-btn" aria-pressed={gScaffolding === 'zelf-schrijven'} onClick={() => updateConstraint('scaffolding', 'zelf-schrijven')}>Zelf schrijven</button>
                                         </div>
                                     </>
                                 )}
@@ -638,9 +638,9 @@ export default function Inspector() {
                                 {!isGeldHerkennen && (
                                     <>
                                         <label style={{ ...S.label, marginTop: '12px' }}>Tekenvak</label>
-                                        <div style={S.btnGroup}>
-                                            <button style={S.radioBtn(gScaffolding === 'eenvoudig')} onClick={() => updateConstraint('scaffolding', 'eenvoudig')}>Eenvoudig</button>
-                                            <button style={S.radioBtn(gScaffolding === 'verdeeld')} onClick={() => updateConstraint('scaffolding', 'verdeeld')}>Verdeeld (€ / cent)</button>
+                                        <div className="seg-group">
+                                            <button className="seg-btn" aria-pressed={gScaffolding === 'eenvoudig'} onClick={() => updateConstraint('scaffolding', 'eenvoudig')}>Eenvoudig</button>
+                                            <button className="seg-btn" aria-pressed={gScaffolding === 'verdeeld'} onClick={() => updateConstraint('scaffolding', 'verdeeld')}>Verdeeld (€ / cent)</button>
                                         </div>
                                     </>
                                 )}
@@ -862,8 +862,8 @@ const S = {
     checkbox: { accentColor: 'var(--accent)', width: '16px', height: '16px', cursor: 'pointer', flexShrink: 0 } as React.CSSProperties,
     // Segmented control: neutral track, selected segment = accent-soft tint + accent
     // text + accent ring (the one canonical selected look — same as sharedPluginStyles).
-    // No track border — each segment carries its own; a track border would double it (colorblind).
-    btnGroup: { display: 'flex', gap: '2px', backgroundColor: 'var(--bg-surface-2)', padding: '3px', borderRadius: 'var(--radius-sm)' } as React.CSSProperties,
+    // radioBtn = the separated bordered-button style; still used for the vertical list-row
+    // selectors (level/scaffolding lists). True segmented groups use .seg-group/.seg-btn.
     radioBtn: (active: boolean): React.CSSProperties => ({ padding: '6px 10px', fontSize: 'var(--text-sm)', border: `1px solid ${active ? 'var(--accent)' : 'var(--separator)'}`, borderRadius: 'var(--radius-xs)', cursor: 'pointer', backgroundColor: active ? 'var(--accent-soft)' : 'transparent', color: active ? 'var(--accent)' : 'var(--text-muted)', fontWeight: active ? 600 : 500, flex: 1, whiteSpace: 'nowrap', transition: 'background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out)' }),
 
     // Engine header: title row with the Genereer CTA on the right (plain card chrome).

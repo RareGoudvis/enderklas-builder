@@ -251,10 +251,10 @@ export default function Sidebar() {
 
             <div style={S.themeRow}>
                 <span style={S.themeLabel}>Thema</span>
-                <div style={S.themeBtnGroup}>
-                    <button style={S.themeBtn(theme === 'light')} onClick={() => setTheme('light')} title="Licht thema" aria-label="Licht thema"><Sun size={14} /></button>
-                    <button style={S.themeBtn(theme === 'dark')} onClick={() => setTheme('dark')} title="Donker thema" aria-label="Donker thema"><Moon size={14} /></button>
-                    <button style={S.themeBtn(theme === 'colorblind')} onClick={() => setTheme('colorblind')} title="Hoog contrast / kleurenblind-veilig" aria-label="Hoog contrast"><Contrast size={14} /></button>
+                <div className="seg-group" style={{ flex: '0 0 auto' }}>
+                    <button className="seg-btn" aria-pressed={theme === 'light'} style={{ width: '40px' }} onClick={() => setTheme('light')} title="Licht thema" aria-label="Licht thema"><Sun size={14} /></button>
+                    <button className="seg-btn" aria-pressed={theme === 'dark'} style={{ width: '40px' }} onClick={() => setTheme('dark')} title="Donker thema" aria-label="Donker thema"><Moon size={14} /></button>
+                    <button className="seg-btn" aria-pressed={theme === 'colorblind'} style={{ width: '40px' }} onClick={() => setTheme('colorblind')} title="Hoog contrast / kleurenblind-veilig" aria-label="Hoog contrast"><Contrast size={14} /></button>
                 </div>
             </div>
 
@@ -374,18 +374,6 @@ const S = {
 
     themeRow: { padding: 'var(--sp-3) var(--sp-4)', borderTop: '1px solid var(--separator)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)' } as React.CSSProperties,
     themeLabel: { fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text-muted)' } as React.CSSProperties,
-    // Segmented control: neutral track, selected = accent-soft tint + accent + ring
-    // (the one canonical selected look across the whole app).
-    themeBtnGroup: { display: 'flex', gap: '2px', backgroundColor: 'var(--bg-surface-2)', padding: '3px', borderRadius: 'var(--radius-sm)' } as React.CSSProperties,
-    themeBtn: (active: boolean): React.CSSProperties => ({
-        width: '34px', height: '28px', borderRadius: 'var(--radius-xs)', cursor: 'pointer',
-        border: `1px solid ${active ? 'var(--accent)' : 'var(--separator)'}`,
-        backgroundColor: active ? 'var(--accent-soft)' : 'transparent',
-        color: active ? 'var(--accent)' : 'var(--text-muted)',
-        fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out)',
-    }),
-
     footer: { padding: 'var(--sp-3) var(--sp-4)', borderTop: '1px solid var(--separator)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' } as React.CSSProperties,
     footerActions: { display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' } as React.CSSProperties,
     footerText: { fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.4 } as React.CSSProperties,
