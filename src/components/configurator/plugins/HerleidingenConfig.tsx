@@ -9,7 +9,6 @@ const FORMATS = [
     { key: 'samengesteld-enkel', label: 'Samengesteld → enkel' }, // 3 m 6 cm = ___ cm
     { key: 'enkel-samengesteld', label: 'Enkel → samengesteld' }, // 540 cm = ___ m ___ dm
 ];
-const ENKEL_STOPS = [10, 100, 1000];
 const SAM_STOPS = [10, 100, 1000, 10000, 100000, 1000000];
 
 export default function HerleidingenConfig({ block }: { block: MathBlock }) {
@@ -29,6 +28,17 @@ export default function HerleidingenConfig({ block }: { block: MathBlock }) {
     const set = (k: string, v: unknown) => update(block.id, { constraints: { ...c, [k]: v } });
     const toggleUnit = (k: string) => { const next = units.includes(k) ? units.filter(x => x !== k) : [...units, k]; if (next.length) set('units', next); };
     const toggleFormat = (k: string) => { const next = formats.includes(k) ? formats.filter(x => x !== k) : [...formats, k]; if (next.length) set('formats', next); };
+
+    // Illustrative pill labels using a representative big→small unit pair from the enabled units.
+    const en = ladder.filter(u => units.includes(u.key));
+    const big = (en[0] ?? ladder[0]).key;
+    const small = (en[en.length - 1] ?? ladder[ladder.length - 1]).key;
+    const patterns: Record<string, string> = {
+        'enkel-getal': `__ ${small}`,
+        'enkel-eenheid': `5 __`,
+        'samengesteld-enkel': `${big} ${small} → __`,
+        'enkel-samengesteld': `__ ${big} __ ${small}`,
+    };
 
     // Breakpoint slider — snaps to power-of-10 stops.
     const stopSlider = (key: string, val: number, stops: number[], label: string) => {
@@ -59,12 +69,19 @@ export default function HerleidingenConfig({ block }: { block: MathBlock }) {
                 <label style={styles.groupLabel}>Soorten oefeningen</label>
                 <div style={styles.buttonGroup}>
                     {FORMATS.map(f => (
-                        <button key={f.key} onClick={() => toggleFormat(f.key)} style={styles.pill(formats.includes(f.key))}>{f.label}</button>
+                        <button key={f.key} title={f.label} onClick={() => toggleFormat(f.key)} style={styles.pill(formats.includes(f.key))}>{patterns[f.key]}</button>
                     ))}
                 </div>
             </div>
 
-            {hasEnkel && stopSlider('maxEnkel', maxEnkel, ENKEL_STOPS, 'Maximum getal (enkelvoudig)')}
+            {hasEnkel && (
+                <div style={styles.section}>
+                    <label style={styles.label}>Maximum getal (enkelvoudig): {maxEnkel.toLocaleString('nl-BE')}</label>
+                    <input type="range" min={10} max={1000} step={10} value={Math.min(1000, Math.max(10, maxEnkel))}
+                        onChange={e => set('maxEnkel', Number(e.target.value))}
+                        style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer' }} />
+                </div>
+            )}
             {hasSam && stopSlider('maxSamengesteld', maxSam, SAM_STOPS, 'Maximum getal (samengesteld)')}
 
             {hasSam && (
