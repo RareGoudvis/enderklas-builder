@@ -379,7 +379,7 @@ const S = {
     themeBtnGroup: { display: 'flex', gap: '2px', backgroundColor: 'var(--bg-surface-2)', padding: '3px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--separator)' } as React.CSSProperties,
     themeBtn: (active: boolean): React.CSSProperties => ({
         width: '34px', height: '28px', borderRadius: 'var(--radius-xs)', cursor: 'pointer',
-        border: `1px solid ${active ? 'var(--accent)' : 'transparent'}`,
+        border: `1px solid ${active ? 'var(--accent)' : 'var(--separator)'}`,
         backgroundColor: active ? 'var(--accent-soft)' : 'transparent',
         color: active ? 'var(--accent)' : 'var(--text-muted)',
         fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center',

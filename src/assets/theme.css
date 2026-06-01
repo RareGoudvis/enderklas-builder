@@ -72,12 +72,13 @@
 
 /* ---- DARK (default) — deep neutral grays, restrained desaturated violet ---- */
 :root {
-    /* Layered surfaces: base < surface < surface-2 separate by tone, not borders */
-    --bg-base: #131316;
-    --bg-surface: #1c1c21;
-    --bg-surface-2: #26262d;
+    /* Layered surfaces: base < surface < surface-2 separate by tone, not borders.
+       Base sits notably darker than surface so panels/cards read as raised. */
+    --bg-base: #0d0d10;
+    --bg-surface: #1b1b22;
+    --bg-surface-2: #292931;
     --bg-hover: rgba(255, 255, 255, 0.06);
-    --separator: rgba(255, 255, 255, 0.09);
+    --separator: rgba(255, 255, 255, 0.12);
 
     --text-main: #f5f5f7;
     --text-muted: #9b9ba8;
@@ -97,7 +98,7 @@
     --accent-vraagstukken: #e0a030;
 
     /* Soft layered elevation — dark needs deeper alpha to read */
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.5);
     --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.40), 0 1px 3px rgba(0, 0, 0, 0.30);
     --shadow-3: 0 18px 48px rgba(0, 0, 0, 0.55), 0 6px 14px rgba(0, 0, 0, 0.35);
     --shadow-focus: 0 0 0 3px rgba(138, 111, 232, 0.45);
@@ -176,12 +177,12 @@
     --accent-meetkunde: #785EF0;
     --accent-vraagstukken: #FFB000;
 
-    /* Bordered chrome already carries a solid #000 edge — a shadow ring on top would
-       double it (the TopBar "header" doubling). Keep shadows only where a surface has
-       no border (menus, the A4 sheet). */
+    /* Bordered chrome already carries a solid #000 edge — any shadow ring on top would
+       double it. So shadows are off here; the only borderless surface (the A4 sheet)
+       gets its single edge from a thin 1px shadow-3 (not 2px, which read as too thick). */
     --shadow-1: none;
-    --shadow-2: 0 0 0 1px #000000;
-    --shadow-3: 0 0 0 2px #000000;
+    --shadow-2: none;
+    --shadow-3: 0 0 0 1px #000000;
     --shadow-focus: 0 0 0 3px rgba(0, 0, 0, 0.55);
 
     --bg-dark: var(--bg-base);

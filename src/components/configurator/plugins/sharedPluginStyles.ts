@@ -45,7 +45,9 @@ export const sharedPluginStyles = {
         fontSize: 'var(--text-sm)',
         borderRadius: 'var(--radius-sm)',
         cursor: 'pointer',
-        border: `1px solid ${active ? 'var(--accent)' : 'transparent'}`,
+        // Unselected uses a --separator border (not transparent) so the button stays
+        // visible in the colorblind theme, where every surface is white.
+        border: `1px solid ${active ? 'var(--accent)' : 'var(--separator)'}`,
         backgroundColor: active ? 'var(--accent-soft)' : 'var(--bg-surface-2)',
         color: active ? 'var(--accent)' : 'var(--text-muted)',
         fontWeight: active ? 600 : 500,
@@ -63,7 +65,7 @@ export const sharedPluginStyles = {
         fontSize: 'var(--text-sm)',
         borderRadius: 'var(--radius-pill)',
         cursor: 'pointer',
-        border: `1px solid ${active ? 'var(--accent)' : 'transparent'}`,
+        border: `1px solid ${active ? 'var(--accent)' : 'var(--separator)'}`,
         backgroundColor: active ? 'var(--accent-soft)' : 'var(--bg-surface-2)',
         color: active ? 'var(--accent)' : 'var(--text-muted)',
         fontWeight: active ? 600 : 500,
