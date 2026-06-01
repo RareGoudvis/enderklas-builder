@@ -71,7 +71,7 @@ export default function TopBar({ onPrint }: Props) {
     };
 
     return (
-        <div style={S.bar}>
+        <div className="mac-vibrant" style={S.bar}>
             <div style={S.group}>
                 <IconButton icon={Undo2} label="Ongedaan maken (Ctrl+Z)" onClick={undo} disabled={!canUndo} />
                 <IconButton icon={Redo2} label="Opnieuw (Ctrl+Y)" onClick={redo} disabled={!canRedo} />
@@ -187,7 +187,7 @@ const S = {
     bar: {
         display: 'flex', alignItems: 'center', gap: 'var(--sp-2)',
         padding: 'var(--sp-3) var(--sp-4)',
-        backgroundColor: 'var(--bg-surface)',
+        /* background comes from .mac-vibrant (frosted) — colorblind override makes it opaque */
         border: '1px solid var(--separator)',
         borderRadius: 'var(--radius-lg)',
         boxShadow: 'var(--shadow-1)',

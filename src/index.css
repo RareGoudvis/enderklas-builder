@@ -108,6 +108,20 @@ textarea:focus-visible,
 .seg-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .seg-btn:not([aria-pressed="true"]):hover { background: var(--bg-hover); }
 
+/* macOS vibrancy: frosted-translucent material (toolbar frosts content scrolling under it;
+   sidebar gets a subtle translucency). High surface-% so it stays readable if a browser
+   lacks backdrop-filter. Colorblind opts out — fully opaque for maximum contrast. */
+.mac-vibrant {
+  background-color: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+[data-theme="colorblind"] .mac-vibrant {
+  background-color: var(--bg-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 /* Respect the OS "reduce motion" setting — calm, no transitions/animations. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -83,7 +83,7 @@ export default function Sidebar() {
     };
 
     return (
-        <aside style={S.aside}>
+        <aside className="mac-vibrant" style={S.aside}>
             <div style={S.headerRow}>
                 <div style={S.logoWrap}>
                     <img src={logo} alt="Enderklas Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
@@ -154,8 +154,9 @@ export default function Sidebar() {
 
                     return (
                         <div key={domain.id} style={S.domainWrap}>
-                            {/* macOS source-list section header: a domain-color dot + the domain name. */}
-                            <div style={S.sectionHeader}>
+                            {/* Domain section header: a full-width accent-tinted band with a
+                               dot + the domain name in the domain's accent color. */}
+                            <div style={S.sectionHeader(accent)}>
                                 <span style={S.sectionDot(accent)} />
                                 <span>{domain.label}</span>
                             </div>
@@ -289,7 +290,7 @@ export default function Sidebar() {
 
 
 const S = {
-    aside: { width: '300px', minWidth: '300px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--separator)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-1)', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } as React.CSSProperties,
+    aside: { width: '300px', minWidth: '300px', border: '1px solid var(--separator)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-1)', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } as React.CSSProperties,
     headerRow: { display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', padding: 'var(--sp-5) var(--sp-4) var(--sp-3)' } as React.CSSProperties,
     logoWrap: { width: '48px', height: '48px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' } as React.CSSProperties,
     headerText: { flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 } as React.CSSProperties,
@@ -313,8 +314,14 @@ const S = {
 
     domainWrap: { marginBottom: 'var(--sp-3)' } as React.CSSProperties,
 
-    // macOS source-list section header + leading domain-color dot.
-    sectionHeader: { display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', padding: 'var(--sp-2) var(--sp-3) var(--sp-1)', fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.01em' } as React.CSSProperties,
+    // Domain section header — full-width accent-tinted band, label + dot in the domain accent.
+    sectionHeader: (accent: string): React.CSSProperties => ({
+        display: 'flex', alignItems: 'center', gap: 'var(--sp-2)',
+        padding: '6px 10px', margin: 'var(--sp-1) var(--sp-1) var(--sp-2)',
+        borderRadius: 'var(--radius-sm)',
+        backgroundColor: `color-mix(in srgb, ${accent} 12%, transparent)`,
+        color: accent, fontSize: 'var(--text-sm)', fontWeight: 700, letterSpacing: '0.01em',
+    }),
     sectionDot: (accent: string): React.CSSProperties => ({ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: accent, flexShrink: 0 }),
 
     domainContent: { paddingLeft: 'var(--sp-1)' } as React.CSSProperties,
