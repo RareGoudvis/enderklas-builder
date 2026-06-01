@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Sparkles } from 'lucide-react';
+import IconButton from '../ui/IconButton';
 import { useWorksheetStore, DEFAULT_FIELD_ORDER, DEFAULT_FIELD_WIDTHS, type HeaderField } from '../../store/useWorksheetStore';
 import { EXERCISE_UI } from '../../config/exerciseUI';
 import { DENOMINATION_CATALOGUE, denominationLabel } from '../../services/geld/geldGenerator';
@@ -47,7 +48,7 @@ export default function Inspector() {
     // No block selected or document → document settings
     if (!activeBlock) {
         return (
-            <aside style={S.sidebar}>
+            <aside data-tour="inspector" style={S.sidebar}>
 
                 {/* ── Werkbundel instellingen ── */}
                 <div style={S.card}>
@@ -225,7 +226,7 @@ export default function Inspector() {
         updateBlockSettings(activeBlock.id, { constraints: { ...c, [key]: value } });
 
     return (
-        <aside style={S.sidebar}>
+        <aside data-tour="inspector" style={S.sidebar}>
 
             {locked && (
                 <div style={S.lockBanner}>
@@ -289,11 +290,12 @@ export default function Inspector() {
                 );
             })()}
 
-            {/* ── 2. Engine (pill box) ── */}
-            <div style={S.engineCard}>
+            {/* ── 2. Engine — same card chrome as every other section; the Genereer
+                   CTA is the shared primary IconButton. ── */}
+            <div style={S.card}>
                 <div style={S.engineHeader}>
-                    <span style={S.engineLabel}>Engine</span>
-                    <button onClick={handleGenerate} style={S.generateBtn}>✨ Genereer</button>
+                    <h4 style={{ ...S.cardTitle, margin: 0 }}>Engine</h4>
+                    <IconButton icon={Sparkles} label="Genereer oefeningen" visibleLabel="Genereer" variant="primary" onClick={handleGenerate} dataTour="generate-block" />
                 </div>
                 <div style={S.engineBody}>
                     {locked ? (
@@ -864,11 +866,9 @@ const S = {
     btnGroup: { display: 'flex', gap: '2px', backgroundColor: 'var(--bg-surface-2)', padding: '3px', borderRadius: 'var(--radius-sm)' } as React.CSSProperties,
     radioBtn: (active: boolean): React.CSSProperties => ({ padding: '6px 10px', fontSize: 'var(--text-sm)', border: `1px solid ${active ? 'var(--accent)' : 'var(--separator)'}`, borderRadius: 'var(--radius-xs)', cursor: 'pointer', backgroundColor: active ? 'var(--accent-soft)' : 'transparent', color: active ? 'var(--accent)' : 'var(--text-muted)', fontWeight: active ? 600 : 500, flex: 1, whiteSpace: 'nowrap', transition: 'background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out)' }),
 
-    engineCard: { backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--accent-soft)', boxShadow: 'var(--shadow-1)' } as React.CSSProperties,
-    engineHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--sp-3) var(--sp-4)', backgroundColor: 'var(--accent-soft)', borderBottom: '1px solid var(--separator)', borderRadius: 'var(--radius-md) var(--radius-md) 0 0' } as React.CSSProperties,
-    engineLabel: { fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--accent)' } as React.CSSProperties,
-    engineBody: { padding: 'var(--sp-4)', maxHeight: '520px', overflowY: 'auto' } as React.CSSProperties,
-    generateBtn: { padding: '8px 16px', backgroundColor: 'var(--accent)', border: 'none', color: 'var(--accent-on)', borderRadius: 'var(--radius-pill)', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--text-sm)', boxShadow: 'var(--shadow-2)' } as React.CSSProperties,
+    // Engine header: title row with the Genereer CTA on the right (plain card chrome).
+    engineHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-2)', marginBottom: 'var(--sp-3)' } as React.CSSProperties,
+    engineBody: { maxHeight: '520px', overflowY: 'auto' } as React.CSSProperties,
 
     advancedWrap: { marginBottom: 'var(--sp-2)' } as React.CSSProperties,
     advancedToggle: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--sp-3) var(--sp-4)', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--separator)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 'var(--text-sm)', fontWeight: 600 } as React.CSSProperties,

@@ -72,16 +72,16 @@
 
 /* ---- DARK (default) — deep neutral grays, restrained desaturated violet ---- */
 :root {
-    /* Layered surfaces: base < surface < surface-2 separate by tone, not borders.
-       Base sits notably darker than surface so panels/cards read as raised. */
-    --bg-base: #0d0d10;
-    --bg-surface: #1b1b22;
-    --bg-surface-2: #292931;
+    /* Layered surfaces — Apple-system comfort: a soft dark gray base (not near-black),
+       surfaces lifted by tone + elevation + hairline rather than a harsh tone jump. */
+    --bg-base: #161619;
+    --bg-surface: #202024;
+    --bg-surface-2: #2b2b31;
     --bg-hover: rgba(255, 255, 255, 0.06);
-    --separator: rgba(255, 255, 255, 0.12);
+    --separator: rgba(255, 255, 255, 0.11);
 
-    --text-main: #f5f5f7;
-    --text-muted: #9b9ba8;
+    --text-main: #ececef;
+    --text-muted: #9b9ba7;
 
     /* Desaturated from the old neon #ac29e9 → a calmer violet */
     --accent: #8a6fe8;
@@ -98,7 +98,7 @@
     --accent-vraagstukken: #e0a030;
 
     /* Soft layered elevation — dark needs deeper alpha to read */
-    --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.45);
     --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.40), 0 1px 3px rgba(0, 0, 0, 0.30);
     --shadow-3: 0 18px 48px rgba(0, 0, 0, 0.55), 0 6px 14px rgba(0, 0, 0, 0.35);
     --shadow-focus: 0 0 0 3px rgba(138, 111, 232, 0.45);
@@ -114,11 +114,11 @@
 
 /* ---- LIGHT — soft off-white surfaces, hairline separators, airy ---- */
 [data-theme="light"] {
-    --bg-base: #ecebe5;
+    --bg-base: #efeee9;
     --bg-surface: #ffffff;
-    --bg-surface-2: #f4f3ee;
+    --bg-surface-2: #f3f2ec;
     --bg-hover: rgba(0, 0, 0, 0.05);
-    --separator: rgba(0, 0, 0, 0.10);
+    --separator: rgba(0, 0, 0, 0.12);
 
     --text-main: #1d1d1f;
     --text-muted: #6e6d66;

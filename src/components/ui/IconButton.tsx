@@ -11,6 +11,7 @@ interface Props {
     disabled?: boolean;
     variant?: IconButtonVariant;
     size?: number;                // icon size in px
+    dataTour?: string;            // forwarded as data-tour (spotlight onboarding anchor)
 }
 
 // Centralised button styling so TopBar / sidebar / block overlay all share
@@ -18,7 +19,7 @@ interface Props {
 // All colour tokens come from CSS variables so themes flow through.
 export default function IconButton({
     icon: Icon, label, visibleLabel, onClick, disabled = false,
-    variant = 'neutral', size = 18,
+    variant = 'neutral', size = 18, dataTour,
 }: Props) {
     const style = computeStyle(variant, disabled, !!visibleLabel);
     return (
@@ -30,6 +31,7 @@ export default function IconButton({
             title={label}
             aria-label={label}
             aria-disabled={disabled || undefined}
+            data-tour={dataTour}
             style={style}
         >
             <Icon size={size} strokeWidth={2} aria-hidden="true" />
