@@ -383,7 +383,7 @@ export const APP_STRUCTURE: Domain[] = [
                     { id: 'herleidingen-lengte', label: 'Lengte', typeId: 'herleidingen', defaultConstraints: { measure: 'lengte', units: ['m', 'dm', 'cm', 'mm'] } },
                     { id: 'herleidingen-inhoud', label: 'Inhoud', typeId: 'herleidingen', defaultConstraints: { measure: 'inhoud', units: ['l', 'dl', 'cl', 'ml'] } },
                     { id: 'herleidingen-massa', label: 'Massa', typeId: 'herleidingen', defaultConstraints: { measure: 'massa', units: ['kg', 'dag', 'g', 'dg'] } },
-                    ph('herleidingen-oppervlakte', 'Oppervlakte'),
+                    { id: 'herleidingen-oppervlakte', label: 'Oppervlakte', typeId: 'herleidingen', defaultConstraints: { measure: 'oppervlakte', units: ['m²', 'dm²', 'cm²', 'a', 'ca', 'ha'] } },
                 ],
             },
         ],

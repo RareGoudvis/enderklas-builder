@@ -341,6 +341,18 @@ export default function Inspector() {
                         </div>
                     )}
 
+                    {/* ── Hulptabel (herleidingen) — a conversion-table scaffold ── */}
+                    {activeBlock.typeId === 'herleidingen' && (
+                        <>
+                            <label style={{ ...S.label, marginTop: '12px' }}>Hulptabel</label>
+                            <div className="seg-group">
+                                {([['geen', 'Geen'], ['tabel-headers', 'Met hoofding'], ['tabel-blanco', 'Blanco']] as const).map(([v, lbl]) => (
+                                    <button key={v} className="seg-btn" aria-pressed={(c.scaffolding ?? 'geen') === v} onClick={() => updateConstraint('scaffolding', v)}>{lbl}</button>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
                     {/* ── Niveau (hoeveelheid-abstract only) — with example range per level ── */}
                     {subType === 'hoeveelheid-abstract' && (
                         <>

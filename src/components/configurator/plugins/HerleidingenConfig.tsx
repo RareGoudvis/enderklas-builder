@@ -9,6 +9,8 @@ const FORMATS = [
     { key: 'samengesteld-enkel', label: 'Samengesteld → enkel' }, // 3 m 6 cm = ___ cm
     { key: 'enkel-samengesteld', label: 'Enkel → samengesteld' }, // 540 cm = ___ m ___ dm
 ];
+const ENKEL_STOPS = [10, 100, 1000];
+const SAM_STOPS = [10, 100, 1000, 10000, 100000, 1000000];
 
 export default function HerleidingenConfig({ block }: { block: MathBlock }) {
     const update = useWorksheetStore(s => s.updateBlockSettings);
@@ -17,31 +19,40 @@ export default function HerleidingenConfig({ block }: { block: MathBlock }) {
     const ladder = ladderFor(measure);
     const units: string[] = c.units ?? ladder.map(u => u.key);
     const formats: string[] = c.formats ?? FORMATS.map(f => f.key);
-    const max: number = c.maxGetal ?? 9;
-    const writeUnits: boolean = !!c.writeUnits;
-    const scaffolding: string = c.scaffolding ?? 'geen';
+    const maxEnkel: number = c.maxEnkel ?? 100;
+    const maxSam: number = c.maxSamengesteld ?? 1000;
+    const compoundMode: string = c.compoundMode ?? '2';
+
+    const hasEnkel = formats.some(f => f === 'enkel-getal' || f === 'enkel-eenheid');
+    const hasSam = formats.some(f => f === 'samengesteld-enkel' || f === 'enkel-samengesteld');
 
     const set = (k: string, v: unknown) => update(block.id, { constraints: { ...c, [k]: v } });
     const toggleUnit = (k: string) => { const next = units.includes(k) ? units.filter(x => x !== k) : [...units, k]; if (next.length) set('units', next); };
     const toggleFormat = (k: string) => { const next = formats.includes(k) ? formats.filter(x => x !== k) : [...formats, k]; if (next.length) set('formats', next); };
 
+    // Breakpoint slider — snaps to power-of-10 stops.
+    const stopSlider = (key: string, val: number, stops: number[], label: string) => {
+        const idx = Math.max(0, stops.indexOf(val));
+        return (
+            <div style={styles.section}>
+                <label style={styles.label}>{label}: {val.toLocaleString('nl-BE')}</label>
+                <input type="range" min={0} max={stops.length - 1} step={1} value={idx}
+                    onChange={e => set(key, stops[Number(e.target.value)])}
+                    style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer' }} />
+            </div>
+        );
+    };
+
     return (
         <div style={styles.container}>
             <div style={styles.section}>
-                <label style={styles.label}>Eenheden:</label>
+                <label style={styles.label}>Maateenheden:</label>
                 <div style={styles.buttonGroup}>
                     {ladder.map(u => (
                         <button key={u.key} onClick={() => toggleUnit(u.key)} style={styles.pill(units.includes(u.key))}>{u.key}</button>
                     ))}
                 </div>
                 <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', margin: '4px 0 0' }}>Kies minstens twee eenheden.</p>
-            </div>
-
-            <div style={styles.section}>
-                <label style={styles.label}>Maximum getal: {max}</label>
-                <input type="range" min={2} max={50} step={1} value={max}
-                    onChange={e => set('maxGetal', Number(e.target.value))}
-                    style={{ width: '100%', accentColor: 'var(--accent)', cursor: 'pointer' }} />
             </div>
 
             <div style={styles.section}>
@@ -53,18 +64,22 @@ export default function HerleidingenConfig({ block }: { block: MathBlock }) {
                 </div>
             </div>
 
+            {hasEnkel && stopSlider('maxEnkel', maxEnkel, ENKEL_STOPS, 'Maximum getal (enkelvoudig)')}
+            {hasSam && stopSlider('maxSamengesteld', maxSam, SAM_STOPS, 'Maximum getal (samengesteld)')}
+
+            {hasSam && (
+                <div style={styles.section}>
+                    <label style={styles.label}>Samengesteld in:</label>
+                    <div className="seg-group">
+                        <button className="seg-btn" aria-pressed={compoundMode === '2'} onClick={() => set('compoundMode', '2')}>2 eenheden</button>
+                        <button className="seg-btn" aria-pressed={compoundMode === 'volledig'} onClick={() => set('compoundMode', 'volledig')}>Volledig</button>
+                    </div>
+                </div>
+            )}
+
             <div style={styles.onOffRow}>
                 <span style={styles.onOffLabel}>Leerling schrijft de eenheden zelf</span>
-                <button onClick={() => set('writeUnits', !writeUnits)} style={styles.onOffBtn(writeUnits)}>{writeUnits ? 'Aan' : 'Uit'}</button>
-            </div>
-
-            <div style={styles.section}>
-                <label style={styles.label}>Hulptabel:</label>
-                <div className="seg-group">
-                    <button className="seg-btn" aria-pressed={scaffolding === 'geen'} onClick={() => set('scaffolding', 'geen')}>Geen</button>
-                    <button className="seg-btn" aria-pressed={scaffolding === 'tabel-headers'} onClick={() => set('scaffolding', 'tabel-headers')}>Met hoofding</button>
-                    <button className="seg-btn" aria-pressed={scaffolding === 'tabel-blanco'} onClick={() => set('scaffolding', 'tabel-blanco')}>Blanco</button>
-                </div>
+                <button onClick={() => set('writeUnits', !c.writeUnits)} style={styles.onOffBtn(!!c.writeUnits)}>{c.writeUnits ? 'Aan' : 'Uit'}</button>
             </div>
         </div>
     );

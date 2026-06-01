@@ -154,9 +154,9 @@ const romeinseDefaults = (): Record<string, unknown> => ({
 
 // measure + units come from the appstructure leaf's defaultConstraints (lengte/inhoud/massa).
 const herleidingenDefaults = (): Record<string, unknown> => ({
-    measure: 'lengte', units: ['m', 'dm', 'cm', 'mm'], maxGetal: 9,
+    measure: 'lengte', units: ['m', 'dm', 'cm', 'mm'], maxEnkel: 100, maxSamengesteld: 1000,
     formats: ['enkel-getal', 'enkel-eenheid', 'samengesteld-enkel', 'enkel-samengesteld'],
-    writeUnits: false, scaffolding: 'geen',
+    compoundMode: '2', writeUnits: false, scaffolding: 'geen',
 });
 
 // All cijferen leaves share the same generator/field/defaults (operator + numberType
