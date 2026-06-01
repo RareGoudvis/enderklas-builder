@@ -32,7 +32,9 @@ export default function RomeinseViewer({ block, showSolutions }: Props) {
                 const answer = herkennen ? formatMathNumber(ex.value) : ex.roman;
                 return (
                     <div key={ex.id} className="print-exercise" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', fontFamily: mono, fontSize: '18px' }}>
-                        <span style={{ minWidth: '74px', letterSpacing: '1px' }}>{prompt}</span>
+                        {/* Fixed width + right-align pins the prompt's right edge so the arrow
+                           and answer line align in a column regardless of numeral length. */}
+                        <span style={{ width: '150px', textAlign: 'right', whiteSpace: 'nowrap', letterSpacing: '1px', flexShrink: 0 }}>{prompt}</span>
                         <span style={{ alignSelf: 'center' }}>→</span>
                         {/* long line so pupils can add the pieces of the numeral */}
                         {showSolutions

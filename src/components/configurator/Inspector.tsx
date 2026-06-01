@@ -290,11 +290,11 @@ export default function Inspector() {
                 );
             })()}
 
-            {/* ── 2. Engine — same card chrome as every other section; the Genereer
-                   CTA is the shared primary IconButton. ── */}
+            {/* ── 2. Oefeningen — exercise-type settings + the Genereer CTA (shared
+                   primary IconButton); same card chrome as every other section. ── */}
             <div style={S.card}>
                 <div style={S.engineHeader}>
-                    <h4 style={{ ...S.cardTitle, margin: 0 }}>Engine</h4>
+                    <h4 style={{ ...S.cardTitle, margin: 0 }}>Oefeningen</h4>
                     <IconButton icon={Sparkles} label="Genereer oefeningen" visibleLabel="Genereer" variant="primary" onClick={handleGenerate} dataTour="generate-block" />
                 </div>
                 <div style={S.engineBody}>

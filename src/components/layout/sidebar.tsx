@@ -55,10 +55,10 @@ export default function Sidebar() {
         try { return localStorage.getItem('enderklas_site_title_v1') ?? 'Enderklas Builder'; } catch { return 'Enderklas Builder'; }
     });
     const [siteSubtitle, setSiteSubtitle] = useState<string>(() => {
-        try { return localStorage.getItem('enderklas_site_subtitle_v1') ?? 'Gemaakt door Ruben Van Handenhove'; } catch { return 'Gemaakt door Ruben Van Handenhove'; }
+        try { return localStorage.getItem('enderklas_site_subtitle_v2') ?? 'By Ruben Van Handenhove.'; } catch { return 'By Ruben Van Handenhove.'; }
     });
     useEffect(() => { try { localStorage.setItem('enderklas_site_title_v1', siteTitle); } catch { /* ignore */ } }, [siteTitle]);
-    useEffect(() => { try { localStorage.setItem('enderklas_site_subtitle_v1', siteSubtitle); } catch { /* ignore */ } }, [siteSubtitle]);
+    useEffect(() => { try { localStorage.setItem('enderklas_site_subtitle_v2', siteSubtitle); } catch { /* ignore */ } }, [siteSubtitle]);
 
     const isSearching = search.trim().length > 0;
     const tree = useMemo(() => filterTree(APP_STRUCTURE, search), [search]);
@@ -98,7 +98,7 @@ export default function Sidebar() {
                     <input
                         value={siteSubtitle}
                         onChange={(e) => setSiteSubtitle(e.target.value)}
-                        placeholder="Gemaakt door Ruben Van Handenhove"
+                        placeholder="By Ruben Van Handenhove."
                         style={S.siteSubtitleInput}
                     />
                 </div>
