@@ -428,8 +428,12 @@ All localStorage; nothing leaves the browser except share links the user copies.
   `RELEASE_SUMMARY`; shown until the user dismisses the current version
   (`enderklas_release_seen_v1`). Details live in
   [HelpModal.tsx](src/components/layout/HelpModal.tsx).
-- **Alpha popup** — [AlphaPopup.tsx](src/components/layout/AlphaPopup.tsx),
-  one-time, keyed by its own localStorage flag.
+- **First-run tutorial** — [TourOverlay.tsx](src/components/onboarding/TourOverlay.tsx),
+  an interactive spotlight tour (add → settings → generate → print → WIP/feedback finale).
+  One-time via `localStorage` `enderklas_tour_seen_v1`; replayable from HelpModal's
+  "Rondleiding" button. Targets elements by `data-tour="…"` anchors (sidebar-nav, inspector,
+  generate-block, print, feedback); advances on real store changes (block added / exercises
+  generated). Replaced the old AlphaPopup (its WIP warning is now the final step).
 
 ---
 
@@ -474,8 +478,9 @@ src/
 │   ├── afronden/afrondenGenerator.ts         # natural+decimal rooster / simpel (targetsFor, roundTo)
 │   └── romeinse/romeinseGenerator.ts         # herkennen / schrijven (toRoman, NIVEAU_MAX)
 └── components/
-    ├── layout/{sidebar.tsx,TopBar.tsx,AlphaPopup.tsx,HelpModal.tsx,PresetModal.tsx,
-    │           BaseSettingsPanel.tsx,BaseSettingsModal.tsx}   # §13 sidebar Geavanceerd + base modal
+    ├── layout/{sidebar.tsx,TopBar.tsx,HelpModal.tsx,PresetModal.tsx,
+    │           BaseSettingsPanel.tsx,BaseSettingsModal.tsx}   # §13 sidebar gear menu + base modal
+    ├── onboarding/TourOverlay.tsx                              # first-run spotlight tutorial
     ├── massadd/MassAddModal.tsx                                # §13 "Toevoegen" modal
     ├── curriculum/CurriculumBuilderModal.tsx                   # §13 curriculum builder
     ├── shared/ExercisePreview.tsx                              # §13 fit-to-card live example

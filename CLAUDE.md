@@ -119,13 +119,13 @@ src/
 │   └── version.ts                 # RELEASE_VERSION / RELEASE_SUMMARY for the "Nieuw" banner
 └── components/
     ├── layout/
-    │   ├── sidebar.tsx            # Left panel: tree nav + Geavanceerd group + locked palette
+    │   ├── sidebar.tsx            # Left panel: source-list nav (domain bands) + gear menu + locked palette
     │   ├── TopBar.tsx             # Toevoegen / Genereer alles / Delen dropdown / ⋯ Meer / print
-    │   ├── BaseSettingsPanel.tsx  # Sidebar "Geavanceerd": Basisinstellingen + Curriculum buttons
+    │   ├── BaseSettingsPanel.tsx  # Sidebar footer gear (⚙) popover: Basisinstellingen + Curriculum
     │   ├── BaseSettingsModal.tsx  # Global base-difficulty modal
-    │   ├── AlphaPopup.tsx         # One-time alpha warning
-    │   ├── HelpModal.tsx          # Ouders / Leerkrachten tabs
+    │   ├── HelpModal.tsx          # Ouders / Leerkrachten tabs + "Rondleiding" replay
     │   └── PresetModal.tsx        # Save/load/delete named presets
+    ├── onboarding/TourOverlay.tsx # First-run interactive spotlight tutorial (one-time + replay)
     ├── massadd/MassAddModal.tsx   # "Toevoegen" mass-add modal
     ├── curriculum/CurriculumBuilderModal.tsx   # Curriculum builder (draftBlocks + real configs)
     ├── shared/ExercisePreview.tsx # Fit-to-card live example (mass-add + curriculum)

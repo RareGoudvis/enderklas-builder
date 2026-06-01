@@ -106,14 +106,22 @@ faint gray) — keep it. The lone exception is `onOffBtn`, a binary switch that 
 local style **only if** it expresses this same rule with tokens and adapts a shared helper
 (`{ ...styles.radioBtn(active), … }`) — see `multiplication/RationalSettings.tsx`.
 
-### IconButton — [IconButton.tsx](src/components/ui/IconButton.tsx)
-34px tall, `--radius-sm`; variants: `primary` (`--accent` bg / `--accent-on`), `neutral`
-(`--bg-surface-2` / main text, default), `danger` (`--danger-soft` bg / `--danger`),
-`active` (`--accent-soft` bg / `--accent`). Hover/press live in `.ui-icon-btn` (index.css).
+### macOS control idioms (CSS classes in [index.css](src/index.css))
+- **Unified segmented control** (`.seg-group` + `.seg-btn[aria-pressed]`): one bezel + thin
+  internal dividers + the selected segment tinted in place. Use for **small fixed
+  single-select** groups (Type oefening, Links/Midden/Rechts, theme switch). **Wrapping** or
+  **multi-select** groups stay as separated buttons (`sharedPluginStyles.radioBtn`/`pill`/
+  `maskBtn`) — macOS's "separated" style, correct for those.
+- **Vibrancy** (`.mac-vibrant`): frosted translucent material (`backdrop-filter` blur +
+  `color-mix` bg) on the TopBar + sidebar. **Colorblind opts out** (opaque) for contrast; the
+  Inspector stays opaque (card contrast).
+- **Domain section header** (sidebar): full-width accent-tinted band
+  (`color-mix(in srgb, <accent> 12%, transparent)`), label + dot in the domain accent.
 
 ### IconButton — [IconButton.tsx](src/components/ui/IconButton.tsx)
-34px tall, `--radius-sm`; variants: `primary` (`--accent` bg / `--accent-on`), `neutral`
-(`--bg-surface-2` / main text, default), `danger` (`--danger-soft` bg / `--danger`),
+34px tall, `--radius-sm`, whisper-light bezel (`--shadow-1`, off in colorblind); `dataTour`
+prop forwards a `data-tour` anchor. Variants: `primary` (`--accent` bg / `--accent-on`),
+`neutral` (`--bg-surface-2` / main text, default), `danger` (`--danger-soft` bg / `--danger`),
 `active` (`--accent-soft` bg / `--accent`). Hover/press live in `.ui-icon-btn` (index.css).
 
 ### Other reusable building blocks
